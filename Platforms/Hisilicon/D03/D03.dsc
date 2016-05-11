@@ -515,6 +515,7 @@
   MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
   MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
   IntelFrameworkModulePkg/Universal/BdsDxe/BdsDxe.inf
+  OpenPlatformPkg/Chips/Hisilicon/Application/EmbeddedLoader/EslStartOs.inf
 
   #
   # UEFI application (Shell Embedded Boot Loader)
