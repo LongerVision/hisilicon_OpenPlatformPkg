@@ -30,7 +30,97 @@
 #include <Protocol/PciRootBridgeIo.h>
 
 #include "IntelBdsPlatform.h"
+#include <Protocol/DevicePathToText.h>
+#include <Guid/GlobalVariable.h>
+#include <Library/PrintLib.h>
+#include <Library/GenericBdsLib.h>
+#include <Library/MemoryAllocationLib.h>
 
+#define BOOT_OPTION_BOOT_FLAG_VALID         1
+#define BOOT_OPTION_BOOT_FLAG_INVALID         0
+
+typedef enum {
+  NoOverride = 0x0,
+  ForcePxe,
+  ForceDefaultHardDisk,
+  ForceDefaultHardDiskSafeMode,
+  ForceDefaultDiagnosticPartition,
+  ForceDefaultCD,
+  ForceSetupUtility,
+  ForceRemoteRemovableMedia,
+  ForceRemoteCD,
+  ForcePrimaryRemoteMedia,
+  ForceRemoteHardDisk = 0xB,
+  ForcePrimaryRemovableMedia = 0xF
+} BOOT_DEVICE_SELECTOR;
+
+// Get System Boot Option data structure
+//
+typedef struct {
+  UINT8 ParameterVersion           :4;
+  UINT8 Reserved1                  :4;
+  UINT8 ParameterSelector          :7;
+  UINT8 ParameterValid             :1;
+  //
+  // Boot Flags Data 1
+  //
+  UINT8 Reserved2                  :5;
+  UINT8 BiosBootType               :1;
+  UINT8 Persistent                 :1;
+  UINT8 BootFlagsValid             :1;
+  //
+  // Boot Flags Data 2
+  //
+  UINT8 LockResetBtn               :1;
+  UINT8 ScreenBlank                :1;
+  UINT8 BootDeviceSelector         :4;
+  UINT8 LockKeyboard               :1;
+  UINT8 ClearCmos                  :1;
+  //
+  // Boot Flags Data 3
+  //
+  UINT8 ConsoleRedirectionControl  :2;
+  UINT8 LockSleepBtn               :1;
+  UINT8 UserPasswordByPass         :1;
+  UINT8 Reserved3                  :1;
+  UINT8 FirmwareVerbosity          :2;
+  UINT8 LockPowerBtn               :1;
+  //
+  // Boot Flags Data 4
+  //
+  UINT8 MuxControlOverride         :3;
+  UINT8 ShareModeOverride          :1;
+  UINT8 Reserved4                  :4;
+  //
+  // Boot Flags Data 5
+  //
+  UINT8 DeviceInstanceSelector     :5;
+  UINT8 Reserved5                  :3;
+} IPMI_GET_BOOT_OPTION;
+
+#define EFI_ACPI_PCI_SAS_DEVICE_PATH_GUID \
+  { \
+    0xA0441D0, 0x0, 0x0, {0x1, 0x1, 0x06, 0x0, 0x0, 0x0, 0x1, 0x1 } \
+  }
+
+typedef struct{
+    UINT8 NodeType;
+    UINT8 NodeSubType;
+    EFI_GUID *Guid;
+    UINTN DeviceType;
+}OemDeviceType;
+
+OemDeviceType DeviceTypeArray[]={
+    {MESSAGING_DEVICE_PATH, MSG_SATA_DP,     NULL, BBS_TYPE_HARDDRIVE},
+    {MESSAGING_DEVICE_PATH, MSG_VENDOR_DP,   &((EFI_GUID)EFI_ACPI_PCI_SAS_DEVICE_PATH_GUID), BBS_TYPE_HARDDRIVE},
+    {MESSAGING_DEVICE_PATH, MSG_VENDOR_DP,   &((EFI_GUID)DEVICE_PATH_MESSAGING_SAS), BBS_TYPE_HARDDRIVE}, 
+    {MESSAGING_DEVICE_PATH, MSG_USB_DP,      NULL, BBS_TYPE_USB},    
+    {MESSAGING_DEVICE_PATH, MSG_MAC_ADDR_DP, NULL, BBS_TYPE_EMBEDDED_NETWORK},
+    {MEDIA_DEVICE_PATH, MEDIA_CDROM_DP,      NULL, BBS_TYPE_CDROM}
+};
+
+EFI_STATUS IpmiCmdGetSysBootOptions(OUT IPMI_GET_BOOT_OPTION *BootOption  );
+EFI_STATUS IpmiCmdSetSysBootOptions(IPMI_GET_BOOT_OPTION    *BootOption  );
 
 //3CEF354A-3B7A-4519-AD70-72A134698311
 GUID gEblFileGuid = {0x3CEF354A, 0x3B7A, 0x4519, {0xAD, 0x70,
@@ -361,6 +451,262 @@ AddOutput (
     ReportText));
 }
 
+UINT16 DeviceTypeFoundInFileSystemHandles(EFI_DEVICE_PATH_PROTOCOL *DevicePathIn)
+{
+  EFI_STATUS                    Status;  
+  EFI_HANDLE                    *FileSystemHandles;
+  UINTN                         NumberFileSystemHandles;
+  UINTN                         Index;
+  EFI_DEVICE_PATH_PROTOCOL      *DevicePathGot;
+  EFI_DEVICE_PATH_TO_TEXT_PROTOCOL* DevicePathToTextProtocol;
+  CHAR16*                       DevicePathTxtIn = NULL;
+  CHAR16*                       DevicePathTxtGot = NULL;
+  EFI_DEVICE_PATH_PROTOCOL      *DevicePathNode = NULL;
+  UINT16                        Result = BBS_TYPE_UNKNOWN;
+
+  Status = gBS->LocateHandleBuffer (
+            ByProtocol,
+            &gEfiSimpleFileSystemProtocolGuid,
+            NULL,
+            &NumberFileSystemHandles,
+            &FileSystemHandles
+            ); 
+  if (EFI_ERROR (Status)) {
+    DEBUG((EFI_D_ERROR, "%a(%d):error!\n", __FUNCTION__,__LINE__));
+  }
+  
+  Status = gBS->LocateProtocol(&gEfiDevicePathToTextProtocolGuid, NULL, (VOID **)&DevicePathToTextProtocol);
+  if (EFI_ERROR (Status)) {
+    DEBUG((EFI_D_ERROR, "%a(%d):error!\n", __FUNCTION__,__LINE__));
+  }
+  DevicePathTxtIn = DevicePathToTextProtocol->ConvertDevicePathToText (DevicePathIn, TRUE, TRUE);
+
+  for (Index = 0; Index < NumberFileSystemHandles; Index++) {
+    DevicePathGot = DevicePathFromHandle (FileSystemHandles[Index]);
+    DevicePathTxtGot = DevicePathToTextProtocol->ConvertDevicePathToText (DevicePathGot, TRUE, TRUE);
+          
+    if(0 == StrnCmp(DevicePathTxtIn, DevicePathTxtGot, StrLen(DevicePathTxtIn)))
+    {
+      DevicePathNode = DevicePathGot;
+      while (!IsDevicePathEnd (DevicePathNode)) {         
+        if((DevicePathNode->Type == MEDIA_DEVICE_PATH) && (DevicePathNode->SubType == MEDIA_CDROM_DP))
+        {            
+            Result = BBS_TYPE_CDROM;
+            break;
+        }
+        DevicePathNode = NextDevicePathNode (DevicePathNode);
+      }        
+    }
+    
+    if(Result != BBS_TYPE_UNKNOWN)
+    {
+        break;
+    }    
+  }
+
+  if (NumberFileSystemHandles != 0) {
+    FreePool (FileSystemHandles);
+  }
+  if(DevicePathTxtGot != NULL)
+  {
+      FreePool (DevicePathTxtGot);
+  }
+  if(DevicePathTxtIn != NULL)
+  {  
+    FreePool (DevicePathTxtIn);
+  }
+
+  return Result;
+}
+
+UINT16 UniGetEfiDeviceType(
+  IN  BDS_COMMON_OPTION *BootOption
+)
+{
+  EFI_DEVICE_PATH_PROTOCOL*  DevicePathNode;
+  UINTN DeviceCnt;
+  UINTN Loop;
+  VENDOR_DEVICE_PATH *Vender;
+  UINT16 Result;
+  
+  DeviceCnt = sizeof(DeviceTypeArray)/sizeof(OemDeviceType);
+  DevicePathNode = BootOption->DevicePath;
+  while (!IsDevicePathEnd (DevicePathNode)) { 
+    for(Loop = 0; Loop < DeviceCnt; Loop++)
+    {
+        if((DevicePathType (DevicePathNode) == DeviceTypeArray[Loop].NodeType) &&
+          (DevicePathSubType (DevicePathNode) == MSG_VENDOR_DP))
+        {
+            Vender = (VENDOR_DEVICE_PATH*)(DevicePathNode);
+            if(0 == CompareMem(&(Vender->Guid), DeviceTypeArray[Loop].Guid, sizeof(EFI_GUID)))
+            {
+                return DeviceTypeArray[Loop].DeviceType;
+            }
+        }else if((DevicePathType (DevicePathNode) == MESSAGING_DEVICE_PATH) &&
+          (DevicePathSubType (DevicePathNode) == MSG_USB_DP))
+        {
+            Result = DeviceTypeFoundInFileSystemHandles(BootOption->DevicePath);
+            if(Result != BBS_TYPE_UNKNOWN)
+            {
+              return Result;  
+            }
+        }
+        else if((DevicePathType (DevicePathNode) == DeviceTypeArray[Loop].NodeType) &&
+          (DevicePathSubType (DevicePathNode) == DeviceTypeArray[Loop].NodeSubType))
+        {
+            return DeviceTypeArray[Loop].DeviceType;
+        }
+    }
+    DevicePathNode = NextDevicePathNode (DevicePathNode);
+  }
+  return BBS_TYPE_UNKNOWN;
+}
+
+EFI_STATUS
+UniBootNextVariableUpdate(UINT16 Index)
+{
+  EFI_STATUS        Status;
+  UINT16            *BootNext;
+  UINTN             BootNextSize;
+
+  BootNext = BdsLibGetVariableAndSize (
+                      L"BootNext",
+                      &gEfiGlobalVariableGuid,
+                      &BootNextSize
+                      );
+  
+  if (NULL != BootNext) {
+    BootNext = ReallocatePool (BootNextSize, BootNextSize + sizeof(UINT16), BootNext);
+    if(NULL == BootNext)
+    {
+        return EFI_OUT_OF_RESOURCES;
+    }
+
+    // Add the new index at the end
+    BootNext[BootNextSize / sizeof(UINT16)] = Index;
+    BootNextSize += sizeof(UINT16);
+  } else {
+    // BootNext does not exist. Create it
+    BootNextSize = sizeof(UINT16);
+    BootNext = &Index;
+  }
+
+  // Update (or Create) the BootNext environment variable
+  Status = gRT->SetVariable (
+      L"BootNext",
+      &gEfiGlobalVariableGuid,
+      EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+      BootNextSize,
+      BootNext
+      );
+
+  // We only free it if the UEFI Variable 'BootNext' was already existing
+  if (BootNextSize > sizeof(UINT16)) {
+    FreePool (BootNext);
+  }
+
+  return Status;
+}
+
+EFI_STATUS GetBmcBootOptionsSetting(IPMI_GET_BOOT_OPTION *BmcBootOpt)
+{
+  EFI_STATUS   Status = EFI_SUCCESS;
+  
+  Status = IpmiCmdGetSysBootOptions(BmcBootOpt);
+  if(EFI_ERROR(Status))
+  {
+    DEBUG((EFI_D_ERROR, "%a - %d  Get iBMC BootOpts %r!\n", __FUNCTION__, __LINE__,Status));     
+    return Status;
+  }
+
+  if (BmcBootOpt->BootFlagsValid != BOOT_OPTION_BOOT_FLAG_VALID)
+  {
+    DEBUG((EFI_D_ERROR, "%a - %d  BootFlags is Invalid !\n", __FUNCTION__, __LINE__));     
+    return EFI_INVALID_PARAMETER;
+  }
+
+  if (BmcBootOpt->Persistent) {
+    BmcBootOpt->BootFlagsValid = BOOT_OPTION_BOOT_FLAG_VALID;
+  } else {
+    BmcBootOpt->BootFlagsValid = BOOT_OPTION_BOOT_FLAG_INVALID;
+  }
+
+  Status = IpmiCmdSetSysBootOptions(BmcBootOpt);
+  if(EFI_ERROR(Status))
+  {
+    DEBUG((EFI_D_ERROR, "%a - %d  Set iBMC BootOpts %r!\n", __FUNCTION__, __LINE__,Status));    
+  }
+  return Status;
+}
+
+VOID ProductBdsPolicyAfterSetup ( VOID )
+{
+  EFI_STATUS                Status = EFI_SUCCESS;
+  IPMI_GET_BOOT_OPTION      BmcBootOpt;
+  UINT16                    *OptionOrder;
+  UINTN                     OptionOrderSize;
+  UINTN                     DeviceType = BBS_TYPE_UNKNOWN;
+  UINTN                     Index;
+  BDS_COMMON_OPTION         *Option;
+  CHAR16                    OptionName[20];
+  LIST_ENTRY                BootOptionList;
+
+  InitializeListHead (&BootOptionList);
+  
+  Status = GetBmcBootOptionsSetting(&BmcBootOpt);
+  DEBUG((EFI_D_ERROR, "%a - %d : %r!\n", __FUNCTION__, __LINE__,Status));
+  if(EFI_ERROR(Status))
+  {
+    return;
+  }
+  
+  if(BmcBootOpt.BootDeviceSelector == ForcePrimaryRemovableMedia) {
+    DeviceType = BBS_TYPE_USB;
+  }
+  else if(BmcBootOpt.BootDeviceSelector == ForcePxe) {
+    DeviceType = BBS_TYPE_EMBEDDED_NETWORK;
+  }
+  else if(BmcBootOpt.BootDeviceSelector == ForceDefaultHardDisk) {
+    DeviceType = BBS_TYPE_HARDDRIVE;
+  }
+  else if(BmcBootOpt.BootDeviceSelector == ForceDefaultCD) {
+    DeviceType = BBS_TYPE_CDROM;
+  }
+  else {
+    return;
+  }
+  
+  OptionOrder = BdsLibGetVariableAndSize (
+                  L"BootOrder",
+                  &gEfiGlobalVariableGuid,
+                  &OptionOrderSize
+                  );
+  if (OptionOrder == NULL) {
+	DEBUG((EFI_D_ERROR, "%a - %d error\n", __FUNCTION__, __LINE__));      
+    return;
+  }
+
+  for (Index = 0; Index < OptionOrderSize / sizeof (UINT16); Index++) {
+    UnicodeSPrint (OptionName, sizeof (OptionName), L"Boot%04x", OptionOrder[Index]);
+    Option   = BdsLibVariableToOption (&BootOptionList, OptionName);
+    if (Option == NULL) {
+      DEBUG((EFI_D_ERROR, "%a - %d  Boot%04x is Null!\n", __FUNCTION__, __LINE__,OptionOrder[Index]));     
+      continue;
+    }
+    if (DeviceType == UniGetEfiDeviceType(Option)){
+      Status = UniBootNextVariableUpdate(OptionOrder[Index]);
+      if(EFI_ERROR(Status)){
+    	DEBUG((EFI_D_ERROR, "%a - %d  UniBootNextVariableUpdate!\n", __FUNCTION__, __LINE__,OptionOrder[Index]));     
+      }
+    }
+    RemoveEntryList(&Option->Link);
+    FreePool(Option);
+  }
+
+  FreePool(OptionOrder);
+
+  return;
+}
 
 /**
   The function will execute with as the platform policy, current policy
@@ -473,6 +819,8 @@ PlatformBdsPolicyBehavior (
   Print (L"Press Enter to boot OS immediately.\n");
   Print (L"Press any other key in %d seconds to stop automatical booting...\n", PcdGet16(PcdPlatformBootTimeOut));
   PlatformBdsEnterFrontPage (PcdGet16(PcdPlatformBootTimeOut), TRUE);
+  //get boot option from BMC
+  ProductBdsPolicyAfterSetup();
 }
 
 /**

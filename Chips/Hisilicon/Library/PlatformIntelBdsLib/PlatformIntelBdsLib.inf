@@ -55,6 +55,7 @@
   UefiBootServicesTableLib
   UefiRuntimeServicesTableLib
   UefiLib
+  IpmiCmdLib
 
 [FixedPcd]
   gEfiIntelFrameworkModulePkgTokenSpaceGuid.PcdLogoFile
@@ -78,3 +79,4 @@
   gEfiLoadedImageProtocolGuid
   gEfiPciRootBridgeIoProtocolGuid
   gEfiSimpleFileSystemProtocolGuid
+  gEfiDevicePathToTextProtocolGuid
