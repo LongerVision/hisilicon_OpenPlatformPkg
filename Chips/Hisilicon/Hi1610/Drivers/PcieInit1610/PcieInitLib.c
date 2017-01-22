@@ -23,6 +23,9 @@
 #include <Library/TimerLib.h>
 
 #define PCIE_SYS_REG_OFFSET 0x1000
+#define MUX_LOS_ALOS_REG_OFFSET 0x508
+#define CH_RXTX_STATUS_CFG_EN BIT1
+#define CH_RXTX_STATUS_CFG BIT2
 
 static PCIE_INIT_CFG mPcieIntCfg;
 UINT64 pcie_subctrl_base[2] = {0xb0000000, BASE_4TB + 0xb0000000};
@@ -138,6 +141,8 @@ VOID PcieRxValidCtrl(UINT32 soctype, UINT32 HostBridgeNum, UINT32 Port, BOOLEAN 
                 RegRead(PCIE_PHY_BASE_1610[HostBridgeNum][Port] + 0x204 + i * 0x4, Value);
                 Value &= (~BIT14);
                 RegWrite(PCIE_PHY_BASE_1610[HostBridgeNum][Port] + 0x204 + i*0x4, Value);
+                RegWrite(PCIE_PHY_BASE_1610[HostBridgeNum][Port] + MUX_LOS_ALOS_REG_OFFSET + i*0x4, \
+                  CH_RXTX_STATUS_CFG_EN|CH_RXTX_STATUS_CFG);
                 }
             } else {
             for (i = 0; i < Lanenum; i++) {
