@@ -273,6 +273,7 @@ READ_LOCK_STATUS   = TRUE
   # VGA Driver
   #
   INF OpenPlatformPkg/Platforms/Hisilicon/Binary/D03/Drivers/Sm750Dxe/UefiSmi.inf
+  INF  MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
 
   INF OpenPlatformPkg/Platforms/Hisilicon/Binary/D03/Drivers/Sas/SasDxeDriver.inf
   #
