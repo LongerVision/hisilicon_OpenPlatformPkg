@@ -433,6 +433,7 @@
   gHisiTokenSpaceGuid.PcdHb1Rb7IoSize|0xffff #64K
 
   gHisiTokenSpaceGuid.Pcdsoctype|0x1610
+  gHisiTokenSpaceGuid.PcdStartOsParameter|L"earlycon=pl011,mmio32,0x602b0000 console=ttyAMA0,115200 acpi=force root=/dev/ram0 rw initrd=0x7000000,120M"
 
 ################################################################################
 #

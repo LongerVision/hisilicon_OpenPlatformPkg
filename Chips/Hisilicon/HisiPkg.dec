@@ -290,6 +290,7 @@
 
   gHisiTokenSpaceGuid.Pcdsoctype|0|UINT32|0x00000061
   gHisiTokenSpaceGuid.PcdSerDesFlowCtrlFlag|0|UINT32|0x40000056
+  gHisiTokenSpaceGuid.PcdStartOsParameter|L""|VOID*|0x40000057
 
 [PcdsFeatureFlag]
   gHisiTokenSpaceGuid.PcdIsItsSupported|FALSE|BOOLEAN|0x00000065
