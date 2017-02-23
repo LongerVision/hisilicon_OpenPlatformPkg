@@ -310,7 +310,7 @@
   ## TODO: need to confirm the base for Performance and Metronome base for PV660
   gArmPlatformTokenSpaceGuid.PcdSP804TimerPerformanceBase|0x40060000
   gArmPlatformTokenSpaceGuid.PcdSP804TimerMetronomeBase|0x40060000
-
+  gHisiTokenSpaceGuid.PcdStartOsParameter|L"console=ttyS0,115200 earlycon=hisilpcuart,mmio,0xa01b0000,0,0x2f8 pci=pcie_bus_perf vga=0x317 acpi=force root=/dev/ram0 rw initrd=0x7000000,120M"
 
 ################################################################################
 #
