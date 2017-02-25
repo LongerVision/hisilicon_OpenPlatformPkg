@@ -28,4 +28,5 @@ DefinitionBlock("DsdtTable.aml", "DSDT", 2, "HISI  ", "HIP07   ", EFI_ACPI_ARM_O
   include ("D05Hns.asl")
   include ("D05Sas.asl")
   include ("D05Pci.asl")
+  include ("D05UncorePmu.asl")
 }
