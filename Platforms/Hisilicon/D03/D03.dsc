@@ -420,6 +420,7 @@
   OpenPlatformPkg/Chips/Hisilicon/Hi1610/Hi1610AcpiTables/AcpiTablesHi1610.inf
   OpenPlatformPkg/Chips/Hisilicon/Drivers/AcpiPlatformDxe/AcpiPlatformDxe.inf
 
+  OpenPlatformPkg/Platforms/Hisilicon/Binary/D03/Drivers/Apei/AcpiApei.inf
   #
   # Usb Support
   #
