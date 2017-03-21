@@ -160,12 +160,7 @@ READ_LOCK_STATUS   = TRUE
   # Bds
   #
   INF MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
-  INF ArmPlatformPkg/Bds/Bds.inf
-
-  #
-  # Legacy Linux Loader
-  #
-  INF ArmPkg/Application/LinuxLoader/LinuxLoader.inf
+  INF OpenPlatformPkg/Platforms/Hisilicon/HiKey/Bds/Bds.inf
 
   #
   # HiKey Platform
