@@ -638,7 +638,7 @@ void SetAtuConfig0RW (
     )
 {
     UINTN RbPciBase = Private->RbPciBar;
-    UINT64 MemLimit = GetPcieCfgAddress (Private->Ecam, Private->BusBase + 1, 1, 0, 0) - 1;
+    UINT64 MemLimit = GetPcieCfgAddress (Private->Ecam, Private->BusBase + 2, 0, 0, 0) - 1;
 
 
     MmioWrite32 (RbPciBase + IATU_OFFSET + IATU_VIEW_POINT, Index);
@@ -1768,6 +1768,10 @@ RootBridgeIoPciRead (
     PCIE_DEBUG ("[%a:%d] - Bus number out of range %d\n", __FUNCTION__, __LINE__, EfiPciAddress->Bus);
     SetMem (Buffer, mOutStride[Width] * Count, 0xFF);
     return EFI_INVALID_PARAMETER;
+  }
+
+  if ((EfiPciAddress->Bus == 0x81) && (EfiPciAddress->Device > 0)) {
+    return EFI_NOT_FOUND;
   }
 
   // The UEFI PCI enumerator scans for devices at all possible addresses,
