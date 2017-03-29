@@ -335,11 +335,11 @@
   gHisiTokenSpaceGuid.PcdHb1Rb0PciRegionSize|0xbeffff
   gHisiTokenSpaceGuid.PcdHb1Rb1PciRegionBaseAddress|0x400a9400000
   gHisiTokenSpaceGuid.PcdHb1Rb1PciRegionSize|0xbeffff
-  gHisiTokenSpaceGuid.PcdHb1Rb2PciRegionBaseAddress|0x20000000
+  gHisiTokenSpaceGuid.PcdHb1Rb2PciRegionBaseAddress|0x40000000
   gHisiTokenSpaceGuid.PcdHb1Rb2PciRegionSize|0xcfffffff
   gHisiTokenSpaceGuid.PcdHb1Rb3PciRegionBaseAddress|0x400ab400000
   gHisiTokenSpaceGuid.PcdHb1Rb3PciRegionSize|0xbeffff
-  gHisiTokenSpaceGuid.PcdHb1Rb4PciRegionBaseAddress|0x30000000
+  gHisiTokenSpaceGuid.PcdHb1Rb4PciRegionBaseAddress|0x40000000
   gHisiTokenSpaceGuid.PcdHb1Rb4PciRegionSize|0xbfffffff
   gHisiTokenSpaceGuid.PcdHb1Rb5PciRegionBaseAddress|0x40000000
   gHisiTokenSpaceGuid.PcdHb1Rb5PciRegionSize|0xafffffff
