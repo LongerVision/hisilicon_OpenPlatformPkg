@@ -382,4 +382,276 @@ Scope(_SB) {
       })
     }
   }
+
+  // DDRC Channel 0 for CPU die #1 (scl #1)
+  Device (DDR0) {
+    Name (_HID, "HISI0232")  // _HID: Hardware ID
+    Name (_UID, 0)  // _UID: Unique ID
+    Name (_CRS, ResourceTemplate () { // _CRS: Current Resource Settings
+      QWordMemory (
+        ResourceProducer,
+        PosDecode,
+        MinFixed,
+        MaxFixed,
+        NonCacheable,
+        ReadWrite,
+        0x0, // Granularity
+        0x40348000, // Min Base Address
+        0x40348FFF, // Max Base Address
+        0x0, // Translate
+        0x1000 // Length
+      )
+    })
+
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"hisilicon,scl-id", 0x01},
+        Package () {"hisilicon,ch-id", 0x00},
+      }
+    })
+
+    Method (_STA, 0x0, NotSerialized)
+    {
+      Return (0xf)
+    }
+  }
+
+  // DDRC Channel 1 for CPU die #1 (scl #1)
+  Device (DDR1) {
+    Name (_HID, "HISI0232")  // _HID: Hardware ID
+    Name (_UID, 1)  // _UID: Unique ID
+    Name (_CRS, ResourceTemplate () { // _CRS: Current Resource Settings
+      QWordMemory (
+        ResourceProducer,
+        PosDecode,
+        MinFixed,
+        MaxFixed,
+        NonCacheable,
+        ReadWrite,
+        0x0, // Granularity
+        0x40358000, // Min Base Address
+        0x40358FFF, // Max Base Address
+        0x0, // Translate
+        0x1000 // Length
+      )
+    })
+
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"hisilicon,scl-id", 0x01},
+        Package () {"hisilicon,ch-id", 0x01},
+      }
+    })
+
+    Method (_STA, 0x0, NotSerialized)
+    {
+      Return (0xf)
+    }
+  }
+
+  // DDRC Channel 0 for CPU die #2 (scl #3)
+  Device (DDR2) {
+    Name (_HID, "HISI0232")  // _HID: Hardware ID
+    Name (_UID, 2)  // _UID: Unique ID
+    Name (_CRS, ResourceTemplate () { // _CRS: Current Resource Settings
+      QWordMemory (
+        ResourceProducer,
+        PosDecode,
+        MinFixed,
+        MaxFixed,
+        NonCacheable,
+        ReadWrite,
+        0x0, // Granularity
+        0x60348000, // Min Base Address
+        0x60348FFF, // Max Base Address
+        0x0, // Translate
+        0x1000 // Length
+      )
+    })
+
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"hisilicon,scl-id", 0x03},
+        Package () {"hisilicon,ch-id", 0x00},
+      }
+    })
+
+    Method (_STA, 0x0, NotSerialized)
+    {
+      Return (0xf)
+    }
+  }
+
+  // DDRC Channel 1 for CPU die #2 (scl #3)
+  Device (DDR3) {
+    Name (_HID, "HISI0232")  // _HID: Hardware ID
+    Name (_UID, 3)  // _UID: Unique ID
+    Name (_CRS, ResourceTemplate () { // _CRS: Current Resource Settings
+      QWordMemory (
+        ResourceProducer,
+        PosDecode,
+        MinFixed,
+        MaxFixed,
+        NonCacheable,
+        ReadWrite,
+        0x0, // Granularity
+        0x60358000, // Min Base Address
+        0x60358FFF, // Max Base Address
+        0x0, // Translate
+        0x1000 // Length
+      )
+    })
+
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"hisilicon,scl-id", 0x03},
+        Package () {"hisilicon,ch-id", 0x01},
+      }
+    })
+
+    Method (_STA, 0x0, NotSerialized)
+    {
+      Return (0xf)
+    }
+  }
+
+  // DDRC Channel 0 for CPU die #3 (scl #5)
+  Device (DDR4) {
+    Name (_HID, "HISI0232")  // _HID: Hardware ID
+    Name (_UID, 4)  // _UID: Unique ID
+    Name (_CRS, ResourceTemplate () { // _CRS: Current Resource Settings
+      QWordMemory (
+        ResourceProducer,
+        PosDecode,
+        MinFixed,
+        MaxFixed,
+        NonCacheable,
+        ReadWrite,
+        0x0, // Granularity
+        0x40040348000, // Min Base Address
+        0x40040348FFF, // Max Base Address
+        0x0, // Translate
+        0x1000 // Length
+      )
+    })
+
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"hisilicon,scl-id", 0x05},
+        Package () {"hisilicon,ch-id", 0x00},
+      }
+    })
+
+    Method (_STA, 0x0, NotSerialized)
+    {
+      Return (0xf)
+    }
+  }
+
+  // DDRC Channel 1 for CPU die #3 (scl #5)
+  Device (DDR5) {
+    Name (_HID, "HISI0232")  // _HID: Hardware ID
+    Name (_UID, 5)  // _UID: Unique ID
+    Name (_CRS, ResourceTemplate () { // _CRS: Current Resource Settings
+      QWordMemory (
+        ResourceProducer,
+        PosDecode,
+        MinFixed,
+        MaxFixed,
+        NonCacheable,
+        ReadWrite,
+        0x0, // Granularity
+        0x40040358000, // Min Base Address
+        0x40040358FFF, // Max Base Address
+        0x0, // Translate
+        0x1000 // Length
+      )
+    })
+
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"hisilicon,scl-id", 0x05},
+        Package () {"hisilicon,ch-id", 0x01},
+      }
+    })
+
+    Method (_STA, 0x0, NotSerialized)
+    {
+      Return (0xf)
+    }
+  }
+
+  // DDRC Channel 0 for CPU die #4 (scl #7)
+  Device (DDR6) {
+    Name (_HID, "HISI0232")  // _HID: Hardware ID
+    Name (_UID, 6)  // _UID: Unique ID
+    Name (_CRS, ResourceTemplate () { // _CRS: Current Resource Settings
+      QWordMemory (
+        ResourceProducer,
+        PosDecode,
+        MinFixed,
+        MaxFixed,
+        NonCacheable,
+        ReadWrite,
+        0x0, // Granularity
+        0x40060348000, // Min Base Address
+        0x40060348FFF, // Max Base Address
+        0x0, // Translate
+        0x1000 // Length
+      )
+    })
+
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"hisilicon,scl-id", 0x07},
+        Package () {"hisilicon,ch-id", 0x00},
+      }
+    })
+
+    Method (_STA, 0x0, NotSerialized)
+    {
+      Return (0xf)
+    }
+  }
+
+  // DDRC Channel 1 for CPU die #4 (scl #7)
+  Device (DDR7) {
+    Name (_HID, "HISI0232")  // _HID: Hardware ID
+    Name (_UID, 7)  // _UID: Unique ID
+    Name (_CRS, ResourceTemplate () { // _CRS: Current Resource Settings
+      QWordMemory (
+        ResourceProducer,
+        PosDecode,
+        MinFixed,
+        MaxFixed,
+        NonCacheable,
+        ReadWrite,
+        0x0, // Granularity
+        0x40060358000, // Min Base Address
+        0x40060358FFF, // Max Base Address
+        0x0, // Translate
+        0x1000 // Length
+      )
+    })
+
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"hisilicon,scl-id", 0x07},
+        Package () {"hisilicon,ch-id", 0x01},
+      }
+    })
+
+    Method (_STA, 0x0, NotSerialized)
+    {
+      Return (0xf)
+    }
+  }
 }
