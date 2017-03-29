@@ -36,6 +36,7 @@
   D05Slit.aslc
   D05Srat.aslc
   D05Spcr.aslc
+  Dbg2.aslc
 
 [Packages]
   ArmPkg/ArmPkg.dec
@@ -55,5 +56,6 @@
   gArmTokenSpaceGuid.PcdArmArchTimerIntrNum
   gArmTokenSpaceGuid.PcdArmArchTimerHypIntrNum
   gArmTokenSpaceGuid.PcdArmArchTimerVirtIntrNum
+  gArmPlatformTokenSpaceGuid.PcdSerialDbgRegisterBase
   gEfiMdeModulePkgTokenSpaceGuid.PcdSerialRegisterBase
 

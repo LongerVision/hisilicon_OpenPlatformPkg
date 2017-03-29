@@ -186,6 +186,8 @@
   # use the TTY terminal type (which has a working backspace)
   gEfiMdePkgTokenSpaceGuid.PcdDefaultTerminalType|4
 
+  ## Serial Debug UART
+  gArmPlatformTokenSpaceGuid.PcdSerialDbgRegisterBase|0xD00C0000
 
   gHisiTokenSpaceGuid.PcdM3SmmuBaseAddress|0xa0040000
   gHisiTokenSpaceGuid.PcdPcieSmmuBaseAddress|0xb0040000
