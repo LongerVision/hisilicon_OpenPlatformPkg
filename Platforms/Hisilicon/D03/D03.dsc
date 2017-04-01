@@ -182,7 +182,7 @@
   gHisiTokenSpaceGuid.PcdAlgSmmuBaseAddress|0xd0040000
 
 
-  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Hisilicon D03 UEFI 16.12 Release"
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Hisilicon D03 UEFI Nemo 1.7 RC2"
 
   gHisiTokenSpaceGuid.PcdBiosVersionString|L"10.01.01T18"
 
