@@ -1770,10 +1770,12 @@ RootBridgeIoPciRead (
     return EFI_INVALID_PARAMETER;
   }
 
-  if ((EfiPciAddress->Bus == 0x81) && (EfiPciAddress->Device > 0)) {
+  if ((EfiPciAddress->Bus == 0x81) && (PrivateData->MemBase == 0xAA000000) && (EfiPciAddress->Device > 0)) {
     return EFI_NOT_FOUND;
   }
-
+  if ((EfiPciAddress->Bus == 0x91) && (EfiPciAddress->Device > 0)) {
+    return EFI_NOT_FOUND;
+}
   // The UEFI PCI enumerator scans for devices at all possible addresses,
   // and ignores some PCI rules - this results in some hardware being
   // detected multiple times. We work around this by faking absent
