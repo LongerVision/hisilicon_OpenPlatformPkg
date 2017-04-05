@@ -213,10 +213,10 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
-/* this is the map for PCIe0 in 1P NB */
-[0004]                         Input base : 00008800
+/* this is the map for PCIe1 in 1P NB */
+[0004]                         Input base : 00010000
 [0004]                           ID Count : 00000800
-[0004]                        Output Base : 00008800
+[0004]                        Output Base : 00000000
 [0004]                   Output Reference : 00000064
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
@@ -581,7 +581,7 @@
 [0004]                         Input base : 00008800
 [0004]                           ID Count : 00000800
 [0004]                        Output Base : 00008800
-[0004]                   Output Reference : 000001e4
+[0004]                   Output Reference : 0000007c
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
@@ -609,8 +609,8 @@
 
 [0004]                         Input base : 00000000
 [0004]                           ID Count : 00000800
-[0004]                        Output Base : 00000000
-[0004]                   Output Reference : 0000007c
+[0004]                        Output Base : 00010000
+[0004]                   Output Reference : 000001e4
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
