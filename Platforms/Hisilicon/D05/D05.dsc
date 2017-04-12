@@ -197,7 +197,7 @@
 
   gHisiTokenSpaceGuid.PcdIsMPBoot|1
   gHisiTokenSpaceGuid.PcdSocketMask|0x3
-  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Hisilicon D05 UEFI Nemo 1.7 RC2"
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Hisilicon D05 UEFI Nemo 1.7 RC3"
 
   gHisiTokenSpaceGuid.PcdBiosVersionString|L"10.01.01T18"
 
