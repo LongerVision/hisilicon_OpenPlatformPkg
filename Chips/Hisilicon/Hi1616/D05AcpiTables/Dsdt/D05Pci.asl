@@ -89,17 +89,17 @@ Scope(_SB)
     Name (_HID, "PNP0A08") // PCI Express Root Bridge
     Name (_CID, "PNP0A03") // Compatible PCI Root Bridge
     Name(_SEG, 2) // Segment of this Root complex
-    Name(_BBN, 0x80) // Base Bus Number
+    Name(_BBN, 0xF8) // Base Bus Number
     Name(_CCA, 1)
     Method (_CRS, 0, Serialized) { // Root complex resources
       Name (RBUF, ResourceTemplate () {
         WordBusNumber ( // Bus numbers assigned to this root
           ResourceProducer, MinFixed, MaxFixed, PosDecode,
           0, // AddressGranularity
-          0x80, // AddressMinimum - Minimum Bus Number
-          0x87, // AddressMaximum - Maximum Bus Number
+          0xF8, // AddressMinimum - Minimum Bus Number
+          0xFE, // AddressMaximum - Maximum Bus Number
           0, // AddressTranslation - Set to 0
-          0x8 // RangeLength - Number of Busses
+          0x7 // RangeLength - Number of Busses
         )
         QWordMemory ( // 64-bit BAR Windows
           ResourceProducer,
@@ -109,10 +109,10 @@ Scope(_SB)
           Cacheable,
           ReadWrite,
           0x0, // Granularity
-          0xa8800000, // Min Base Address
-          0xaffeffff, // Max Base Address
+          0xa8000000, // Min Base Address
+          0xaf7fffff, // Max Base Address
           0x0, // Translate
-          0x77f0000 // Length
+          0x7800000 // Length
         )
         QWordIO (
           ResourceProducer,
@@ -273,17 +273,17 @@ Scope(_SB)
     Name (_HID, "PNP0A08") // PCI Express Root Bridge
     Name (_CID, "PNP0A03") // Compatible PCI Root Bridge
     Name(_SEG, 5) // Segment of this Root complex
-    Name(_BBN, 0x0) // Base Bus Number
+    Name(_BBN, 0x78) // Base Bus Number
     Name(_CCA, 1)
     Method (_CRS, 0, Serialized) { // Root complex resources
       Name (RBUF, ResourceTemplate () {
         WordBusNumber ( // Bus numbers assigned to this root
           ResourceProducer, MinFixed, MaxFixed, PosDecode,
           0, // AddressGranularity
-          0x0, // AddressMinimum - Minimum Bus Number
-          0x7, // AddressMaximum - Maximum Bus Number
+          0x78, // AddressMinimum - Minimum Bus Number
+          0x7e, // AddressMaximum - Maximum Bus Number
           0, // AddressTranslation - Set to 0
-          0x8 // RangeLength - Number of Busses
+          0x7 // RangeLength - Number of Busses
         )
         QWordMemory ( // 64-bit BAR Windows
           ResourceProducer,
@@ -293,10 +293,10 @@ Scope(_SB)
           Cacheable,
           ReadWrite,
           0x0, // Granularity
-          0xb0800000, // Min Base Address
-          0xb7feffff, // Max Base Address
+          0xb0000000, // Min Base Address
+          0xb77fffff, // Max Base Address
           0x800000000, // Translate
-          0x77f0000 // Length
+          0x7800000 // Length
         )
         QWordIO (
           ResourceProducer,
