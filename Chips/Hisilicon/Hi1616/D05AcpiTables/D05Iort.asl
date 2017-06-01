@@ -124,7 +124,7 @@
                             HTTU Override : 0
 [0004]                           Reserved : 00000000
 [0008]                      VATOS Address : 0
-[0004]                              Model : 00000002
+[0004]                              Model : 00000001
 [0004]                    Event Interrupt : 00000000
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
@@ -152,7 +152,7 @@
                             HTTU Override : 0
 [0004]                           Reserved : 00000000
 [0008]                      VATOS Address : 0
-[0004]                              Model : 00000002
+[0004]                              Model : 00000001
 [0004]                    Event Interrupt : 00000000
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
@@ -186,7 +186,7 @@
                                HTTU Override : 0
 [0A4h 0164   4]                     Reserved : 00000000
 [0A8h 0168   8]                VATOS Address : 0000000000000000
-[0B0h 0176   4]                        Model : 00000002
+[0B0h 0176   4]                        Model : 00000001
 [0B4h 0180   4]                   Event GSIV : 00000000
 [0B8h 0184   4]                     PRI GSIV : 00000000
 [0BCh 0188   4]                    GERR GSIV : 00000000
@@ -208,7 +208,7 @@
                             HTTU Override : 0
 [0004]                           Reserved : 00000000
 [0008]                      VATOS Address : 0
-[0004]                              Model : 00000002
+[0004]                              Model : 00000001
 [0004]                    Event Interrupt : 00000000
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
@@ -236,7 +236,7 @@
                             HTTU Override : 0
 [0004]                           Reserved : 00000000
 [0008]                      VATOS Address : 0
-[0004]                              Model : 00000002
+[0004]                              Model : 00000001
 [0004]                    Event Interrupt : 00000000
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
