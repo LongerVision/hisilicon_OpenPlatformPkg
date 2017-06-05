@@ -220,8 +220,15 @@
 [0004]                   Output Reference : 00000064
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
+/* this is the map for PCIe0 in 1P NB */
+[0004]                         Input base : 00008800
+[0004]                           ID Count : 00000800
+[0004]                        Output Base : 00008800
+[0004]                   Output Reference : 00000064
+[0004]              Flags (decoded below) : 00000000
+                           Single Mapping : 0
 
-//234
+//248
 /* 2P NA PCIe SMMU */
 [0001]                               Type : 04
 [0002]                             Length : 0050
@@ -581,7 +588,7 @@
 [0004]                         Input base : 00008800
 [0004]                           ID Count : 00000800
 [0004]                        Output Base : 00008800
-[0004]                   Output Reference : 0000007c
+[0004]                   Output Reference : 000001e4
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
@@ -695,7 +702,7 @@
 [0004]                         Input base : 00001000
 [0004]                           ID Count : 00001000
 [0004]                        Output Base : 00021000
-[0004]                   Output Reference : 00000234
+[0004]                   Output Reference : 00000248
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
