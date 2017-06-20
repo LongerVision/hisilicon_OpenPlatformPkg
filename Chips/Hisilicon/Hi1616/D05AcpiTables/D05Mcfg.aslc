@@ -58,7 +58,7 @@ EFI_PCI_EXPRESS_MEMORY_MAPPED_CONFIGURATION_SPACE_TABLE Mcfg=
       0xa0000000,                                         //Base Address
       0x2,                                                //Segment Group Number
       0xF8,                                               //Start Bus Number
-      0xFE,                                               //End Bus Number
+      0xFF,                                               //End Bus Number
       0x00000000,                                         //Reserved
     },
     //1p NB PCIe0
@@ -74,7 +74,7 @@ EFI_PCI_EXPRESS_MEMORY_MAPPED_CONFIGURATION_SPACE_TABLE Mcfg=
       0x8b0000000,                                        //Base Address
       0x5,                                                //Segment Group Number
       0x78,                                                //Start Bus Number
-      0x7e,                                                //End Bus Number
+      0x7F,                                                //End Bus Number
       0x00000000,                                         //Reserved
     },
     //1p NB PCIe2
