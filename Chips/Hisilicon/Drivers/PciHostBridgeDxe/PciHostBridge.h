@@ -518,4 +518,8 @@ RootBridgeConstructor (
   IN UINT32                             Seg
   );
 
+VOID
+EnlargeAtuConfig0 (
+  IN EFI_PCI_HOST_BRIDGE_RESOURCE_ALLOCATION_PROTOCOL *This
+  );
 #endif
