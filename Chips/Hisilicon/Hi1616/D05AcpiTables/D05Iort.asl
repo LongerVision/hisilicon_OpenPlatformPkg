@@ -112,16 +112,17 @@
 //f4
 /* 1P NA PCIe SMMU */
 [0001]                               Type : 04
-[0002]                             Length : 0050
+[0002]                             Length : 0054        //length added 4
 [0001]                           Revision : 00
 [0004]                           Reserved : 00000000
 [0004]                      Mapping Count : 00000001
-[0004]                     Mapping Offset : 0000003C
+[0004]                     Mapping Offset : 00000040    //new spec define the length
 
 [0008]                       Base Address : a0040000
-[0004]              Flags (decoded below) : 00000001
+[0004]              Flags (decoded below) : 00000009  	//PXM
                           COHACC Override : 1
                             HTTU Override : 0
+                    Proximity Domain Valid: 1          //added for PXM
 [0004]                           Reserved : 00000000
 [0008]                      VATOS Address : 0
 [0004]                              Model : 00000001
@@ -129,6 +130,9 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
+[0001]                    Proximity domain: 00
+[0001]                           Reserved1: 00
+[0002]                           Reserved2: 0000
 /* this is the map for PCIe2 in 1P NA */
 [0004]                         Input base : 0002f800
 [0004]                           ID Count : 00000800
@@ -137,19 +141,20 @@
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
-//144
+//148
 /* 2P NB PCIe SMMU */
 [0001]                               Type : 04
-[0002]                             Length : 0064
+[0002]                             Length : 0068        //length added 4
 [0001]                           Revision : 00
 [0004]                           Reserved : 00000000
 [0004]                      Mapping Count : 00000001
-[0004]                     Mapping Offset : 0000003C
+[0004]                     Mapping Offset : 00000040    //new spec define the length
 
 [0008]                       Base Address : 700a0040000
-[0004]              Flags (decoded below) : 00000001
+[0004]              Flags (decoded below) : 00000009  	//PXM
                           COHACC Override : 1
                             HTTU Override : 0
+                    Proximity Domain Valid: 1          //added for PXM
 [0004]                           Reserved : 00000000
 [0008]                      VATOS Address : 0
 [0004]                              Model : 00000001
@@ -157,6 +162,9 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
+[0001]                    Proximity domain: 03
+[0001]                           Reserved1: 00
+[0002]                           Reserved2: 0000
 /* this is the map for pcie0 in 2p nb */
 [0004]                         Input base : 00002000
 [0004]                           Id count : 00001000
@@ -172,18 +180,19 @@
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
-//1a8
+//1b0
 [088h 0136   1]                         Type : 04
-[089h 0137   2]                       Length : 003C
+[089h 0137   2]                       Length : 0040        //length added 4
 [08Bh 0139   1]                     Revision : 00
 [08Ch 0140   4]                     Reserved : 00000000
 [090h 0144   4]                Mapping Count : 00000000
-[094h 0148   4]               Mapping Offset : 0000003C
+[094h 0148   4]               Mapping Offset : 00000040    //new spec define the length
 
 [098h 0152   8]                 Base Address : 00000000C0040000
-[0A0h 0160   4]        Flags (decoded below) : 00000001
+[0A0h 0160   4]        Flags (decoded below) : 00000009  	//PXM
                              COHACC Override : 1
                                HTTU Override : 0
+                       Proximity Domain Valid: 1          //added for PXM
 [0A4h 0164   4]                     Reserved : 00000000
 [0A8h 0168   8]                VATOS Address : 0000000000000000
 [0B0h 0176   4]                        Model : 00000001
@@ -191,21 +200,24 @@
 [0B8h 0184   4]                     PRI GSIV : 00000000
 [0BCh 0188   4]                    GERR GSIV : 00000000
 [0C0h 0192   4]                    Sync GSIV : 00000000
+[0001]                       Proximity domain: 00
+[0001]                              Reserved1: 00
+[0002]                              Reserved2: 0000
 
-
-//1e4
+//1F0
 /* 1P NB PCIe SMMU */
 [0001]                               Type : 04
-[0002]                             Length : 0050
+[0002]                             Length : 0068        //length added 4
 [0001]                           Revision : 00
 [0004]                           Reserved : 00000000
 [0004]                      Mapping Count : 00000001
-[0004]                     Mapping Offset : 0000003C
+[0004]                     Mapping Offset : 00000040    //new spec define the length
 
 [0008]                       Base Address : 8a0040000
-[0004]              Flags (decoded below) : 00000001
+[0004]              Flags (decoded below) : 00000009  	//PXM
                           COHACC Override : 1
                             HTTU Override : 0
+                    Proximity Domain Valid: 1          //added for PXM
 [0004]                           Reserved : 00000000
 [0008]                      VATOS Address : 0
 [0004]                              Model : 00000001
@@ -213,6 +225,9 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
+[0001]                    Proximity domain: 01
+[0001]                           Reserved1: 00
+[0002]                           Reserved2: 0000
 /* this is the map for PCIe1 in 1P NB */
 [0004]                         Input base : 00017800
 [0004]                           ID Count : 00000800
@@ -228,19 +243,20 @@
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
-//248
+//258
 /* 2P NA PCIe SMMU */
 [0001]                               Type : 04
-[0002]                             Length : 0050
+[0002]                             Length : 0054        //length added 4
 [0001]                           Revision : 00
 [0004]                           Reserved : 00000000
 [0004]                      Mapping Count : 00000001
-[0004]                     Mapping Offset : 0000003C
+[0004]                     Mapping Offset : 00000040    //new spec define the length
 
 [0008]                       Base Address : 600a0040000
-[0004]              Flags (decoded below) : 00000001
+[0004]              Flags (decoded below) : 00000009  	//PXM
                           COHACC Override : 1
                             HTTU Override : 0
+                    Proximity Domain Valid: 1          //added for PXM
 [0004]                           Reserved : 00000000
 [0008]                      VATOS Address : 0
 [0004]                              Model : 00000001
@@ -248,6 +264,9 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
+[0001]                    Proximity domain: 02
+[0001]                           Reserved1: 00
+[0002]                           Reserved2: 0000
 /* this is the map for PCIe2 in 2P NA */
 [0004]                         Input base : 00021000
 [0004]                           ID Count : 00001000
@@ -588,7 +607,7 @@
 [0004]                         Input base : 00008800
 [0004]                           ID Count : 00000800
 [0004]                        Output Base : 00008800
-[0004]                   Output Reference : 000001e4
+[0004]                   Output Reference : 000001F0
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
@@ -617,7 +636,7 @@
 [0004]                         Input base : 00007800
 [0004]                           ID Count : 00000800
 [0004]                        Output Base : 00017800
-[0004]                   Output Reference : 000001e4
+[0004]                   Output Reference : 000001F0
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
@@ -702,7 +721,7 @@
 [0004]                         Input base : 00001000
 [0004]                           ID Count : 00001000
 [0004]                        Output Base : 00021000
-[0004]                   Output Reference : 00000248
+[0004]                   Output Reference : 00000258
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
@@ -731,7 +750,7 @@
 [0004]                         Input base : 00002000
 [0004]                           ID Count : 00001000
 [0004]                        Output Base : 00002000
-[0004]                   Output Reference : 00000144
+[0004]                   Output Reference : 00000148
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
@@ -760,7 +779,7 @@
 [0004]                         Input base : 00003000
 [0004]                           ID Count : 00001000
 [0004]                        Output Base : 00013000
-[0004]                   Output Reference : 00000144
+[0004]                   Output Reference : 00000148
 [0004]              Flags (decoded below) : 00000000
                            Single Mapping : 0
 
@@ -855,7 +874,7 @@
 [38Ch 0908   4]                   Input base : 00000000
 [390h 0912   4]                     ID Count : 00000001
 [394h 0916   4]                  Output Base : 00040900
-[398h 0920   4]             Output Reference : 000001a8
+[398h 0920   4]             Output Reference : 000001b0
 [39Ch 0924   4]        Flags (decoded below) : 00000001
                               Single Mapping : 1
 
@@ -952,6 +971,6 @@
 [44Ch 1100   4]                   Input base : 00000000
 [450h 1104   4]                     ID Count : 00000001
 [454h 1108   4]                  Output Base : 00000000
-[458h 1112   4]             Output Reference : 000001a8
+[458h 1112   4]             Output Reference : 000001b0
 [45Ch 1116   4]        Flags (decoded below) : 00000001
                               Single Mapping : 1
