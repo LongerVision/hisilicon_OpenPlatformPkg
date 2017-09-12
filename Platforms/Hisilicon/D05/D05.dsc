@@ -537,6 +537,7 @@
   MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
 
   OpenPlatformPkg/Chips/Hisilicon/Hi1616/D05AcpiTables/AcpiTablesHi1616.inf
+  OpenPlatformPkg/Chips/Hisilicon/Hi1616/Pptt/Pptt.inf
   OpenPlatformPkg/Chips/Hisilicon/Drivers/AcpiPlatformDxe/AcpiPlatformDxe.inf
 
   #

@@ -1,0 +1,43 @@
+
+
+
+[defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = AcpiPptt
+  FILE_GUID                        = AAB14F90-DC2E-4f33-A594-C7894A5B412D
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = PpttEntryPoint
+
+[sources.common]
+  Pptt.c
+  Pptt.h
+
+[Sources.AARCH64] 
+  
+[Packages]
+  MdePkg/MdePkg.dec
+  OpenPlatformPkg/Chips/Hisilicon/HisiPkg.dec
+  ArmPkg/ArmPkg.dec
+
+[LibraryClasses]
+  ArmLib
+  HobLib
+  UefiRuntimeServicesTableLib
+  UefiDriverEntryPoint
+  BaseMemoryLib
+  DebugLib
+
+[Guids]
+
+  
+[Protocols]
+  gEfiAcpiTableProtocolGuid                     # PROTOCOL ALWAYS_CONSUMED
+  gEfiAcpiSdtProtocolGuid
+  
+[Pcd]
+
+
+[Depex]
+  gEfiAcpiTableProtocolGuid AND gEfiAcpiSdtProtocolGuid
+
