@@ -135,7 +135,7 @@
 [0002]                           Reserved2: 0000
 /* this is the map for PCIe2 in 1P NA */
 [0004]                         Input base : 0002f800
-[0004]                           ID Count : 00000800
+[0004]                           ID Count : 00000700
 [0004]                        Output Base : 0000f800
 [0004]                   Output Reference : 00000064
 [0004]              Flags (decoded below) : 00000000
@@ -577,7 +577,7 @@
 [0004]                 PCI Segment Number : 00000002
 
 [0004]                         Input base : 0000f800
-[0004]                           ID Count : 00000800
+[0004]                           ID Count : 00000700
 [0004]                        Output Base : 0002f800
 [0004]                   Output Reference : 000000f4
 [0004]              Flags (decoded below) : 00000000
