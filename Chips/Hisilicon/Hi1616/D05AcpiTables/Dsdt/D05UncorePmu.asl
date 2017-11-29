@@ -51,7 +51,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x01, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x01}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -64,7 +65,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x02, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x02}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -76,7 +78,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x03, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x03}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -89,7 +92,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x04, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x04}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -142,7 +146,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x01, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x01}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -155,7 +160,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x02, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x02}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -168,7 +174,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x03, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x03}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -181,7 +188,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x04, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x04}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -234,7 +242,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x01, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x01}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -246,7 +255,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x02, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x02}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -259,7 +269,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x03, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x03}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -272,7 +283,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x04, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x04}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -325,7 +337,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x01, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x01}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -338,7 +351,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x02, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x02}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
@@ -351,7 +365,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x03, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x03}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
 	}
@@ -364,7 +379,8 @@ Scope(_SB) {
       Name (_DSD, Package () {
         ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
         Package () {
-          Package () {"hisilicon,module-id", Package () {0x04, 0x01}},
+          Package () {"hisilicon,module-id", Package () {0x04}},
+          Package () {"hisilicon,instance-id", Package () {0x01}},
         }
       })
     }
