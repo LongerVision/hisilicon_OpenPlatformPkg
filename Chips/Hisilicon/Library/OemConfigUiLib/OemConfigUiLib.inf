@@ -1,0 +1,55 @@
+## @file
+#  OEM config Library used by BDS
+#
+#  Copyright (c) 2011 - 2017, Intel Corporation. All rights reserved.<BR>
+#  This program and the accompanying materials are licensed and made available under
+#  the terms and conditions of the BSD License that accompanies this distribution.
+#  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php.
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = OemConfigUiLib
+  MODULE_UNI_FILE                = OemConfigUiLib.uni
+  FILE_GUID                      = C59ADAD7-B4E6-42d4-A79B-F117243F8883
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = NULL|DXE_DRIVER UEFI_APPLICATION
+  CONSTRUCTOR                    = OemConfigUiLibConstructor
+  DESTRUCTOR                     = OemConfigUiLibDestructor
+
+[Sources]
+  OemConfig.h
+  OemConfigVfr.Vfr
+  OemConfigUiLibStrings.uni
+  OemConfig.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  OpenPlatformPkg/Chips/Hisilicon/HisiPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  DevicePathLib
+  HiiLib
+  MemoryAllocationLib
+  PrintLib
+  UefiBootServicesTableLib
+  UefiHiiServicesLib
+  UefiRuntimeServicesTableLib
+
+[Guids]
+  gEfiHiiPlatformSetupFormsetGuid               ## CONSUMES ## GUID (Indicate the formset class guid to be displayed)
+  gEfiIfrFrontPageGuid                          ## CONSUMES ## GUID (Indicate the formset in this library need to dispaly in which page)
+  gEfiIfrTianoGuid                              ## CONSUMES ## GUID (Extended IFR Guid Opcode)
+  gOemConfigGuid
+
+[Protocols]
+  gEfiHiiConfigAccessProtocolGuid               ## CONSUMES

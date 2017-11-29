@@ -1,0 +1,39 @@
+///** @file
+//
+//  String definitions for the OEM Config.
+//
+//  Copyright (c) 2004 - 2017, Intel Corporation. All rights reserved.<BR>
+//  This program and the accompanying materials
+//  are licensed and made available under the terms and conditions of the BSD License
+//  which accompanies this distribution.  The full text of the license may be found at
+//  http://opensource.org/licenses/bsd-license.php
+//
+//  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+//
+//**/
+
+/=#
+
+#langdef   en-US "English"
+#langdef   fr-FR "Français"
+
+#string STR_EMPTY_STRING               #language en-US  ""
+                                       #language fr-FR  ""
+#string STR_OEM_CONFIG                 #language en-US  "Oem Config"
+                                       #language fr-FR  "Oem Config"
+#string STR_OEM_TABLE                  #language en-US  "Support Smmu"
+                                       #language fr-FR  "Support Smmu"
+#string STR_OEM_CONFIG_HELP            #language en-US  "Enable or Disable Smmu."
+                                       #language fr-FR  "Enable or Disable Smmu."
+#string STR_ENABLED                    #language en-US "Enabled"
+                                       #language fr-FR  "Enabled"
+#string STR_DISABLED                   #language en-US "Disabled"
+                                       #language fr-FR  "Disabled"
+#string STR_EXIT_STRING                #language en-US  "Press ESC to exit."
+                                       #language fr-FR  "Press ESC to exit."
+//
+// Ensure that this is the last string.  We are using it programmatically
+// to do string token re-usage settings for the Oem Config since we are
+// constantly recreating this page based on HII population.
+////

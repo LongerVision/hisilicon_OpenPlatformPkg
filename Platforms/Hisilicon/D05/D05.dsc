@@ -539,7 +539,10 @@
   #
   #ACPI
   #
-  OpenPlatformPkg/Chips/Hisilicon/Drivers/HisiAcpiPlatformDxe/AcpiPlatformDxe.inf
+  OpenPlatformPkg/Chips/Hisilicon/Drivers/HisiAcpiPlatformDxe/AcpiPlatformDxe.inf {
+    <LibraryClasses>
+    NULL|OpenPlatformPkg/Chips/Hisilicon/Library/OemConfigUiLib/OemConfigUiLib.inf
+  }
   MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
 
   OpenPlatformPkg/Chips/Hisilicon/Hi1616/D05AcpiTables/AcpiTablesHi1616.inf
