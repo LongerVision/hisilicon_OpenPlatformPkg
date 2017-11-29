@@ -25,8 +25,8 @@
 
 UINT64 PCIE_APB_SLVAE_BASE_1616[2][8] = {{0xa0090000, 0xa0200000, 0xa00a0000, 0xa00b0000, 0x8a0090000, 0x8a0200000, 0x8a00a0000, 0x8a00b0000},
                                          {0x600a0090000, 0x600a0200000, 0x600a00a0000, 0x600a00b0000, 0x700a0090000, 0x700a0200000, 0x700a00a0000, 0x700a00b0000},};
-UINT8 PCIE_ROOT_BRIDGE_BUS_NUM_1P[8] = {0x10, 0x21, 0x81, 0x30, 0x40, 0x1, 0x60, 0x70};
-UINT8 PCIE_ROOT_BRIDGE_BUS_NUM_2P[8] = {0x80, 0x90, 0x11, 0x40, 0x21, 0x31, 0x60, 0x70};
+UINT8 PCIE_ROOT_BRIDGE_BUS_NUM_1P[8] = {0x81, 0x91, 0xf9, 0xb1, 0x89, 0x79, 0xc1, 0x91};
+UINT8 PCIE_ROOT_BRIDGE_BUS_NUM_2P[8] = {0x81, 0x91, 0x11, 0xb1, 0x21, 0x31, 0xa9, 0xb9};
 
 #define RegWrite(addr,data)            (*(volatile UINT32*)(UINTN)(addr) = (data))
 #define RegRead(addr,data)             ((data) = *(volatile UINT32*)(UINTN)(addr))
@@ -51,7 +51,7 @@ OemEs3000PerformaceOperation(
     UINTN                              FunctionNumber;
     UINT16 DeviceId = 0;
     UINT16 VenderId = 0;
-    UINT8  i = 0;
+    UINT8  i = 255;
     UINT32 Value = 0;
 
     Status = gBS->LocateHandleBuffer (
@@ -92,13 +92,13 @@ OemEs3000PerformaceOperation(
                             break;
                     }   
                   }
-                  DEBUG((EFI_D_ERROR,"find es3000...............\n"));
-                  DEBUG((EFI_D_ERROR,"Segment = %d, i = %d, PCIE APB SLAVE BASE = %lx\n",SegmentNumber, i, PCIE_APB_SLVAE_BASE_1616[SegmentNumber][i]));
-                  RegWrite((UINT64)PCIE_APB_SLVAE_BASE_1616[SegmentNumber][i] + 0x1110, 0x28002fff);
-                  RegRead((UINT64)PCIE_APB_SLVAE_BASE_1616[SegmentNumber][i] + 0x1110, Value);
-                  DEBUG((EFI_D_ERROR,"Read value = %lx\n",Value));
-                  DEBUG((EFI_D_ERROR, "Device Id = %x, Vender Id = %x\n",VenderId, DeviceId));
-                    
+                  
+                  DEBUG((EFI_D_ERROR,"find es3000 i=%x ...............\n", i));
+                  if (i >= 0 && i < 8) {
+                    RegWrite((UINT64)PCIE_APB_SLVAE_BASE_1616[SegmentNumber][i] + 0x1110, 0x28002fff);
+                    RegRead((UINT64)PCIE_APB_SLVAE_BASE_1616[SegmentNumber][i] + 0x1110, Value);
+                    DEBUG((EFI_D_ERROR,"Read reg(%llx) value = %x\n", (UINT64)PCIE_APB_SLVAE_BASE_1616[SegmentNumber][i] + 0x1110, Value));
+                  }
                 }
                       
     }
