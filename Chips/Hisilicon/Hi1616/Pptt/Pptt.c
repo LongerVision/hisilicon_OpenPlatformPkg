@@ -277,7 +277,7 @@ PpttSetAcpiTable(
   EFI_STATUS                Status;
   UINT8                               Checksum;
   EFI_ACPI_SDT_HEADER     *Table;
-  EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE  *ApicTable;
+  EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE  *ApicTable;
   EFI_ACPI_TABLE_VERSION  TableVersion;
   VOID                    *PpttTable;
 //  VOID                    *PpttTypePtr;
@@ -313,7 +313,7 @@ PpttSetAcpiTable(
       continue;
     }
 
-    ApicTable = (EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE *)Table;
+    ApicTable = (EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE *)Table;
     Index1 = 0;
 
     //Get APIC data 

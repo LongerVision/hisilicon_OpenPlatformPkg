@@ -32,6 +32,7 @@
   DEFINE INCLUDE_TFTP_COMMAND=1
   DEFINE NETWORK_IP6_ENABLE      = FALSE
   DEFINE HTTP_BOOT_ENABLE        = FALSE
+  DEFINE GENERIC_BDS             = TRUE
 
 !include OpenPlatformPkg/Chips/Hisilicon/Hisilicon.dsc.inc
 
@@ -60,6 +61,7 @@
   FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
   BootLogoLib|MdeModulePkg/Library/BootLogoLib/BootLogoLib.inf
   SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
+  OsBootLib|OpenPlatformPkg/Chips/Hisilicon/Library/OsBootLib/OsBootLib.inf
 
 !if $(NETWORK_IP6_ENABLE) == TRUE
   TcpIoLib|MdeModulePkg/Library/DxeTcpIoLib/DxeTcpIoLib.inf
@@ -89,6 +91,15 @@
   CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibNull/DxeCapsuleLibNull.inf
   GenericBdsLib|IntelFrameworkModulePkg/Library/GenericBdsLib/GenericBdsLib.inf
   PlatformBdsLib|OpenPlatformPkg/Chips/Hisilicon/Library/PlatformIntelBdsLib/PlatformIntelBdsLib.inf
+  BmcConfigBootLib|OpenPlatformPkg/Chips/Hisilicon/Library/BmcConfigBootLib/BmcConfigBootLib.inf
+  UefiBootManagerLib|MdeModulePkg/Library/UefiBootManagerLib/UefiBootManagerLib.inf
+!if $(GENERIC_BDS) == TRUE
+  SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
+  ReportStatusCodeLib|MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf
+  DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
+  PlatformBootManagerLib|OpenPlatformPkg/Chips/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
+  FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
+!endif
   CustomizedDisplayLib|MdeModulePkg/Library/CustomizedDisplayLib/CustomizedDisplayLib.inf
 
   # USB Requirements
@@ -228,7 +239,9 @@
 
   gEfiMdeModulePkgTokenSpaceGuid.PcdResetOnMemoryTypeInformationChange|FALSE
   gEfiIntelFrameworkModulePkgTokenSpaceGuid.PcdShellFile|{ 0x83, 0xA5, 0x04, 0x7C, 0x3E, 0x9E, 0x1C, 0x4F, 0xAD, 0x65, 0xE0, 0x52, 0x68, 0xD0, 0xB4, 0xD1 }
-
+!if $(GENERIC_BDS) == TRUE
+  gEfiMdeModulePkgTokenSpaceGuid.PcdBootManagerMenuFile|{ 0x21, 0xaa, 0x2c, 0x46, 0x14, 0x76, 0x03, 0x45, 0x83, 0x6e, 0x8a, 0xb6, 0xf4, 0x66, 0x23, 0x31 }|VOID*|0x0001006b
+!endif
   gHisiTokenSpaceGuid.PcdSysControlBaseAddress|0x40010000
   gHisiTokenSpaceGuid.PcdMailBoxAddress|0x0000FFF8
 
@@ -599,6 +612,14 @@
   MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
 
   OpenPlatformPkg/Platforms/Hisilicon/Binary/D05/Ebl/Ebl.inf
+!if $(GENERIC_BDS) == TRUE
+  MdeModulePkg/Application/UiApp/UiApp.inf {
+    <LibraryClasses>
+      NULL|MdeModulePkg/Library/BootManagerUiLib/BootManagerUiLib.inf
+      NULL|MdeModulePkg/Library/DeviceManagerUiLib/DeviceManagerUiLib.inf
+      NULL|MdeModulePkg/Library/BootMaintenanceManagerUiLib/BootMaintenanceManagerUiLib.inf
+  }
+!endif
   #
   # Bds
   #
@@ -649,7 +670,12 @@
   MdeModulePkg/Universal/MemoryTest/NullMemoryTestDxe/NullMemoryTestDxe.inf
   MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
   MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
+!if $(GENERIC_BDS) == TRUE
+  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
+!else
   IntelFrameworkModulePkg/Universal/BdsDxe/BdsDxe.inf
+!endif
+
   #
   # UEFI application (Shell Embedded Boot Loader)
   #

@@ -308,6 +308,9 @@ READ_LOCK_STATUS   = TRUE
   #
   INF ShellPkg/Application/Shell/Shell.inf
 
+!if $(GENERIC_BDS) == TRUE
+  INF MdeModulePkg/Application/UiApp/UiApp.inf
+!endif
   #
   # Bds
   #
@@ -316,7 +319,11 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Universal/MemoryTest/NullMemoryTestDxe/NullMemoryTestDxe.inf
   INF MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
   INF MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
+!if $(GENERIC_BDS) == TRUE
+  INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
+!else
   INF IntelFrameworkModulePkg/Universal/BdsDxe/BdsDxe.inf
+!endif
 
 [FV.FVMAIN_COMPACT]
 FvAlignment        = 16

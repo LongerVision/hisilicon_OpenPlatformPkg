@@ -64,11 +64,11 @@
 #pragma pack (1)
 
 typedef struct {
-  EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER   Header;
-  EFI_ACPI_5_1_GIC_STRUCTURE                            GicInterfaces[HI1616_GIC_STRUCTURE_COUNT];
-  EFI_ACPI_6_0_GIC_DISTRIBUTOR_STRUCTURE                GicDistributor;
-  EFI_ACPI_6_0_GIC_ITS_STRUCTURE                      GicITS[8];
-} EFI_ACPI_1_0_MULTIPLE_APIC_DESCRIPTION_TABLE;
+  EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER   Header;
+  EFI_ACPI_6_1_GIC_STRUCTURE                            GicInterfaces[HI1616_GIC_STRUCTURE_COUNT];
+  EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE                GicDistributor;
+  EFI_ACPI_6_1_GIC_ITS_STRUCTURE                      GicITS[8];
+} EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE;
 
 #pragma pack ()
 

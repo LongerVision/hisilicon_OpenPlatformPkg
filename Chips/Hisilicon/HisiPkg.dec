@@ -49,6 +49,7 @@
   gHisiTokenSpaceGuid = {0xc8bc553e, 0x12bf, 0x11e6, {0x97, 0x4f, 0x87, 0xf7, 0x7c, 0xfd, 0x52, 0x1d}}
 
   gHisiEfiMemoryMapGuid  = {0xf8870015, 0x6994, 0x4b98, {0x95, 0xa2, 0xbd, 0x56, 0xda, 0x91, 0xc0, 0x7f}}
+  gOemConfigGuid = {0x42927b59, 0x58fc, 0x41be, {0x8f, 0x59, 0xd1, 0x7c, 0x02, 0x1a, 0x70, 0x13}}
   gVersionInfoHobGuid = {0xe13a14c, 0x859c, 0x4f22, {0x82, 0xbd, 0x18, 0xe, 0xe1, 0x42, 0x12, 0xbf}}
   #
   # APEI Support
@@ -287,6 +288,29 @@
   gHisiTokenSpaceGuid.PcdHb1Rb5IoSize|0|UINT64|0x2110005b
   gHisiTokenSpaceGuid.PcdHb1Rb6IoSize|0|UINT64|0x2110005c
   gHisiTokenSpaceGuid.PcdHb1Rb7IoSize|0|UINT64|0x2110005d
+
+  #1620 PCIe Upload+ >>>
+
+  #Chip0 config
+  gHisiTokenSpaceGuid.PciHb0Mem32Base|0|UINT64|0x2110005e
+  gHisiTokenSpaceGuid.PciHb0Mem32Size|0|UINT64|0x2110005f
+  gHisiTokenSpaceGuid.PciHb0Mem64Base|0|UINT64|0x21100060
+  gHisiTokenSpaceGuid.PciHb0Mem64Size|0|UINT64|0x21100061
+
+  gHisiTokenSpaceGuid.PciHb0IoBase|0|UINT64|0x21100062
+  gHisiTokenSpaceGuid.PciHb0IoSize|0|UINT64|0x21100063
+
+  #Chip1 config
+  gHisiTokenSpaceGuid.PciHb1Mem32Base|0|UINT64|0x21100064
+  gHisiTokenSpaceGuid.PciHb1Mem32Size|0|UINT64|0x21100065
+  gHisiTokenSpaceGuid.PciHb1Mem64Base|0|UINT64|0x21100066
+  gHisiTokenSpaceGuid.PciHb1Mem64Size|0|UINT64|0x21100067
+
+  gHisiTokenSpaceGuid.PciHb1IoBase|0|UINT64|0x21100068
+  gHisiTokenSpaceGuid.PciHb1IoSize|0|UINT64|0x21100069
+
+  gHisiTokenSpaceGuid.PciTotalEcam|0|UINT64|0x2110006a
+  #1620 PCIe Upload+ <<<
 
   gHisiTokenSpaceGuid.Pcdsoctype|0|UINT32|0x00000061
   gHisiTokenSpaceGuid.PcdSerDesFlowCtrlFlag|0|UINT32|0x40000056
