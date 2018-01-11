@@ -57,6 +57,15 @@ MISC_SMBIOS_TABLE_FUNCTION(MiscIpmiDeviceInformation)
         return EFI_INVALID_PARAMETER;
     }
 
+    Status = gBS->LocateProtocol (&gIpmiInterfaceProtocolGuid, NULL, (VOID **)&Ipmi);
+    if (EFI_ERROR (Status)) {
+      return EFI_UNSUPPORTED;
+    }
+
+    if ((Ipmi->GetIpmiVersion (Ipmi) >> 4) * 10 + (Ipmi->GetIpmiVersion (Ipmi) & 0x0F) >= 15) {
+      return EFI_SUCCESS;
+    }
+
     InputData = (SMBIOS_TABLE_TYPE38*)RecordData;
 
     SmbiosRecord = AllocateZeroPool(sizeof (SMBIOS_TABLE_TYPE38) + 1 + 1);
@@ -68,12 +77,9 @@ MISC_SMBIOS_TABLE_FUNCTION(MiscIpmiDeviceInformation)
 
     SmbiosRecord->Hdr.Length = sizeof (SMBIOS_TABLE_TYPE38);
 
-    Status = gBS->LocateProtocol (&gIpmiInterfaceProtocolGuid, NULL, (VOID **)&Ipmi);
-    if (!EFI_ERROR (Status)) {
-        SmbiosRecord->InterfaceType = Ipmi->GetIpmiInterfaceType (Ipmi);
-        SmbiosRecord->BaseAddress = (UINT64)Ipmi->GetIpmiBaseAddress (Ipmi) | Ipmi->GetIpmiBaseAddressType (Ipmi);
-        SmbiosRecord->IPMISpecificationRevision = Ipmi->GetIpmiVersion (Ipmi);
-    }
+    SmbiosRecord->InterfaceType = Ipmi->GetIpmiInterfaceType (Ipmi);
+    SmbiosRecord->BaseAddress = (UINT64)Ipmi->GetIpmiBaseAddress (Ipmi) | Ipmi->GetIpmiBaseAddressType (Ipmi);
+    SmbiosRecord->IPMISpecificationRevision = Ipmi->GetIpmiVersion (Ipmi);
     //
     // Now we have got the full smbios record, call smbios protocol to add this record.
     //
