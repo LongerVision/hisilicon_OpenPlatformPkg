@@ -34,4 +34,15 @@ struct _PLATFORM_SAS_PROTOCOL {
     SAS_INIT         Init;
 };
 
+typedef struct _HISI_PLATFORM_SAS_PROTOCOL HISI_PLATFORM_SAS_PROTOCOL;
+
+struct _HISI_PLATFORM_SAS_PROTOCOL {
+  UINT32        ControllerId;
+  BOOLEAN       Enable;
+  UINT64        BaseAddr;
+  UINT64        ResetAddr;
+};
+
+extern EFI_GUID gHisiPlatformSasProtocolGuid;
+
 #endif
