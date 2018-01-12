@@ -652,6 +652,7 @@
   OpenPlatformPkg/Platforms/Hisilicon/Binary/D05/Drivers/ReportPciePlugDidVidToBmc/ReportPciePlugDidVidToBmc.inf
   OpenPlatformPkg/Chips/Hisilicon/Drivers/Smbios/AddSmbiosType9/AddSmbiosType9.inf
   OpenPlatformPkg/Platforms/Hisilicon/Binary/D05/Drivers/Sm750Dxe/UefiSmi.inf
+  OpenPlatformPkg/Chips/Hisilicon/Drivers/SasPlatform/SasPlatform.inf
   MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
   OpenPlatformPkg/Chips/Hisilicon/Hi1610/Drivers/Es3000PerformanceDxe/Es3000Dxe.inf
   OpenPlatformPkg/Chips/Hisilicon/Drivers/Smbios/MemorySubClassDxe/MemorySubClassDxe.inf

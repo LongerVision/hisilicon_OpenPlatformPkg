@@ -276,6 +276,7 @@ READ_LOCK_STATUS   = TRUE
   INF OpenPlatformPkg/Platforms/Hisilicon/Binary/D03/Drivers/Sm750Dxe/UefiSmi.inf
   INF  MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
 
+  INF OpenPlatformPkg/Chips/Hisilicon/Drivers/SasPlatform/SasPlatform.inf
   INF OpenPlatformPkg/Platforms/Hisilicon/Binary/D03/Drivers/Sas/SasDxeDriver.inf
   #
   # UEFI application (Shell Embedded Boot Loader)
