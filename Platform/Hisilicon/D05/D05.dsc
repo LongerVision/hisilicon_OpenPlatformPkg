@@ -515,7 +515,7 @@
 
   ArmPkg/Drivers/TimerDxe/TimerDxe.inf
 
-  ArmPlatformPkg/Drivers/SP805WatchdogDxe/SP805WatchdogDxe.inf
+  MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
   IntelFrameworkModulePkg/Universal/StatusCode/RuntimeDxe/StatusCodeRuntimeDxe.inf
   #
   #ACPI
