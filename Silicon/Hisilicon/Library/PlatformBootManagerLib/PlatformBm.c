@@ -18,6 +18,7 @@
 #include <IndustryStandard/Pci22.h>
 #include <Library/BmcConfigBootLib.h>
 #include <Library/DevicePathLib.h>
+#include <Library/OsBootLib.h>
 #include <Library/PcdLib.h>
 #include <Library/UefiBootManagerLib.h>
 #include <Library/UefiLib.h>
@@ -575,6 +576,11 @@ PlatformBootManagerAfterConsole (
   PlatformRegisterFvBootOption (
     PcdGetPtr (PcdShellFile), L"UEFI Shell", LOAD_OPTION_ACTIVE
     );
+
+  Status = AdjustOsBootOrder ();
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "%a:%r\n", __FUNCTION__, Status));
+  }
 
   HandleBmcBootType ();
 }

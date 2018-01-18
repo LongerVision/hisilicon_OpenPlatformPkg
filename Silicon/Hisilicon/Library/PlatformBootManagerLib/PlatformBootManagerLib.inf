@@ -49,6 +49,7 @@
   DevicePathLib
   DxeServicesLib
   MemoryAllocationLib
+  OsBootLib
   PcdLib
   PrintLib
   UefiBootManagerLib

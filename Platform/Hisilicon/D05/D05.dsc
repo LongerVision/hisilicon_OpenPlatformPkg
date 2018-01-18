@@ -55,6 +55,7 @@
   FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
   BootLogoLib|MdeModulePkg/Library/BootLogoLib/BootLogoLib.inf
   SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
+  OsBootLib|Silicon/Hisilicon/Library/OsBootLib/OsBootLib.inf
 
 !if $(NETWORK_IP6_ENABLE) == TRUE
   TcpIoLib|MdeModulePkg/Library/DxeTcpIoLib/DxeTcpIoLib.inf

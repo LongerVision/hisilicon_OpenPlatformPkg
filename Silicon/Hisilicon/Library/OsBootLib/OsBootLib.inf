@@ -1,0 +1,59 @@
+## @file
+#  Manager Os Boot option.
+#  Copyright (c) 2017, Hisilicon Limited. All rights reserved.
+#  Copyright (c) 2017, Linaro Limited. All rights reserved.
+#
+#  Copyright (c) 2008 - 2014, Intel Corporation. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = OsBootLib
+  FILE_GUID                      = e406c654-ccde-4d32-8362-0aec01725139
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = OsBootLib
+
+[Sources]
+  OsBootLib.c
+  OsBootLibMisc.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  Silicon/Hisilicon/HisiPkg.dec
+
+[LibraryClasses]
+  BaseMemoryLib
+  BaseLib
+  DxeServicesLib
+  DebugLib
+  DxeServicesTableLib
+  DevicePathLib
+  MemoryAllocationLib
+  PrintLib
+  UefiRuntimeServicesTableLib
+  UefiLib
+  UefiBootServicesTableLib
+  UefiBootManagerLib
+
+[Guids]
+  gEfiGlobalVariableGuid
+  gEfiFileInfoGuid                              ## SOMETIMES_CONSUMES ## GUID
+
+[Protocols]
+  gEfiSimpleFileSystemProtocolGuid              ## SOMETIMES_CONSUMES
+  gEfiBlockIoProtocolGuid                       ## SOMETIMES_CONSUMES
+  gEfiFirmwareVolume2ProtocolGuid               ## SOMETIMES_CONSUMES
+  gEfiDevicePathProtocolGuid                    ## CONSUMES
+  gEfiDevicePathToTextProtocolGuid
+
+[Pcd]
