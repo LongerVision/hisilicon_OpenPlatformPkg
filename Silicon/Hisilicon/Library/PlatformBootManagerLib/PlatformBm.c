@@ -46,6 +46,10 @@ typedef struct {
 } PLATFORM_SERIAL_CONSOLE;
 #pragma pack ()
 
+//3CEF354A-3B7A-4519-AD70-72A134698311
+GUID gEblFileGuid = {0x3CEF354A, 0x3B7A, 0x4519, {0xAD, 0x70,
+  0x72, 0xA1, 0x34, 0x69, 0x83, 0x11} };
+
 #define SERIAL_DXE_FILE_GUID { \
           0xD3987D4B, 0x971A, 0x435F, \
           { 0x8C, 0xAF, 0x49, 0x67, 0xEB, 0x62, 0x72, 0x41 } \
@@ -575,6 +579,9 @@ PlatformBootManagerAfterConsole (
   //
   PlatformRegisterFvBootOption (
     PcdGetPtr (PcdShellFile), L"UEFI Shell", LOAD_OPTION_ACTIVE
+    );
+  PlatformRegisterFvBootOption (
+    &gEblFileGuid, L"Ebl", LOAD_OPTION_ACTIVE
     );
 
   Status = AdjustOsBootOrder ();
