@@ -83,6 +83,7 @@ I2C_Enable(UINT32 Socket,UINT8 Port)
 {
     I2C0_ENABLE_U           I2cEnableReg;
     I2C0_ENABLE_STATUS_U    I2cEnableStatusReg;
+    UINT32                  ulTimeCnt = I2C_READ_TIMEOUT;
 
     UINTN Base = GetI2cBase(Socket, Port);
 
@@ -91,16 +92,19 @@ I2C_Enable(UINT32 Socket,UINT8 Port)
     I2cEnableReg.bits.enable = 1;
     I2C_REG_WRITE(Base + I2C_ENABLE_OFFSET, I2cEnableReg.Val32);
 
+    do
+    {
+        I2C_Delay(10000);
 
-    I2C_REG_READ(Base + I2C_ENABLE_STATUS_OFFSET, I2cEnableStatusReg.Val32);
-    if (1 == I2cEnableStatusReg.bits.ic_en)
-    {
-        return EFI_SUCCESS;
-    }
-    else
-    {
-        return EFI_DEVICE_ERROR;
-    }
+        ulTimeCnt--;
+        I2C_REG_READ(Base + I2C_ENABLE_STATUS_OFFSET, I2cEnableStatusReg.Val32);
+        if (0 == ulTimeCnt)
+        {
+            return EFI_DEVICE_ERROR;
+        }
+    }while (0 == I2cEnableStatusReg.bits.ic_en);
+
+    return EFI_SUCCESS;
 }
 
 void I2C_SetTarget(UINT32 Socket,UINT8 Port,UINT32 I2cDeviceAddr)
