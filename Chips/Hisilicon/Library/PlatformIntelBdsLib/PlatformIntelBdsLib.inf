@@ -47,12 +47,11 @@
 [LibraryClasses]
   BaseLib
   BaseMemoryLib
-  BmcConfigBootLib
   DebugLib
   DevicePathLib
   GenericBdsLib
+  IpmiCmdLib
   MemoryAllocationLib
-  OsBootLib
   PcdLib
   PrintLib
   UefiBootServicesTableLib
@@ -71,12 +70,14 @@
 
 [Guids]
   gEfiEndOfDxeEventGroupGuid
+  gEfiEventReadyToBootGuid
   gEfiFileInfoGuid
   gEfiFileSystemInfoGuid
   gEfiFileSystemVolumeLabelInfoIdGuid
 
 [Protocols]
   gEfiDevicePathProtocolGuid
+  gEfiDevicePathToTextProtocolGuid
   gEfiGraphicsOutputProtocolGuid
   gEfiLoadedImageProtocolGuid
   gEfiPciRootBridgeIoProtocolGuid
