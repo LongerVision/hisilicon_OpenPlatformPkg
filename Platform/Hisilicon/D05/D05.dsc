@@ -97,6 +97,10 @@
 
   LpcLib|Silicon/Hisilicon/Hi1610/Library/LpcLib/LpcLib.inf
   SerialPortLib|ArmPlatformPkg/Library/PL011SerialPortLib/PL011SerialPortLib.inf
+  PlatformPciLib|Platform/Hisilicon/D05/Library/PlatformPciLib/PlatformPciLib.inf
+  PciHostBridgeLib|Platform/Hisilicon/Library/PciHostBridgeLib/PciHostBridgeLib.inf
+  PciSegmentLib|Silicon/Hisilicon/Hi1610/Library/Hi161xPciSegmentLib/Hi161xPciSegmentLib.inf
+  PciPlatformLib|Silicon/Hisilicon/Hi1610/Library/Hi161xPciPlatformLib/Hi161xPciPlatformLib.inf
 
 [LibraryClasses.common.SEC]
   ArmPlatformLib|Silicon/Hisilicon/Library/ArmPlatformLibHisilicon/ArmPlatformLibSec.inf
@@ -472,6 +476,7 @@
   ArmPkg/Drivers/CpuDxe/CpuDxe.inf
   MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
 
+  Silicon/Hisilicon/Drivers/ArmPciCpuIo2Dxe/ArmPciCpuIo2Dxe.inf
   Platform/Hisilicon/D03/Drivers/OemNicConfig2PHi1610/OemNicConfig2P.inf
 
   Platform/Hisilicon/D05/Drivers/SFC/SfcDxeDriver.inf
@@ -611,10 +616,12 @@
     <LibraryClasses>
       NULL|Platform/Hisilicon/D05/Library/PlatformPciLib/PlatformPciLib.inf
   }
-  Silicon/Hisilicon/Drivers/PciPlatform/PciPlatform.inf
-  Silicon/Hisilicon/Drivers/PciHostBridgeDxe/PciHostBridgeDxe.inf {
+  Silicon/Hisilicon/Drivers/PciPlatform/PciPlatform.inf {
     <LibraryClasses>
-      DmaLib|EmbeddedPkg/Library/CoherentDmaLib/CoherentDmaLib.inf
+      NULL|Platform/Hisilicon/D05/Library/PlatformPciLib/PlatformPciLib.inf
+  }
+  MdeModulePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf {
+    <LibraryClasses>
       NULL|Platform/Hisilicon/D05/Library/PlatformPciLib/PlatformPciLib.inf
   }
 
