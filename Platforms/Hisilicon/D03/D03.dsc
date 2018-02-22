@@ -119,6 +119,7 @@
   #  It could be set FALSE to save size.
   gEfiMdeModulePkgTokenSpaceGuid.PcdConOutGopSupport|TRUE
   gHisiTokenSpaceGuid.PcdIsItsSupported|TRUE
+  gEfiMdeModulePkgTokenSpaceGuid.PcdHiiOsRuntimeSupport|FALSE
 
 [PcdsFixedAtBuild.common]
   gEmbeddedTokenSpaceGuid.PcdEmbeddedPrompt|"D03"
