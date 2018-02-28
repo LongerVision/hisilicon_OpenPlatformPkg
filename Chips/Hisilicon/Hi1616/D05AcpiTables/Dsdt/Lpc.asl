@@ -26,24 +26,29 @@ Scope(_SB) {
 
   Device (LPC0.IPMI) {
     Name (_HID, "IPI0001")
-    //Name (_CID, "IPI0001")
+    Name (_STR, Unicode("IPMI_BT"))
+
     Method (_IFT) {
       Return (0x03)
+    }
+
+    Method (_SRV) {
+      Return (0x0200)   // IPMI Spec Revision 2.0
     }
     Name (LORS, ResourceTemplate() {
       QWordIO (
         ResourceConsumer,
-	MinNotFixed,     // _MIF
-	MaxNotFixed,     // _MAF
-	PosDecode,
-	EntireRange,
-	0x0,             // _GRA
-	0xe4,            // _MIN
-	0x3fff,          // _MAX
-	0x0,             // _TRA
-	0x04,            // _LEN
-	, ,
-	BTIO
+        MinNotFixed,     // _MIF
+        MaxNotFixed,     // _MAF
+        PosDecode,
+        EntireRange,
+        0x0,             // _GRA
+        0xe4,            // _MIN
+        0xe7,            // _MAX
+        0x0,             // _TRA
+        0x04,            // _LEN
+        , ,
+        BTIO
       )
     })
     CreateQWordField (LORS, BTIO._MIN, CMIN)
@@ -62,6 +67,10 @@ Scope(_SB) {
       Store (IMIN, CMIN)
       CreateQWordField (Arg0, \_SB.LPC0.IPMI.BTIO._MAX, IMAX)
       Store (IMAX, CMAX)
+      CreateQWordField (Arg0, \_SB.LPC0.IPMI.BTIO._LEN, ILEN)
+      If (LNotEqual(ILEN, CLEN)) {
+        Store (ILEN, CLEN)
+      }
     }
 
     //Name (_DEP, Package() {\_SB.LPC0})
