@@ -112,7 +112,6 @@
 [0004]                           ItsCount : 00000001
 [0004]                        Identifiers : 00000007
 
-
 /* mbi-gen peri b, named component */
 [0001]                               Type : 01
 [0002]                             Length : 0046
@@ -415,7 +414,7 @@
 [0004]                 PCI Segment Number : 00000002
 
 [0004]                         Input base : 0000f800
-[0004]                           ID Count : 00000700
+[0004]                           ID Count : 00000800
 [0004]                        Output Base : 0000f800
 [0004]                   Output Reference : 00000064
 [0004]              Flags (decoded below) : 00000000

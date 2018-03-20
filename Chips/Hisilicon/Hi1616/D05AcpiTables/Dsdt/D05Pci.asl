@@ -97,9 +97,9 @@ Scope(_SB)
           ResourceProducer, MinFixed, MaxFixed, PosDecode,
           0, // AddressGranularity
           0xF8, // AddressMinimum - Minimum Bus Number
-          0xFE, // AddressMaximum - Maximum Bus Number
+          0xFF, // AddressMaximum - Maximum Bus Number
           0, // AddressTranslation - Set to 0
-          0x7 // RangeLength - Number of Busses
+          0x8 // RangeLength - Number of Busses
         )
         QWordMemory ( // 64-bit BAR Windows
           ResourceProducer,
@@ -165,7 +165,7 @@ Scope(_SB)
   {
     Name (_HID, "PNP0C02")  // Motherboard reserved resource
     Name (_CRS, ResourceTemplate (){
-      Memory32Fixed (ReadWrite, 0xaf800000 , 0x700000) //ECAM space for [bus f8-fe]
+      Memory32Fixed (ReadWrite, 0xaf800000 , 0x800000) //ECAM space for [bus f8-ff]
     })
     Method (_STA, 0x0, NotSerialized)
     {
