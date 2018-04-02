@@ -636,6 +636,37 @@ Scope(_SB)
       }
     })
   }
+  Device (ETH2) {
+    Name(_HID, "HISI00C2")
+    Name (_CCA, 1) // Cache-coherent controller
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"local-mac-address", Package () { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }}, // 6-bytes
+        Package () {"ae-handle", Package (){\_SB.DSF0}},
+        Package () {"port-idx-in-ae", 2},
+      }
+    })
+    Method (_STA, 0x0, NotSerialized) {
+      return (0);
+    }
+  }
+  Device (ETH3) {
+    Name(_HID, "HISI00C2")
+    Name (_CCA, 1) // Cache-coherent controller
+    Name (_DSD, Package () {
+      ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
+      Package () {
+        Package () {"local-mac-address", Package () { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }}, // 6-bytes
+        Package () {"ae-handle", Package (){\_SB.DSF0}},
+        Package () {"port-idx-in-ae", 3},
+      }
+    })
+    Method (_STA, 0x0, NotSerialized) {
+      return (0);
+    }
+  }
+
   Device (ETH0) {
     Name(_HID, "HISI00C2")
     Name (_CCA, 1) // Cache-coherent controller
@@ -668,7 +699,7 @@ Scope(_SB)
     Name (_DSD, Package () {
       ToUUID("daffd814-6eba-4d8c-8a91-bc9bbf4aa301"),
       Package () {
-        Package () {"eth-handle", Package () {\_SB.ETH0, \_SB.ETH1, 0, 0, \_SB.ETH4, \_SB.ETH5}},
+        Package () {"eth-handle", Package () {\_SB.ETH0, \_SB.ETH1, \_SB.ETH2, \_SB.ETH3, \_SB.ETH4, \_SB.ETH5}},
         Package () {"dsaf-handle", Package (){\_SB.DSF0}},
         Package () {"node-guid", Package () { 0x00, 0x9A, 0xCD, 0x00, 0x00, 0x01, 0x02, 0x03 }}, // 8-bytes
         Package () {"interrupt-names", Package() {"hns-roce-comp-0",
