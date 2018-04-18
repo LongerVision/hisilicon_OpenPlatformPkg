@@ -629,6 +629,7 @@
 
 
   Silicon/Hisilicon/Drivers/Smbios/ProcessorSubClassDxe/ProcessorSubClassDxe.inf
+  Platform/Hisilicon/D05/Drivers/PlatformMiscDxe/PlatformMiscDxe.inf
 
   #
   # Memory test
