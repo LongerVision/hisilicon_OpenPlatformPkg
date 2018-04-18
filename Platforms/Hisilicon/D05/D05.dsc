@@ -659,6 +659,7 @@
 
 
   OpenPlatformPkg/Chips/Hisilicon/Drivers/Smbios/ProcessorSubClassDxe/ProcessorSubClassDxe.inf
+  OpenPlatformPkg/Platforms/Hisilicon/D05/Drivers/PlatformMiscDxe/PlatformMiscDxe.inf
 
   #
   # Memory test

@@ -1,0 +1,53 @@
+#/** @file
+#
+#    Copyright (c) 2018, Hisilicon Limited. All rights reserved.
+#    Copyright (c) 2016, Linaro Limited. All rights reserved.
+#
+#    This program and the accompanying materials
+#    are licensed and made available under the terms and conditions of the BSD License
+#    which accompanies this distribution. The full text of the license may be found at
+#    http://opensource.org/licenses/bsd-license.php
+#
+#    THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = PlatformMiscDxe
+  FILE_GUID                      = a48f7a09-253f-468b-87c6-caf78baf47bb
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = PlatformMiscDxeEntry
+
+[Sources.common]
+  PlatformMiscDxe.c
+
+[Packages]
+  MdeModulePkg/MdeModulePkg.dec
+  MdePkg/MdePkg.dec
+  OpenPlatformPkg/Chips/Hisilicon/HisiPkg.dec
+
+[Guids]
+  gEfiEventReadyToBootGuid
+
+[Protocols]
+  gEfiPciIoProtocolGuid
+
+[LibraryClasses]
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  IoLib
+  PcdLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+
+[FixedPcd]
+
+[Depex]
+  TRUE
+
+[BuildOptions]
+
