@@ -189,7 +189,7 @@
   gHisiTokenSpaceGuid.PcdAlgSmmuBaseAddress|0xd0040000
 
 
-  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Hisilicon D03 IT20 Nemo 2.0 RC0"
+  gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Hisilicon D03 IT21 Nemo 2.0 RC0"
 
   gHisiTokenSpaceGuid.PcdBiosVersionString|L"10.01.01T18"
 
