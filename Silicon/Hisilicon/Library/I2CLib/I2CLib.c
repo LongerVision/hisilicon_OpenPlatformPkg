@@ -248,7 +248,11 @@ CheckI2CTimeOut (
   if (Transfer == I2CTx) {
     ulFifo = I2C_GetTxStatus (Socket,Port);
     while (ulFifo != 0) {
-      I2C_Delay(2);
+      if (Port == 5) {
+        I2C_Delay(1000);
+      } else {
+        I2C_Delay(2);
+      }
       if (++ulTimes > I2C_READ_TIMEOUT) {
         (VOID)I2C_Disable (Socket, Port);
         return EFI_TIMEOUT;
@@ -259,7 +263,11 @@ CheckI2CTimeOut (
   else {
     ulFifo = I2C_GetRxStatus (Socket,Port);
     while (ulFifo == 0) {
-      I2C_Delay(2);
+      if (Port == 5) {
+        I2C_Delay(1000);
+      } else {
+        I2C_Delay(2);
+      }
       if (++ulTimes > I2C_READ_TIMEOUT) {
         (VOID)I2C_Disable (Socket, Port);
         return EFI_TIMEOUT;
@@ -359,7 +367,7 @@ I2CWrite(I2C_DEVICE *I2cInfo, UINT16 InfoOffset, UINT32 ulLength, UINT8 *pBuf)
         ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
         while(ulFifo > I2C_TXRX_THRESHOLD)
         {
-            I2C_Delay(2);
+            I2C_Delay(1000);
             if(++ulTimes > I2C_READ_TIMEOUT)
             {
                 (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
