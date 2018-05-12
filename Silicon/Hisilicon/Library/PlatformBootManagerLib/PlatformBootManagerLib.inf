@@ -49,6 +49,7 @@
   MemoryAllocationLib
   PcdLib
   PrintLib
+  TimerLib
   UefiBootManagerLib
   UefiBootServicesTableLib
   UefiLib
@@ -67,6 +68,7 @@
 [Guids]
   gEfiEndOfDxeEventGroupGuid
   gEfiTtyTermGuid
+  gHisiOemVariableGuid
 
 [Protocols]
   gEfiGenericMemTestProtocolGuid
