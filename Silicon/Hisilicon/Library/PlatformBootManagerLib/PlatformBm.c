@@ -20,6 +20,7 @@
 #include <Library/BmcConfigBootLib.h>
 #include <Library/DevicePathLib.h>
 #include <Library/PcdLib.h>
+#include <Library/TimerLib.h>
 #include <Library/UefiBootManagerLib.h>
 #include <Library/UefiLib.h>
 #include <Protocol/DevicePath.h>
@@ -554,6 +555,47 @@ PlatformBootManagerBeforeConsole (
   PlatformRegisterOptionsAndKeys ();
 }
 
+STATIC
+VOID
+WaitForDiskReady (
+  )
+{
+  EFI_STATUS                Status;
+  UINT32                    Index;
+  UINTN                     DataSize;
+  UINT32                    DiskInfo;
+  UINT8                     IsFinished;
+
+  Status = EFI_NOT_FOUND;
+  DataSize = sizeof (UINT32);
+  // Wait for 15 seconds at most.
+  for (Index = 0; Index < 15; Index++) {
+    Status = gRT->GetVariable (
+                    L"SASDiskInfo",
+                    &gHisiOemVariableGuid,
+                    NULL,
+                    &DataSize,
+                    &DiskInfo
+                    );
+    if (EFI_ERROR(Status)) {
+      DEBUG ((DEBUG_ERROR, "Get DiskInfo:%r\n", Status));
+      break;
+    }
+
+    IsFinished = (UINT8)(DiskInfo >> 24);
+    if (IsFinished) {
+      break;
+    }
+    DEBUG ((DEBUG_ERROR, "%a", Index == 0 ? "Wait for disk." : "."));
+    MicroSecondDelay(1000 * 1000);
+  }
+
+  if (!EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "DiskInfo:%x\n", DiskInfo));
+    EfiBootManagerConnectAll ();
+  }
+}
+
 /**
   Do the platform specific action after the console is ready
   Possible things that can be done in PlatformBootManagerAfterConsole:
@@ -583,6 +625,7 @@ PlatformBootManagerAfterConsole (
   // Connect the rest of the devices.
   //
   EfiBootManagerConnectAll ();
+  WaitForDiskReady ();
 
   //
   // Enumerate all possible boot options.
