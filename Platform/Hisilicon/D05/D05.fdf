@@ -148,6 +148,10 @@ READ_LOCK_STATUS   = TRUE
 
   APRIORI DXE {
     INF MdeModulePkg/Universal/PCD/Dxe/Pcd.inf
+    INF ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
+    INF ArmPkg/Drivers/CpuDxe/CpuDxe.inf
+    INF Platform/Hisilicon/D05/Drivers/SFC/SfcDxeDriver.inf
+    INF EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
   }
 
   INF MdeModulePkg/Core/Dxe/DxeMain.inf
@@ -157,6 +161,7 @@ READ_LOCK_STATUS   = TRUE
   #
   # PI DXE Drivers producing Architectural Protocols (EFI Services)
   #
+  INF ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
   INF ArmPkg/Drivers/CpuDxe/CpuDxe.inf
   INF MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
 
@@ -190,7 +195,6 @@ READ_LOCK_STATUS   = TRUE
 
   # Simple TextIn/TextOut for UEFI Terminal
 
-  INF ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
   INF ArmPkg/Drivers/TimerDxe/TimerDxe.inf
 
   INF MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
