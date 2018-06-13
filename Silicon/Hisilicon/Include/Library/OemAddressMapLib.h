@@ -24,10 +24,16 @@ typedef struct _DDRC_BASE_ID{
 // Invalid address, will cause exception when accessed by bug code
 #define ADDRESS_MAP_INVALID ((UINTN)(-1))
 
+UINTN OemGetGicSubBase (UINT32 NodeId);
+UINTN OemGetCfgbusBase (UINT32 NodeId);
 UINTN OemGetPoeSubBase (UINT32 NodeId);
 UINTN OemGetPeriSubBase (UINT32 NodeId);
 UINTN OemGetAlgSubBase (UINT32 NodeId);
 UINTN OemGetM3SubBase (UINT32 NodeId);
+UINTN OemGetPCIeSubBase (UINT32 NodeId);
+UINTN OemGetIOMGMTSubBase(UINT32 NodeId);
+UINTN OemGetNetworkSubBase(UINT32 NodeId);
+UINTN OemGetHACSubBase(UINT32 NodeId);
 
 VOID OemAddressMapInit(VOID);
 
