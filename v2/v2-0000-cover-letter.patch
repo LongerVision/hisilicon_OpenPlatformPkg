@@ -1,0 +1,316 @@
+From 7181548f40616d5086dba15cc557703e517e9c50 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Tue, 14 Aug 2018 16:06:00 +0800
+Subject: [PATCH edk2-platforms v2 00/43] Upload for D06 platform 
+
+The major features of this patchset include:
+1 D06 source code;
+2 Unify some D0x modules;
+
+This patch set is base on pcihostbridage-v2.
+For compiling D06, add below hunk to edk2-platforms.config
+[d06]
+LONGNAME=HiSilicon D06
+DSC=Platform/Hisilicon/D06/D06.dsc
+ARCH=AARCH64
+
+Code can also be found in github: https://github.com/hisilicon/OpenPlatformPkg.git
+branch: d06-platform-v2
+
+
+Heyi Guo (3):
+  Hisilicon/D06: Add Debug Serial Port Init Driver
+  Hisilicon/Hi1620: Add ACPI PPTT table
+  Platform/Hisilicon/D06: Enable ACPI PPTT
+
+Luqi Jiang (1):
+  Hisilicon/D06: add apei driver
+
+Ming Huang (32):
+  Silicon/Hisilicon: Modify the MRC interface for other module
+  Silicon/Hisilicon: Separate PlatformArch.h
+  Silicon/Hisilicon/Acpi: Move some macro to PlatformArch.h
+  Hisilicon/D0x: Move CustomData.Fv to common path of Hisilicon
+  Hisilicon/D0x: Move IpmiCmdLib to common path of Hisilicon
+  Hisilicon/D0x: Unify FlashFvbDxe driver
+  Hisilicon/D0X: Rename the global variable gDS3231RtcDevice
+  Hisilicon/D06: Add several base file for D06
+  Platform/Hisilicon/D06: Add M41T83RealTimeClockLib
+  Platform/Hisilicon/D06: Add edk2-non-osi components for D06
+  Hisilicon/D06: Add OemMiscLibD06
+  Silicon/Hisilicon/D06: Wait for all disk ready
+  Silicon/Hisilicon/Acpi: Unify HisiAcipPlatformDxe
+  Hisilicon/D06: Add ACPI Tables for D06
+  Silicon/Hisilicon/D06: Stop watchdog
+  Hisilicon/I2C: Modify I2CLib.c for coding style
+  Silicon/Hisilicon/I2C: Refactor I2C library
+  Silicon/Hisilicon/D06: Fix I2C enable fail issue for D06
+  Silicon/Hisilicon/D06: Add I2C delay for HNS auto config
+  Hisilicon/I2C: Fix a typo issue
+  Platform/Hisilicon/D06: Add OemNicLib
+  Platform/Hisilicon/D06: Add OemNicConfig2P Driver
+  Platform/Hisilicon/D06: Add EarlyConfigPeim peim
+  Platform/Hisilicon/D06: Add PciHostBridgeLib
+  Silicon/Hisilicon/D06: Add some Lpc macro to LpcLib.h
+  Platform/Hisilicon/D06: Add capsule upgrade support
+  Silicon/Hisilicon/D06: Add I2C Bus Exception handle function
+  Silicon/Hisilicon/Setup: Support SPCR table switch
+  Silicon/Hisilicon/setup: Support SMMU switch
+  Hisilicon/D06: Add PciPlatformLib
+  Hisilicon/D06: Add edk2-non-osi Shell components
+  Platform/Hisilicon/D0x: Update version string to 18.08
+
+Sun Yuanchen (3):
+  Silicon/Hisilicon/D0x: Move dimm size definition to PlatformArch.h
+  Silicon/Hisilicon/D0x: Move RAS macro to PlatformArch.h
+  Hisilicon/D0x: Update SMBIOS type9 info
+
+Yang XinYi (2):
+  Hisilicon/D06: Add Hi1620OemConfigUiLib
+  Silicon/Hisilicon/Setup: Add Setup Item "EnableGOP"
+
+ZhenYao (1):
+  Silicon/Hisilicon/D06: Modify for close slave core clock.
+
+shaochangliang (1):
+  Silicon/Hisilicon/D06: Optimize HNS config CDR post time
+
+ Platform/Hisilicon/D06/D06.dec                |   29 +
+ Silicon/Hisilicon/HisiPkg.dec                 |    6 +
+ Platform/Hisilicon/D03/D03.dsc                |    4 +-
+ Platform/Hisilicon/D05/D05.dsc                |    4 +-
+ Platform/Hisilicon/D06/D06.dsc                |  490 ++++
+ Platform/Hisilicon/D03/D03.fdf                |    8 +-
+ Platform/Hisilicon/D05/D05.fdf                |    8 +-
+ Platform/Hisilicon/D06/D06.fdf                |  444 ++++
+ .../OemMiscLib2P/OemMiscLib2PHi1610.inf       |    1 +
+ .../Library/OemMiscLibD05/OemMiscLibD05.inf   |    1 +
+ .../OemNicConfig2PHi1620/OemNicConfig2P.inf   |   43 +
+ .../SystemFirmwareDescriptor.inf              |   50 +
+ .../EarlyConfigPeim/EarlyConfigPeimD06.inf    |   50 +
+ .../Library/OemMiscLibD06/OemMiscLibD06.inf   |   51 +
+ .../D06/Library/OemNicLib/OemNicLib.inf       |   35 +
+ .../PciHostBridgeLib/PciHostBridgeLib.inf     |   36 +
+ .../Drivers/FlashFvbDxe/FlashFvbDxe.inf       |    7 +-
+ .../HisiAcpiPlatformDxe/AcpiPlatformDxe.inf   |    3 +-
+ .../ProcessorSubClassDxe.inf                  |    2 +
+ .../Hisilicon/Hi1620/Drivers/Apei/Apei.inf    |   64 +
+ .../Pl011DebugSerialPortInitDxe.inf           |   48 +
+ .../Hi1620AcpiTables/AcpiTablesHi1620.inf     |   59 +
+ .../Hi1620OemConfigUiLib/OemConfigUiLib.inf   |   68 +
+ .../Hi1620PciPlatformLib.inf                  |   30 +
+ Silicon/Hisilicon/Hi1620/Pptt/Pptt.inf        |   48 +
+ .../M41T83RealTimeClockLib.inf                |   46 +
+ .../PlatformBootManagerLib.inf                |    4 +
+ .../OemNicConfig2PHi1620/OemNicConfig.h       |   25 +
+ .../Hisilicon/D06/Include/Library/CpldD06.h   |   39 +
+ .../Smbios/MemorySubClassDxe/MemorySubClass.h |    2 -
+ .../Hi1610/Hi1610AcpiTables/Hi1610Platform.h  |   27 +-
+ .../Hisilicon/Hi1610/Include/PlatformArch.h   |   71 +
+ .../Hi1616/D05AcpiTables/Hi1616Platform.h     |   24 +-
+ .../Hisilicon/Hi1616/Include/PlatformArch.h   |   71 +
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.h  |   41 +
+ .../Hisilicon/Hi1620/Drivers/Apei/Bert/bert.h |   43 +
+ .../Hisilicon/Hi1620/Drivers/Apei/Einj/einj.h |  146 ++
+ .../Hi1620/Drivers/Apei/ErrorSource/Ghes.h    |  110 +
+ .../Hisilicon/Hi1620/Drivers/Apei/Erst/erst.h |  146 ++
+ .../Hisilicon/Hi1620/Drivers/Apei/Hest/hest.h |   59 +
+ .../Hi1620/Drivers/Apei/OemApeiHi1620.h       |   43 +
+ .../Hi1620/Hi1620AcpiTables/Hi1620Platform.h  |   27 +
+ .../Hi1620/Hi1620OemConfigUiLib/OemConfig.h   |  142 ++
+ .../Hi1620/Hi1620OemConfigUiLib/OemConfigUi.h |   64 +
+ .../Hi1620/Include/Library/SerdesLib.h        |   85 +
+ .../Hisilicon/Hi1620/Include/PlatformArch.h   |   67 +
+ Silicon/Hisilicon/Hi1620/Pptt/Pptt.h          |   68 +
+ .../Hisilicon/Include/Library/AcpiNextLib.h   |   31 +-
+ .../Hisilicon/Include/Library/HwMemInitLib.h  |  356 +--
+ .../Hisilicon/Include/Library/IpmiCmdLib.h    |   16 +
+ Silicon/Hisilicon/Include/Library/LpcLib.h    |   51 +-
+ .../Include/Library/OemAddressMapLib.h        |    8 +
+ .../Hisilicon/Include/Library/OemConfigData.h |   85 +
+ .../Hisilicon/Include/Library/OemMiscLib.h    |    9 +-
+ Silicon/Hisilicon/Include/Library/OemNicLib.h |   57 +
+ .../Include/Library/PlatformSysCtrlLib.h      |    6 +
+ Silicon/Hisilicon/Include/PlatformArch.h      |   35 -
+ Silicon/Hisilicon/Library/I2CLib/I2CHw.h      |    9 +-
+ .../M41T83RealTimeClock.h                     |  158 ++
+ .../DS3231RealTimeClockLib.c                  |    8 +-
+ .../OemMiscLib2P/BoardFeature2PHi1610.c       |    2 +-
+ .../Library/OemMiscLib2P/OemMiscLib2PHi1610.c |   24 +
+ .../Library/OemMiscLibD05/BoardFeatureD05.c   |    2 +-
+ .../D05/Library/OemMiscLibD05/OemMiscLibD05.c |   27 +-
+ .../OemNicConfig2PHi1620/OemNicConfig2P.c     |   71 +
+ .../SystemFirmwareDescriptorPei.c             |   70 +
+ .../D06/EarlyConfigPeim/EarlyConfigPeimD06.c  |  107 +
+ .../Library/OemMiscLibD06/BoardFeatureD06.c   |  432 ++++
+ .../D06/Library/OemMiscLibD06/OemMiscLibD06.c |  222 ++
+ .../D06/Library/OemNicLib/OemNicLib.c         |  570 +++++
+ .../PciHostBridgeLib/PciHostBridgeLib.c       |  635 ++++++
+ .../Drivers/FlashFvbDxe/FlashFvbDxe.c         |   22 +-
+ .../HisiAcpiPlatformDxe/UpdateAcpiTable.c     |  118 +-
+ .../Smbios/AddSmbiosType9/AddSmbiosType9.c    |   14 +-
+ .../Smbios/MemorySubClassDxe/MemorySubClass.c |   26 +-
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.c  |  108 +
+ .../Hisilicon/Hi1620/Drivers/Apei/Bert/bert.c |   92 +
+ .../Hisilicon/Hi1620/Drivers/Apei/Einj/einj.c |  349 +++
+ .../Hi1620/Drivers/Apei/ErrorSource/Ghes.c    |  330 +++
+ .../Hisilicon/Hi1620/Drivers/Apei/Erst/erst.c |  374 ++++
+ .../Hisilicon/Hi1620/Drivers/Apei/Hest/hest.c |  119 +
+ .../Hi1620/Drivers/Apei/OemApeiHi1620.c       |  337 +++
+ .../Pl011DebugSerialPortInitDxe.c             |   64 +
+ .../Hi1620/Hi1620OemConfigUiLib/OemConfig.c   |  364 +++
+ .../Hi1620PciPlatformLib.c                    |   67 +
+ Silicon/Hisilicon/Hi1620/Pptt/Pptt.c          |  543 +++++
+ .../DS3231RealTimeClockLib.c                  |    8 +-
+ Silicon/Hisilicon/Library/I2CLib/I2CLib.c     |  975 ++++----
+ .../M41T83RealTimeClockLib.c                  |  564 +++++
+ .../PlatformBootManagerLib/PlatformBm.c       |   65 +
+ .../SystemFirmwareUpdateConfig.ini            |   46 +
+ .../SystemFirmwareDescriptor.aslc             |   81 +
+ .../OemMiscLibD06/BoardFeatureD06Strings.uni  |   64 +
+ .../Hi1620/Hi1620AcpiTables/Dsdt/CPU.asl      |  409 ++++
+ .../Hi1620/Hi1620AcpiTables/Dsdt/Com.asl      |   30 +
+ .../Hi1620AcpiTables/Dsdt/DsdtHi1620.asl      |   35 +
+ .../Hi1620AcpiTables/Dsdt/Hi1620Apei.asl      |   93 +
+ .../Hi1620AcpiTables/Dsdt/Hi1620Ged.asl       |   58 +
+ .../Hi1620AcpiTables/Dsdt/Hi1620Mbig.asl      | 1459 ++++++++++++
+ .../Hi1620AcpiTables/Dsdt/Hi1620Mctp.asl      |   41 +
+ .../Hi1620AcpiTables/Dsdt/Hi1620Pci.asl       | 1216 ++++++++++
+ .../Hi1620AcpiTables/Dsdt/Hi1620Power.asl     |   28 +
+ .../Hi1620AcpiTables/Dsdt/Hi1620Rde.asl       |   47 +
+ .../Hi1620AcpiTables/Dsdt/Hi1620Sec.asl       |   57 +
+ .../Dsdt/Hi1620Socip4_i2c100k.asl             |  249 +++
+ .../Dsdt/Hi1620Socip4_i2c400k.asl             |  249 +++
+ .../Hi1620AcpiTables/Dsdt/LpcUart_clk.asl     |   49 +
+ .../Hi1620AcpiTables/Dsdt/Pv680UncorePmu.asl  | 1658 ++++++++++++++
+ .../Hi1620/Hi1620AcpiTables/Dsdt/ipmi.asl     |   49 +
+ .../Hi1620/Hi1620AcpiTables/Facs.aslc         |   67 +
+ .../Hi1620/Hi1620AcpiTables/Fadt.aslc         |   91 +
+ .../Hi1620/Hi1620AcpiTables/Gtdt.aslc         |   86 +
+ .../Hi1620/Hi1620AcpiTables/Hi1620Dbg2.aslc   |   86 +
+ .../Hi1620/Hi1620AcpiTables/Hi1620Iort.asl    | 1989 +++++++++++++++++
+ .../Hi1620AcpiTables/Hi1620IortNoSmmu.asl     | 1736 ++++++++++++++
+ .../Hi1620/Hi1620AcpiTables/Hi1620Mcfg.aslc   |   64 +
+ .../Hi1620/Hi1620AcpiTables/Hi1620Slit.aslc   |   64 +
+ .../Hi1620/Hi1620AcpiTables/Hi1620Spcr.aslc   |   81 +
+ .../Hi1620/Hi1620AcpiTables/Hi1620Srat.aslc   |  166 ++
+ .../Hi1620/Hi1620AcpiTables/MadtHi1620.aslc   |  375 ++++
+ .../Hi1620OemConfigUiLib/MemoryConfig.hfr     |  154 ++
+ .../Hi1620OemConfigUiLib/MemoryConfig.uni     |  103 +
+ .../Hi1620OemConfigUiLib/MiscConfig.hfr       |   48 +
+ .../Hi1620OemConfigUiLib/MiscConfig.uni       |   27 +
+ .../Hi1620OemConfigUiLib/OemConfigUiLib.uni   |   24 +
+ .../OemConfigUiLibStrings.uni                 |   42 +
+ .../Hi1620OemConfigUiLib/OemConfigVfr.Vfr     |   89 +
+ .../Hi1620OemConfigUiLib/PcieConfig.hfr       |  219 ++
+ .../PcieConfigStrings.uni                     |  111 +
+ .../Hi1620OemConfigUiLib/PciePortConfig.hfr   |  167 ++
+ .../Hi1620/Hi1620OemConfigUiLib/RasConfig.hfr |  172 ++
+ .../Hi1620/Hi1620OemConfigUiLib/RasConfig.uni |   85 +
+ .../Hi1620OemConfigUiLib/iBMCConfig.hfr       |   81 +
+ .../Hi1620OemConfigUiLib/iBMCConfig.uni       |   34 +
+ 134 files changed, 21578 insertions(+), 970 deletions(-)
+ create mode 100644 Platform/Hisilicon/D06/D06.dec
+ create mode 100644 Platform/Hisilicon/D06/D06.dsc
+ create mode 100644 Platform/Hisilicon/D06/D06.fdf
+ create mode 100644 Platform/Hisilicon/D06/Drivers/OemNicConfig2PHi1620/OemNicConfig2P.inf
+ create mode 100644 Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
+ create mode 100644 Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.inf
+ create mode 100644 Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf
+ create mode 100644 Platform/Hisilicon/D06/Library/OemNicLib/OemNicLib.inf
+ create mode 100644 Platform/Hisilicon/D06/Library/PciHostBridgeLib/PciHostBridgeLib.inf
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.inf
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.inf
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/AcpiTablesHi1620.inf
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfigUiLib.inf
+ create mode 100644 Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.inf
+ create mode 100644 Silicon/Hisilicon/Hi1620/Pptt/Pptt.inf
+ create mode 100644 Silicon/Hisilicon/Library/M41T83RealTimeClockLib/M41T83RealTimeClockLib.inf
+ create mode 100644 Platform/Hisilicon/D06/Drivers/OemNicConfig2PHi1620/OemNicConfig.h
+ create mode 100644 Platform/Hisilicon/D06/Include/Library/CpldD06.h
+ create mode 100644 Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
+ create mode 100644 Silicon/Hisilicon/Hi1616/Include/PlatformArch.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Hi1620Platform.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfig.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfigUi.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Include/Library/SerdesLib.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Include/PlatformArch.h
+ create mode 100644 Silicon/Hisilicon/Hi1620/Pptt/Pptt.h
+ create mode 100644 Silicon/Hisilicon/Include/Library/OemConfigData.h
+ create mode 100644 Silicon/Hisilicon/Include/Library/OemNicLib.h
+ delete mode 100644 Silicon/Hisilicon/Include/PlatformArch.h
+ create mode 100644 Silicon/Hisilicon/Library/M41T83RealTimeClockLib/M41T83RealTimeClock.h
+ create mode 100644 Platform/Hisilicon/D06/Drivers/OemNicConfig2PHi1620/OemNicConfig2P.c
+ create mode 100644 Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptorPei.c
+ create mode 100644 Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.c
+ create mode 100644 Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06.c
+ create mode 100644 Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c
+ create mode 100644 Platform/Hisilicon/D06/Library/OemNicLib/OemNicLib.c
+ create mode 100644 Platform/Hisilicon/D06/Library/PciHostBridgeLib/PciHostBridgeLib.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfig.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.c
+ create mode 100644 Silicon/Hisilicon/Hi1620/Pptt/Pptt.c
+ create mode 100644 Silicon/Hisilicon/Library/M41T83RealTimeClockLib/M41T83RealTimeClockLib.c
+ create mode 100644 Platform/Hisilicon/D06/Capsule/SystemFirmwareUpdateConfig/SystemFirmwareUpdateConfig.ini
+ create mode 100644 Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.aslc
+ create mode 100644 Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06Strings.uni
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/CPU.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Com.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/DsdtHi1620.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Apei.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Ged.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Mbig.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Mctp.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Pci.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Power.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Rde.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Sec.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Socip4_i2c100k.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Hi1620Socip4_i2c400k.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/LpcUart_clk.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/Pv680UncorePmu.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Dsdt/ipmi.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Facs.aslc
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Fadt.aslc
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Gtdt.aslc
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Hi1620Dbg2.aslc
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Hi1620Iort.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Hi1620IortNoSmmu.asl
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Hi1620Mcfg.aslc
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Hi1620Slit.aslc
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Hi1620Spcr.aslc
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/Hi1620Srat.aslc
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/MadtHi1620.aslc
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MemoryConfig.hfr
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MemoryConfig.uni
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.hfr
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.uni
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfigUiLib.uni
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfigUiLibStrings.uni
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfigVfr.Vfr
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/PcieConfig.hfr
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/PcieConfigStrings.uni
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/PciePortConfig.hfr
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/RasConfig.hfr
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/RasConfig.uni
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/iBMCConfig.hfr
+ create mode 100644 Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/iBMCConfig.uni
+
+-- 
+2.17.0
+

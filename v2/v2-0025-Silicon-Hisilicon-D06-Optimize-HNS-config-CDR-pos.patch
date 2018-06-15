@@ -1,0 +1,44 @@
+From dfb52fc65450d03f858f1e2f0ac86ec6d266e2d8 Mon Sep 17 00:00:00 2001
+From: shaochangliang <shaochangliang@huawei.com>
+Date: Mon, 21 May 2018 18:09:07 +0800
+Subject: [PATCH edk2-platforms v2 25/43] Silicon/Hisilicon/D06: Optimize HNS
+ config CDR post time
+
+Use I2C 400KB speed for config CDR.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Silicon/Hisilicon/Library/I2CLib/I2CLib.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/Silicon/Hisilicon/Library/I2CLib/I2CLib.c b/Silicon/Hisilicon/Library/I2CLib/I2CLib.c
+index ed44ac204f..55c030a3af 100644
+--- a/Silicon/Hisilicon/Library/I2CLib/I2CLib.c
++++ b/Silicon/Hisilicon/Library/I2CLib/I2CLib.c
+@@ -28,6 +28,9 @@
+ #include "I2CLibInternal.h"
+ #include "I2CHw.h"
+ 
++#define I2C_100KB_SPEED 0x1
++#define I2C_400KB_SPEED 0x2
++
+ VOID
+ I2C_Delay (
+   UINT32 Count
+@@ -158,7 +161,11 @@ I2CInit (
+ 
+   I2C_REG_READ (Base + I2C_CON_OFFSET, I2cControlReg.Val32);
+   I2cControlReg.bits.master = 1;
+-  I2cControlReg.bits.Speed = 0x1;
++  if(SpeedMode == Normal) {
++    I2cControlReg.bits.Speed = I2C_100KB_SPEED;
++  } else {
++    I2cControlReg.bits.Speed = I2C_400KB_SPEED;
++  }
+   I2cControlReg.bits.restart_en = 1;
+   I2cControlReg.bits.slave_disable = 1;
+   I2C_REG_WRITE (Base + I2C_CON_OFFSET, I2cControlReg.Val32);
+-- 
+2.17.0
+

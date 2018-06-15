@@ -1,0 +1,62 @@
+From 7181548f40616d5086dba15cc557703e517e9c50 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Tue, 24 Jul 2018 14:42:33 +0800
+Subject: [PATCH edk2-platforms v2 43/43] Platform/Hisilicon/D0x: Update
+ version string to 18.08
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D03/D03.dsc | 2 +-
+ Platform/Hisilicon/D05/D05.dsc | 2 +-
+ Platform/Hisilicon/D06/D06.dsc | 4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/Platform/Hisilicon/D03/D03.dsc b/Platform/Hisilicon/D03/D03.dsc
+index c12790ba59..add15b7f93 100644
+--- a/Platform/Hisilicon/D03/D03.dsc
++++ b/Platform/Hisilicon/D03/D03.dsc
+@@ -174,7 +174,7 @@
+   !ifdef $(FIRMWARE_VER)
+     gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"$(FIRMWARE_VER)"
+   !else
+-    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Development build 18.02 for Hisilicon D03"
++    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Development build 18.08 for Hisilicon D03"
+   !endif
+ 
+   gHisiTokenSpaceGuid.PcdBiosVersionString|L"10.01.01T18"
+diff --git a/Platform/Hisilicon/D05/D05.dsc b/Platform/Hisilicon/D05/D05.dsc
+index 94d386582e..76c0bd421e 100644
+--- a/Platform/Hisilicon/D05/D05.dsc
++++ b/Platform/Hisilicon/D05/D05.dsc
+@@ -192,7 +192,7 @@
+   !ifdef $(FIRMWARE_VER)
+     gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"$(FIRMWARE_VER)"
+   !else
+-    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Development build 18.02 for Hisilicon D05"
++    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Development build 18.08 for Hisilicon D05"
+   !endif
+ 
+   gHisiTokenSpaceGuid.PcdBiosVersionString|L"10.01.01T18"
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+index 544039e450..09197922ad 100644
+--- a/Platform/Hisilicon/D06/D06.dsc
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -165,12 +165,12 @@
+   !ifdef $(FIRMWARE_VER)
+     gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"$(FIRMWARE_VER)"
+   !else
+-    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Hisilicon D06 UEFI RC0 - B308 (V0.38)"
++    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Development build 18.08 for Hisilicon D06"
+   !endif
+ 
+   gHisiTokenSpaceGuid.PcdBiosVersionString|L"10.01.01T18"
+ 
+-  gHisiTokenSpaceGuid.PcdBiosVersionForBmc|L"0.38"
++  gHisiTokenSpaceGuid.PcdBiosVersionForBmc|L"0.42"
+ 
+   gHisiTokenSpaceGuid.PcdSystemProductName|L"D06"
+   gHisiTokenSpaceGuid.PcdSystemVersion|L"VER.A"
+-- 
+2.17.0
+

@@ -1,0 +1,68 @@
+From a36aa321b03a58b090f1cdbf54363a0f0bca40e6 Mon Sep 17 00:00:00 2001
+From: Sun Yuanchen <sunyuanchen@huawei.com>
+Date: Tue, 3 Jul 2018 18:14:59 +0800
+Subject: [PATCH edk2-platforms v2 05/43] Silicon/Hisilicon/D0x: Move RAS macro
+ to PlatformArch.h
+
+Move some RAS macros definition to PlatformArch.h for
+unifying D0x
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Sun Yuanchen <sunyuanchen@huawei.com>
+---
+ Silicon/Hisilicon/Hi1610/Include/PlatformArch.h |  9 +++++++--
+ Silicon/Hisilicon/Hi1616/Include/PlatformArch.h | 12 ++++++++++++
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+
+diff --git a/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h b/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
+index 2ff076901e..f39ae0748c 100644
+--- a/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
++++ b/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
+@@ -1,7 +1,7 @@
+ /** @file
+ *
+-*  Copyright (c) 2015, Hisilicon Limited. All rights reserved.
+-*  Copyright (c) 2015, Linaro Limited. All rights reserved.
++*  Copyright (c) 2015 - 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2015 - 2018, Linaro Limited. All rights reserved.
+ *
+ *  This program and the accompanying materials
+ *  are licensed and made available under the terms and conditions of the BSD License
+@@ -32,6 +32,11 @@
+ 
+ #define S1_BASE               0x40000000000
+ 
++#define RASC_BASE                (0x5000)
++/* configuration register for Rank statistical information */
++#define RASC_CFG_INFOIDX_REG     (RASC_BASE + 0x5C)
++/* configuration register for Sparing level */
++#define RASC_CFG_SPLVL_REG       (RASC_BASE + 0xB8)
+ 
+ //
+ // ACPI table information used to initialize tables.
+diff --git a/Silicon/Hisilicon/Hi1616/Include/PlatformArch.h b/Silicon/Hisilicon/Hi1616/Include/PlatformArch.h
+index 60a60593be..e02e4bdabd 100644
+--- a/Silicon/Hisilicon/Hi1616/Include/PlatformArch.h
++++ b/Silicon/Hisilicon/Hi1616/Include/PlatformArch.h
+@@ -30,6 +30,18 @@
+ // Max NUMA node number for each node type
+ #define MAX_NUM_PER_TYPE 8
+ 
++#define RASC_BASE                (0x5000)
++/* configuration register for Rank statistical information */
++#define RASC_CFG_INFOIDX_REG     (RASC_BASE + 0x5C)
++/* configuration register for Sparing level */
++#define RASC_CFG_SPLVL_REG       (RASC_BASE + 0xB8)
++
++// for acpi
++#define NODE_IN_SOCKET                                  2
++#define CORE_NUM_PER_SOCKET                             32
++#define EFI_ACPI_MEMORY_AFFINITY_STRUCTURE_COUNT        10
++#define EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE_COUNT       8
++
+ #define S1_BASE               0x40000000000
+ 
+ //
+-- 
+2.17.0
+

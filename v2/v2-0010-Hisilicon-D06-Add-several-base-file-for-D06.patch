@@ -1,0 +1,1160 @@
+From d4e234e7fdabe58f9823bba7b194af03ec9f69e1 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Wed, 13 Jun 2018 20:13:08 +0800
+Subject: [PATCH edk2-platforms v2 10/43] Hisilicon/D06: Add several base file
+ for D06
+
+Add several base head files and add several build
+files for D06.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D06/D06.dec                       |  29 ++
+ Platform/Hisilicon/D06/D06.dsc                       | 455 ++++++++++++++++++++
+ Platform/Hisilicon/D06/D06.fdf                       | 351 +++++++++++++++
+ Platform/Hisilicon/D06/Include/Library/CpldD06.h     |  37 ++
+ Silicon/Hisilicon/Hi1620/Include/Library/SerdesLib.h |  85 ++++
+ Silicon/Hisilicon/Hi1620/Include/PlatformArch.h      |  61 +++
+ Silicon/Hisilicon/Include/Library/OemAddressMapLib.h |   6 +
+ Silicon/Hisilicon/Include/Library/OemNicLib.h        |  57 +++
+ 8 files changed, 1081 insertions(+)
+
+diff --git a/Platform/Hisilicon/D06/D06.dec b/Platform/Hisilicon/D06/D06.dec
+new file mode 100644
+index 0000000000..710f083eee
+--- /dev/null
++++ b/Platform/Hisilicon/D06/D06.dec
+@@ -0,0 +1,29 @@
++#/** @file
++#
++#    Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++#    Copyright (c) 2018, Linaro Limited. All rights reserved.
++#
++#    This program and the accompanying materials
++#    are licensed and made available under the terms and conditions of the BSD License
++#    which accompanies this distribution. The full text of the license may be found at
++#    http://opensource.org/licenses/bsd-license.php
++#
++#    THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++#    WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++#
++#**/
++
++#
++# D06 Package
++#
++#
++#
++
++[Defines]
++  DEC_SPECIFICATION              = 0x0001001A
++  PACKAGE_NAME                   = D06Pkg
++  PACKAGE_GUID                   = B46F75D7-3864-450D-86D9-A0346A882232
++  PACKAGE_VERSION                = 0.1
++
++[Includes]
++  Include
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+new file mode 100644
+index 0000000000..d14fce1159
+--- /dev/null
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -0,0 +1,455 @@
++#
++#  Copyright (c) 2011-2012, ARM Limited. All rights reserved.
++#  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++#  Copyright (c) 2018, Linaro Limited. All rights reserved.
++#
++#  This program and the accompanying materials
++#  are licensed and made available under the terms and conditions of the BSD License
++#  which accompanies this distribution.  The full text of the license may be found at
++#  http://opensource.org/licenses/bsd-license.php
++#
++#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++#
++#
++
++################################################################################
++#
++# Defines Section - statements that will be processed to create a Makefile.
++#
++################################################################################
++[Defines]
++  PLATFORM_NAME                  = D06
++  PLATFORM_GUID                  = D0D445F1-B2CA-4101-9986-1B23525CBEA6
++  PLATFORM_VERSION               = 0.1
++  DSC_SPECIFICATION              = 0x0001001A
++  OUTPUT_DIRECTORY               = Build/$(PLATFORM_NAME)
++  SUPPORTED_ARCHITECTURES        = AARCH64
++  BUILD_TARGETS                  = DEBUG|NOOPT|RELEASE
++  SKUID_IDENTIFIER               = DEFAULT
++  FLASH_DEFINITION               = Platform/Hisilicon/$(PLATFORM_NAME)/$(PLATFORM_NAME).fdf
++  DEFINE NETWORK_IP6_ENABLE      = FALSE
++  DEFINE HTTP_BOOT_ENABLE        = FALSE
++  DEFINE SECURE_BOOT_ENABLE      = FALSE
++
++!include Silicon/Hisilicon/Hisilicon.dsc.inc
++
++[LibraryClasses.common]
++  ArmLib|ArmPkg/Library/ArmLib/ArmBaseLib.inf
++  ArmPlatformLib|Silicon/Hisilicon/Library/ArmPlatformLibHisilicon/ArmPlatformLib.inf
++
++
++  I2CLib|Silicon/Hisilicon/Library/I2CLib/I2CLib.inf
++  TimerLib|ArmPkg/Library/ArmArchTimerLib/ArmArchTimerLib.inf
++  NetLib|MdeModulePkg/Library/DxeNetLib/DxeNetLib.inf
++  DpcLib|MdeModulePkg/Library/DxeDpcLib/DxeDpcLib.inf
++  HiiLib|MdeModulePkg/Library/UefiHiiLib/UefiHiiLib.inf
++  UefiHiiServicesLib|MdeModulePkg/Library/UefiHiiServicesLib/UefiHiiServicesLib.inf
++  UdpIoLib|MdeModulePkg/Library/DxeUdpIoLib/DxeUdpIoLib.inf
++  IpIoLib|MdeModulePkg/Library/DxeIpIoLib/DxeIpIoLib.inf
++  OrderedCollectionLib|MdePkg/Library/BaseOrderedCollectionRedBlackTreeLib/BaseOrderedCollectionRedBlackTreeLib.inf
++  ReportStatusCodeLib|MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf
++  DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
++  FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
++  BootLogoLib|MdeModulePkg/Library/BootLogoLib/BootLogoLib.inf
++  SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
++
++!if $(NETWORK_IP6_ENABLE) == TRUE
++  TcpIoLib|MdeModulePkg/Library/DxeTcpIoLib/DxeTcpIoLib.inf
++!endif
++
++!if $(HTTP_BOOT_ENABLE) == TRUE
++  HttpLib|MdeModulePkg/Library/DxeHttpLib/DxeHttpLib.inf
++!endif
++
++  CpldIoLib|Silicon/Hisilicon/Library/CpldIoLib/CpldIoLib.inf
++
++  TimeBaseLib|EmbeddedPkg/Library/TimeBaseLib/TimeBaseLib.inf
++
++  CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibNull/DxeCapsuleLibNull.inf
++  GenericBdsLib|IntelFrameworkModulePkg/Library/GenericBdsLib/GenericBdsLib.inf
++  BmcConfigBootLib|Silicon/Hisilicon/Library/BmcConfigBootLib/BmcConfigBootLib.inf
++  UefiBootManagerLib|MdeModulePkg/Library/UefiBootManagerLib/UefiBootManagerLib.inf
++  SortLib|MdeModulePkg/Library/UefiSortLib/UefiSortLib.inf
++  ReportStatusCodeLib|MdeModulePkg/Library/DxeReportStatusCodeLib/DxeReportStatusCodeLib.inf
++  DxeServicesLib|MdePkg/Library/DxeServicesLib/DxeServicesLib.inf
++  PlatformBootManagerLib|Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
++  FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
++  CustomizedDisplayLib|MdeModulePkg/Library/CustomizedDisplayLib/CustomizedDisplayLib.inf
++
++  # USB Requirements
++  UefiUsbLib|MdePkg/Library/UefiUsbLib/UefiUsbLib.inf
++
++  SerialPortLib|ArmPlatformPkg/Library/PL011SerialPortLib/PL011SerialPortLib.inf
++!if $(SECURE_BOOT_ENABLE) == TRUE
++  FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
++!endif
++  PciExpressLib|MdePkg/Library/BasePciExpressLib/BasePciExpressLib.inf
++
++[LibraryClasses.common.SEC]
++  ArmPlatformLib|Silicon/Hisilicon/Library/ArmPlatformLibHisilicon/ArmPlatformLibSec.inf
++
++
++[LibraryClasses.common.DXE_RUNTIME_DRIVER]
++  I2CLib|Silicon/Hisilicon/Library/I2CLib/I2CLibRuntime.inf
++  SerialPortLib|ArmPlatformPkg/Library/PL011SerialPortLib/PL011SerialPortLib.inf
++
++[BuildOptions]
++  GCC:*_*_AARCH64_PLATFORM_FLAGS == -I$(WORKSPACE)/Silicon/Hisilicon/Hi1620/Include
++
++################################################################################
++#
++# Pcd Section - list of all EDK II PCD Entries defined by this Platform
++#
++################################################################################
++
++[PcdsFeatureFlag.common]
++
++  ## If TRUE, Graphics Output Protocol will be installed on virtual handle created by ConsplitterDxe.
++  #  It could be set FALSE to save size.
++  gEfiMdeModulePkgTokenSpaceGuid.PcdConOutGopSupport|TRUE
++  gHisiTokenSpaceGuid.PcdIsItsSupported|TRUE
++  gArmTokenSpaceGuid.PcdArmGicV3WithV2Legacy|FALSE
++  gEfiMdeModulePkgTokenSpaceGuid.PcdHiiOsRuntimeSupport|FALSE
++
++[PcdsFixedAtBuild.common]
++  gArmPlatformTokenSpaceGuid.PcdCoreCount|48
++  gEmbeddedTokenSpaceGuid.PcdPrePiCpuMemorySize|48
++
++  gEfiMdeModulePkgTokenSpaceGuid.PcdMaxVariableSize|0x2000
++
++
++  # Stacks for MPCores in Normal World
++  gArmPlatformTokenSpaceGuid.PcdCPUCoresStackBase|0xA0E88000
++  gArmPlatformTokenSpaceGuid.PcdCPUCorePrimaryStackSize|0x40000
++
++  gArmTokenSpaceGuid.PcdSystemMemoryBase|0x00000000
++  gArmTokenSpaceGuid.PcdSystemMemorySize|0x3FC00000
++
++  # Size of the region used by UEFI in permanent memory (Reserved 64MB)
++  gArmPlatformTokenSpaceGuid.PcdSystemMemoryUefiRegionSize|0x10000000
++
++  gHisiTokenSpaceGuid.PcdSerDesFlowCtrlFlag|1
++
++  gHisiTokenSpaceGuid.PcdSlotPerChannelNum|0x2
++
++  ## Serial Terminal
++  gEfiMdeModulePkgTokenSpaceGuid.PcdSerialRegisterBase|0x94080000
++  gArmPlatformTokenSpaceGuid.PcdSerialDbgRegisterBase|0x400094080000
++  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate|115200
++
++  gArmPlatformTokenSpaceGuid.PL011UartClkInHz|200000000
++
++  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultDataBits|8
++  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultParity|1
++  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultStopBits|1
++
++  gHisiTokenSpaceGuid.PcdIsMPBoot|1
++  gHisiTokenSpaceGuid.PcdSocketMask|0x3
++  !ifdef $(FIRMWARE_VER)
++    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"$(FIRMWARE_VER)"
++  !else
++    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Hisilicon D06 UEFI RC0 - B308 (V0.38)"
++  !endif
++
++  gHisiTokenSpaceGuid.PcdBiosVersionString|L"10.01.01T18"
++
++  gHisiTokenSpaceGuid.PcdBiosVersionForBmc|L"0.38"
++
++  gHisiTokenSpaceGuid.PcdSystemProductName|L"D06"
++  gHisiTokenSpaceGuid.PcdSystemVersion|L"VER.A"
++  gHisiTokenSpaceGuid.PcdBaseBoardProductName|L"D06"
++  gHisiTokenSpaceGuid.PcdBaseBoardVersion|L"Estuary"
++
++  gHisiTokenSpaceGuid.PcdCPUInfo|L"Hisilicon 1620"
++
++  # TA
++  gHisiTokenSpaceGuid.PcdArmPrimaryCoreTemp|0x80010000
++  gArmTokenSpaceGuid.PcdGicDistributorBase|0xAE000000
++  gArmTokenSpaceGuid.PcdGicRedistributorsBase|0xAE100000
++  gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase|0xFE000000
++
++
++
++  #
++  # ARM Architectual Timer Frequency
++  #
++  # Set it to 0 so that the code will read frequency from register and be
++  # adapted to 100M and 50M boards
++  gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz|0
++  gEmbeddedTokenSpaceGuid.PcdTimerPeriod|10000
++
++
++  gEfiMdeModulePkgTokenSpaceGuid.PcdResetOnMemoryTypeInformationChange|FALSE
++  gEfiIntelFrameworkModulePkgTokenSpaceGuid.PcdShellFile|{ 0x83, 0xA5, 0x04, 0x7C, 0x3E, 0x9E, 0x1C, 0x4F, 0xAD, 0x65, 0xE0, 0x52, 0x68, 0xD0, 0xB4, 0xD1 }
++  gEfiMdeModulePkgTokenSpaceGuid.PcdBootManagerMenuFile|{ 0x21, 0xaa, 0x2c, 0x46, 0x14, 0x76, 0x03, 0x45, 0x83, 0x6e, 0x8a, 0xb6, 0xf4, 0x66, 0x23, 0x31 }
++  gHisiTokenSpaceGuid.PcdSysControlBaseAddress|0x94010000
++  gHisiTokenSpaceGuid.PcdMailBoxAddress|0x0000FFF8
++
++  gHisiTokenSpaceGuid.PcdCpldBaseAddress|0x80000000
++  gHisiTokenSpaceGuid.PcdSFCMEM0BaseAddress|0x204000000
++
++  gHisiTokenSpaceGuid.PcdPeriSubctrlAddress|0x94000000
++
++  ## 2+1
++  gHisiTokenSpaceGuid.PcdPlatformDefaultPackageType|0x1
++
++  gHisiTokenSpaceGuid.PcdTopOfLowMemory|0x40000000
++
++  gHisiTokenSpaceGuid.PcdBottomOfHighMemory|0x1000000000
++
++  gHisiTokenSpaceGuid.PcdNORFlashBase|0x80000000
++  gHisiTokenSpaceGuid.PcdNORFlashCachableSize|0x8000000
++
++  gHisiTokenSpaceGuid.PcdTrustedFirmwareEnable|0x1
++  gHisiTokenSpaceGuid.PcdMacAddress|0xA47E0000
++
++  # PCIe ECAM Access BaseAddress
++  gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress|0xD0000000
++  gEmbeddedTokenSpaceGuid.PcdPrePiCpuIoSize|16
++
++  gHisiTokenSpaceGuid.Pcdsoctype|0x1620
++
++  # SMBIOS 3.0 only
++  #  BIT0 set indicates 32-bit entry point and table are produced.<BR>
++  #  BIT1 set indicates 64-bit entry point and table are produced.<BR>
++  gEfiMdeModulePkgTokenSpaceGuid.PcdSmbiosEntryPointProvideMethod|0x2
++
++  #
++  # ACPI Table Version
++  #
++  #   BIT 1 - EFI_ACPI_TABLE_VERSION_1_0B.<BR>
++  #   BIT 2 - EFI_ACPI_TABLE_VERSION_2_0.<BR>
++  #   BIT 3 - EFI_ACPI_TABLE_VERSION_3_0.<BR>
++  #   BIT 4 - EFI_ACPI_TABLE_VERSION_4_0.<BR>
++  #   BIT 5 - EFI_ACPI_TABLE_VERSION_5_0.<BR>
++  gEfiMdeModulePkgTokenSpaceGuid.PcdAcpiExposedTableVersions|0x20
++
++  gEfiMdeModulePkgTokenSpaceGuid.PcdSrIovSupport|FALSE
++  gArmTokenSpaceGuid.PcdPciIoTranslation|0x0
++
++################################################################################
++#
++# Components Section - list of all EDK II Modules needed by this Platform
++#
++################################################################################
++[Components.common]
++
++  #
++  # SEC
++  #
++
++  #
++  # PEI Phase modules
++  #
++  ArmPlatformPkg/PrePeiCore/PrePeiCoreMPCore.inf
++  MdeModulePkg/Core/Pei/PeiMain.inf
++  MdeModulePkg/Universal/PCD/Pei/Pcd.inf
++
++  ArmPlatformPkg/PlatformPei/PlatformPeim.inf
++
++  ArmPkg/Drivers/CpuPei/CpuPei.inf
++  IntelFrameworkModulePkg/Universal/StatusCode/Pei/StatusCodePei.inf
++  MdeModulePkg/Universal/FaultTolerantWritePei/FaultTolerantWritePei.inf
++  MdeModulePkg/Universal/Variable/Pei/VariablePei.inf
++
++  Silicon/Hisilicon/Drivers/VersionInfoPeim/VersionInfoPeim.inf
++
++  MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf {
++    <LibraryClasses>
++      NULL|MdeModulePkg/Library/LzmaCustomDecompressLib/LzmaCustomDecompressLib.inf
++  }
++
++  #
++  # DXE
++  #
++  MdeModulePkg/Core/Dxe/DxeMain.inf {
++    <LibraryClasses>
++      NULL|MdeModulePkg/Library/DxeCrc32GuidedSectionExtractLib/DxeCrc32GuidedSectionExtractLib.inf
++  }
++  MdeModulePkg/Universal/PCD/Dxe/Pcd.inf
++
++
++  #
++  # Architectural Protocols
++  #
++  ArmPkg/Drivers/CpuDxe/CpuDxe.inf
++  MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
++
++
++!if $(SECURE_BOOT_ENABLE) == TRUE
++  MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf {
++    <LibraryClasses>
++      NULL|SecurityPkg/Library/DxeImageVerificationLib/DxeImageVerificationLib.inf
++  }
++  SecurityPkg/VariableAuthenticated/SecureBootConfigDxe/SecureBootConfigDxe.inf
++!else
++  MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
++!endif
++  Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.inf
++  MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf {
++    <LibraryClasses>
++      NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
++      BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
++  }
++  MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
++  MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
++
++  MdeModulePkg/Universal/MonotonicCounterRuntimeDxe/MonotonicCounterRuntimeDxe.inf
++  MdeModulePkg/Universal/ResetSystemRuntimeDxe/ResetSystemRuntimeDxe.inf
++  EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf {
++    <LibraryClasses>
++      CpldIoLib|Silicon/Hisilicon/Library/CpldIoLib/CpldIoLibRuntime.inf
++  }
++  EmbeddedPkg/MetronomeDxe/MetronomeDxe.inf
++
++  MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
++  MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
++  MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
++  MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
++  MdeModulePkg/Universal/SerialDxe/SerialDxe.inf
++
++  MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
++
++  ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
++
++  ArmPkg/Drivers/TimerDxe/TimerDxe.inf
++
++  MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
++  IntelFrameworkModulePkg/Universal/StatusCode/RuntimeDxe/StatusCodeRuntimeDxe.inf
++  #
++  #ACPI
++  #
++  MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
++  Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/AcpiPlatformDxe.inf
++
++  Silicon/Hisilicon/Drivers/AcpiPlatformDxe/AcpiPlatformDxe.inf
++
++  #
++  # Usb Support
++  #
++  MdeModulePkg/Bus/Pci/EhciDxe/EhciDxe.inf
++  MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
++  MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
++  MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe.inf
++  MdeModulePkg/Bus/Usb/UsbMouseDxe/UsbMouseDxe.inf
++  MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
++
++  #
++  #network
++  #
++  MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
++
++  MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
++  MdeModulePkg/Universal/Network/Dhcp4Dxe/Dhcp4Dxe.inf
++  MdeModulePkg/Universal/Network/DpcDxe/DpcDxe.inf
++  MdeModulePkg/Universal/Network/Ip4Dxe/Ip4Dxe.inf
++  MdeModulePkg/Universal/Network/MnpDxe/MnpDxe.inf
++  MdeModulePkg/Universal/Network/Mtftp4Dxe/Mtftp4Dxe.inf
++  MdeModulePkg/Universal/Network/Udp4Dxe/Udp4Dxe.inf
++!if $(NETWORK_IP6_ENABLE) == TRUE
++  NetworkPkg/Ip6Dxe/Ip6Dxe.inf
++  NetworkPkg/TcpDxe/TcpDxe.inf
++  NetworkPkg/Udp6Dxe/Udp6Dxe.inf
++  NetworkPkg/Dhcp6Dxe/Dhcp6Dxe.inf
++  NetworkPkg/Mtftp6Dxe/Mtftp6Dxe.inf
++  NetworkPkg/UefiPxeBcDxe/UefiPxeBcDxe.inf
++!else
++  MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
++  MdeModulePkg/Universal/Network/UefiPxeBcDxe/UefiPxeBcDxe.inf
++!endif
++  MdeModulePkg/Universal/Network/IScsiDxe/IScsiDxe.inf
++!if $(HTTP_BOOT_ENABLE) == TRUE
++  NetworkPkg/DnsDxe/DnsDxe.inf
++  NetworkPkg/HttpUtilitiesDxe/HttpUtilitiesDxe.inf
++  NetworkPkg/HttpDxe/HttpDxe.inf
++  NetworkPkg/HttpBootDxe/HttpBootDxe.inf
++!endif
++
++  MdeModulePkg/Bus/Pci/SataControllerDxe/SataControllerDxe.inf
++  MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
++  MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
++  #
++  # FAT filesystem + GPT/MBR partitioning
++  #
++
++  MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
++  MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
++  FatPkg/EnhancedFatDxe/Fat.inf
++  MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
++
++  MdeModulePkg/Application/UiApp/UiApp.inf {
++    <LibraryClasses>
++      NULL|MdeModulePkg/Library/BootManagerUiLib/BootManagerUiLib.inf
++      NULL|MdeModulePkg/Library/DeviceManagerUiLib/DeviceManagerUiLib.inf
++      NULL|MdeModulePkg/Library/BootMaintenanceManagerUiLib/BootMaintenanceManagerUiLib.inf
++  }
++  #
++  # Bds
++  #
++  MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
++
++  MdeModulePkg/Universal/SmbiosDxe/SmbiosDxe.inf
++  Silicon/Hisilicon/Drivers/Smbios/SmbiosMiscDxe/SmbiosMiscDxe.inf
++  Silicon/Hisilicon/Drivers/Smbios/MemorySubClassDxe/MemorySubClassDxe.inf
++  Silicon/Hisilicon/Drivers/Smbios/ProcessorSubClassDxe/ProcessorSubClassDxe.inf
++  Silicon/Hisilicon/Drivers/Smbios/AddSmbiosType9/AddSmbiosType9.inf
++
++  #PCIe Support
++  Silicon/Hisilicon/Drivers/PciPlatform/PciPlatform.inf
++  ArmPkg/Drivers/ArmPciCpuIo2Dxe/ArmPciCpuIo2Dxe.inf
++  MdeModulePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf {
++    <LibraryClasses>
++      PciSegmentLib|MdePkg/Library/BasePciSegmentLibPci/BasePciSegmentLibPci.inf
++      PciLib|MdePkg/Library/BasePciLibPciExpress/BasePciLibPciExpress.inf
++      PciHostBridgeLib|MdeModulePkg/Library/PciHostBridgeLibNull/PciHostBridgeLibNull.inf
++  }
++
++  MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
++
++  MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
++
++  #
++  # Memory test
++  #
++  MdeModulePkg/Universal/MemoryTest/NullMemoryTestDxe/NullMemoryTestDxe.inf
++  MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
++  MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
++  MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
++
++  #
++  # UEFI application (Shell Embedded Boot Loader)
++  #
++  ShellPkg/Application/Shell/Shell.inf {
++    <LibraryClasses>
++      ShellCommandLib|ShellPkg/Library/UefiShellCommandLib/UefiShellCommandLib.inf
++      NULL|ShellPkg/Library/UefiShellLevel2CommandsLib/UefiShellLevel2CommandsLib.inf
++      NULL|ShellPkg/Library/UefiShellLevel1CommandsLib/UefiShellLevel1CommandsLib.inf
++      NULL|ShellPkg/Library/UefiShellLevel3CommandsLib/UefiShellLevel3CommandsLib.inf
++      NULL|ShellPkg/Library/UefiShellDriver1CommandsLib/UefiShellDriver1CommandsLib.inf
++      NULL|ShellPkg/Library/UefiShellDebug1CommandsLib/UefiShellDebug1CommandsLib.inf
++      NULL|ShellPkg/Library/UefiShellInstall1CommandsLib/UefiShellInstall1CommandsLib.inf
++      NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
++      HandleParsingLib|ShellPkg/Library/UefiHandleParsingLib/UefiHandleParsingLib.inf
++      PrintLib|MdePkg/Library/BasePrintLib/BasePrintLib.inf
++      BcfgCommandLib|ShellPkg/Library/UefiShellBcfgCommandLib/UefiShellBcfgCommandLib.inf
++!if $(NETWORK_IP6_ENABLE) == TRUE
++      NULL|ShellPkg/Library/UefiShellNetwork2CommandsLib/UefiShellNetwork2CommandsLib.inf
++!endif
++
++!if $(INCLUDE_DP) == TRUE
++      NULL|ShellPkg/Library/UefiDpLib/UefiDpLib.inf
++!endif #$(INCLUDE_DP)
++
++    <PcdsFixedAtBuild>
++      gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0xFF
++      gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE
++      gEfiMdePkgTokenSpaceGuid.PcdUefiLibMaxPrintBufferSize|8000
++  }
++!if $(INCLUDE_TFTP_COMMAND) == TRUE
++  ShellPkg/DynamicCommand/TftpDynamicCommand/TftpDynamicCommand.inf {
++    <PcdsFixedAtBuild>
++      gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE
++  }
++!endif #$(INCLUDE_TFTP_COMMAND)
++
+diff --git a/Platform/Hisilicon/D06/D06.fdf b/Platform/Hisilicon/D06/D06.fdf
+new file mode 100644
+index 0000000000..9567ede0ad
+--- /dev/null
++++ b/Platform/Hisilicon/D06/D06.fdf
+@@ -0,0 +1,351 @@
++#
++#  Copyright (c) 2011, 2012, ARM Limited. All rights reserved.
++#  Copyright (c) 2017 - 2018, Hisilicon Limited. All rights reserved.
++#  Copyright (c) 2017 - 2018, Linaro Limited. All rights reserved.
++#
++#  This program and the accompanying materials
++#  are licensed and made available under the terms and conditions of the BSD License
++#  which accompanies this distribution.  The full text of the license may be found at
++#  http://opensource.org/licenses/bsd-license.php
++#
++#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++#
++
++[DEFINES]
++
++################################################################################
++#
++# FD Section
++# The [FD] Section is made up of the definition statements and a
++# description of what goes into  the Flash Device Image.  Each FD section
++# defines one flash "device" image.  A flash device image may be one of
++# the following: Removable media bootable image (like a boot floppy
++# image,) an Option ROM image (that would be "flashed" into an add-in
++# card,) a System "Flash"  image (that would be burned into a system's
++# flash) or an Update ("Capsule") image that will be used to update and
++# existing system flash.
++#
++################################################################################
++[FD.D06]
++
++BaseAddress   = 0x204100000|gArmTokenSpaceGuid.PcdFdBaseAddress  # The base address of the Firmware in NOR Flash.
++
++Size          = 0x00400000|gArmTokenSpaceGuid.PcdFdSize         # The size in bytes of the FLASH Device
++ErasePolarity = 1
++
++# This one is tricky, it must be: BlockSize * NumBlocks = Size
++BlockSize     = 0x00010000
++NumBlocks     = 0x40
++
++################################################################################
++#
++# Following are lists of FD Region layout which correspond to the locations of different
++# images within the flash device.
++#
++# Regions must be defined in ascending order and may not overlap.
++#
++# A Layout Region start with a eight digit hex offset (leading "0x" required) followed by
++# the pipe "|" character, followed by the size of the region, also in hex with the leading
++# "0x" characters. Like:
++# Offset|Size
++# PcdOffsetCName|PcdSizeCName
++# RegionType <FV, DATA, or FILE>
++#
++################################################################################
++
++0x00000000|0x00100000
++gArmTokenSpaceGuid.PcdSecureFvBaseAddress|gArmTokenSpaceGuid.PcdSecureFvSize
++
++0x00100000|0x00280000
++gArmTokenSpaceGuid.PcdFvBaseAddress|gArmTokenSpaceGuid.PcdFvSize
++FV = FVMAIN_COMPACT
++
++0x00380000|0x00020000
++gHisiTokenSpaceGuid.PcdTrustedFirmwareBL1Base
++FILE = Platform/Hisilicon/D06/bl1.bin
++0x003A0000|0x00020000
++FILE = Platform/Hisilicon/D06/fip.bin
++
++0x003C0000|0x0000e000
++gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize
++DATA = {
++  ## This is the EFI_FIRMWARE_VOLUME_HEADER
++  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++  # FileSystemGuid: gEfiSystemNvDataFvGuid         =
++  0x8D, 0x2B, 0xF1, 0xFF, 0x96, 0x76, 0x8B, 0x4C,
++  0xA9, 0x85, 0x27, 0x47, 0x07, 0x5B, 0x4F, 0x50,
++  # FvLength: 0x20000
++  0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00,
++  #Signature "_FVH"       #Attributes
++  0x5f, 0x46, 0x56, 0x48, 0xff, 0xfe, 0x04, 0x00,
++  #HeaderLength #CheckSum #ExtHeaderOffset #Reserved #Revision
++  0x48, 0x00, 0x36, 0x09, 0x00, 0x00, 0x00, 0x02,
++  #Blockmap[0]: 2 Blocks * 0x10000 Bytes / Block
++  0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00,
++  #Blockmap[1]: End
++  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++  ## This is the VARIABLE_STORE_HEADER
++!if $(SECURE_BOOT_ENABLE) == TRUE
++  #Signature: gEfiAuthenticatedVariableGuid =
++  #  { 0xaaf32c78, 0x947b, 0x439a, { 0xa1, 0x80, 0x2e, 0x14, 0x4e, 0xc3, 0x77, 0x92 }}
++  0x78, 0x2c, 0xf3, 0xaa, 0x7b, 0x94, 0x9a, 0x43,
++  0xa1, 0x80, 0x2e, 0x14, 0x4e, 0xc3, 0x77, 0x92,
++!else
++  #Signature: gEfiVariableGuid =
++  #  { 0xddcf3616, 0x3275, 0x4164, { 0x98, 0xb6, 0xfe, 0x85, 0x70, 0x7f, 0xfe, 0x7d }}
++  0x16, 0x36, 0xcf, 0xdd, 0x75, 0x32, 0x64, 0x41,
++  0x98, 0xb6, 0xfe, 0x85, 0x70, 0x7f, 0xfe, 0x7d,
++!endif
++  #Size: 0xe000 (gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize) - 0x48 (size of EFI_FIRMWARE_VOLUME_HEADER) = 0xdFB8
++  0xB8, 0xdF, 0x00, 0x00,
++  #FORMATTED: 0x5A #HEALTHY: 0xFE #Reserved: UINT16 #Reserved1: UINT32
++  0x5A, 0xFE, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
++}
++
++0x003CE000|0x00002000
++gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase64|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
++#NV_FTW_WORKING
++DATA = {
++  # EFI_FAULT_TOLERANT_WORKING_BLOCK_HEADER->Signature = gEdkiiWorkingBlockSignatureGuid          =
++  0x2B, 0x29, 0x58, 0x9E, 0x68, 0x7C, 0x7D, 0x49,
++  0xA0, 0xCE, 0x65, 0x0 , 0xFD, 0x9F, 0x1B, 0x95,
++  # Crc:UINT32            #WorkingBlockValid:1, WorkingBlockInvalid:1, Reserved
++  0xE2, 0x33, 0xF2, 0x03, 0xFE, 0xFF, 0xFF, 0xFF,
++  # WriteQueueSize: UINT64 #Size: 0x2000 - 0x20 (FTW_WORKING_HEADER) = 0x1FE0
++  0xE0, 0x1F, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
++}
++
++0x003D0000|0x00010000
++gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase64|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
++
++0x003E0000|0x00010000
++
++0x003F0000|0x00010000
++FILE = Platform/Hisilicon/D0x-CustomData.Fv
++
++################################################################################
++#
++# FV Section
++#
++# [FV] section is used to define what components or modules are placed within a flash
++# device file.  This section also defines order the components and modules are positioned
++# within the image.  The [FV] section consists of define statements, set statements and
++# module statements.
++#
++################################################################################
++
++[FV.FvMain]
++BlockSize          = 0x40
++NumBlocks          = 0         # This FV gets compressed so make it just big enough
++FvAlignment        = 16        # FV alignment and FV attributes setting.
++ERASE_POLARITY     = 1
++MEMORY_MAPPED      = TRUE
++STICKY_WRITE       = TRUE
++LOCK_CAP           = TRUE
++LOCK_STATUS        = TRUE
++WRITE_DISABLED_CAP = TRUE
++WRITE_ENABLED_CAP  = TRUE
++WRITE_STATUS       = TRUE
++WRITE_LOCK_CAP     = TRUE
++WRITE_LOCK_STATUS  = TRUE
++READ_DISABLED_CAP  = TRUE
++READ_ENABLED_CAP   = TRUE
++READ_STATUS        = TRUE
++READ_LOCK_CAP      = TRUE
++READ_LOCK_STATUS   = TRUE
++
++  APRIORI DXE {
++    INF MdeModulePkg/Universal/PCD/Dxe/Pcd.inf
++  }
++
++  INF MdeModulePkg/Core/Dxe/DxeMain.inf
++  INF MdeModulePkg/Universal/PCD/Dxe/Pcd.inf
++
++  #
++  # PI DXE Drivers producing Architectural Protocols (EFI Services)
++  #
++  INF ArmPkg/Drivers/CpuDxe/CpuDxe.inf
++  INF MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
++
++  INF MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
++
++
++  INF Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.inf
++  INF MdeModulePkg/Universal/FaultTolerantWriteDxe/FaultTolerantWriteDxe.inf
++  INF MdeModulePkg/Universal/Variable/RuntimeDxe/VariableRuntimeDxe.inf
++
++  INF MdeModulePkg/Universal/CapsuleRuntimeDxe/CapsuleRuntimeDxe.inf
++  INF MdeModulePkg/Universal/MonotonicCounterRuntimeDxe/MonotonicCounterRuntimeDxe.inf
++
++!if $(SECURE_BOOT_ENABLE) == TRUE
++  INF SecurityPkg/VariableAuthenticated/SecureBootConfigDxe/SecureBootConfigDxe.inf
++!endif
++
++  INF MdeModulePkg/Universal/ResetSystemRuntimeDxe/ResetSystemRuntimeDxe.inf
++  INF EmbeddedPkg/RealTimeClockRuntimeDxe/RealTimeClockRuntimeDxe.inf
++  INF EmbeddedPkg/MetronomeDxe/MetronomeDxe.inf
++
++  INF MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
++
++  #
++  # Multiple Console IO support
++  #
++  INF MdeModulePkg/Universal/Console/ConPlatformDxe/ConPlatformDxe.inf
++  INF MdeModulePkg/Universal/Console/ConSplitterDxe/ConSplitterDxe.inf
++  INF MdeModulePkg/Universal/Console/GraphicsConsoleDxe/GraphicsConsoleDxe.inf
++  INF MdeModulePkg/Universal/Console/TerminalDxe/TerminalDxe.inf
++  INF MdeModulePkg/Universal/SerialDxe/SerialDxe.inf
++
++  INF ArmPkg/Drivers/ArmGic/ArmGicDxe.inf
++  INF ArmPkg/Drivers/TimerDxe/TimerDxe.inf
++
++  INF MdeModulePkg/Universal/WatchdogTimerDxe/WatchdogTimer.inf
++
++  #
++  # FAT filesystem + GPT/MBR partitioning
++  #
++  INF MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
++  INF MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
++  INF FatPkg/EnhancedFatDxe/Fat.inf
++  INF MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
++  INF IntelFrameworkModulePkg/Universal/StatusCode/RuntimeDxe/StatusCodeRuntimeDxe.inf
++
++  #
++  # Usb Support
++  #
++
++
++  INF MdeModulePkg/Bus/Pci/EhciDxe/EhciDxe.inf
++
++  INF MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
++  INF MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
++  INF MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe.inf
++  INF MdeModulePkg/Bus/Usb/UsbMouseDxe/UsbMouseDxe.inf
++  INF MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
++
++  INF MdeModulePkg/Universal/SmbiosDxe/SmbiosDxe.inf
++  INF Silicon/Hisilicon/Drivers/Smbios/SmbiosMiscDxe/SmbiosMiscDxe.inf
++  INF Silicon/Hisilicon/Drivers/Smbios/AddSmbiosType9/AddSmbiosType9.inf
++
++
++
++  INF Silicon/Hisilicon/Drivers/Smbios/MemorySubClassDxe/MemorySubClassDxe.inf
++
++  INF Silicon/Hisilicon/Drivers/Smbios/ProcessorSubClassDxe/ProcessorSubClassDxe.inf
++
++  #
++  #ACPI
++  #
++  INF MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
++  INF Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/AcpiPlatformDxe.inf
++
++  INF Silicon/Hisilicon/Drivers/AcpiPlatformDxe/AcpiPlatformDxe.inf
++
++  #
++  #Network
++  #
++
++  INF MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
++  INF MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
++  INF MdeModulePkg/Universal/Network/Dhcp4Dxe/Dhcp4Dxe.inf
++  INF MdeModulePkg/Universal/Network/DpcDxe/DpcDxe.inf
++  INF MdeModulePkg/Universal/Network/Ip4Dxe/Ip4Dxe.inf
++  INF MdeModulePkg/Universal/Network/MnpDxe/MnpDxe.inf
++  INF MdeModulePkg/Universal/Network/Mtftp4Dxe/Mtftp4Dxe.inf
++  INF MdeModulePkg/Universal/Network/Udp4Dxe/Udp4Dxe.inf
++!if $(NETWORK_IP6_ENABLE) == TRUE
++  INF NetworkPkg/Ip6Dxe/Ip6Dxe.inf
++  INF NetworkPkg/TcpDxe/TcpDxe.inf
++  INF NetworkPkg/Udp6Dxe/Udp6Dxe.inf
++  INF NetworkPkg/Dhcp6Dxe/Dhcp6Dxe.inf
++  INF NetworkPkg/Mtftp6Dxe/Mtftp6Dxe.inf
++  INF NetworkPkg/UefiPxeBcDxe/UefiPxeBcDxe.inf
++!else
++  INF MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
++  INF MdeModulePkg/Universal/Network/UefiPxeBcDxe/UefiPxeBcDxe.inf
++!endif
++  INF MdeModulePkg/Universal/Network/IScsiDxe/IScsiDxe.inf
++!if $(HTTP_BOOT_ENABLE) == TRUE
++  INF NetworkPkg/DnsDxe/DnsDxe.inf
++  INF NetworkPkg/HttpUtilitiesDxe/HttpUtilitiesDxe.inf
++  INF NetworkPkg/HttpDxe/HttpDxe.inf
++  INF NetworkPkg/HttpBootDxe/HttpBootDxe.inf
++!endif
++
++
++  #
++  # PCI Support
++  #
++  INF Silicon/Hisilicon/Drivers/PciPlatform/PciPlatform.inf
++  INF ArmPkg/Drivers/ArmPciCpuIo2Dxe/ArmPciCpuIo2Dxe.inf
++  INF MdeModulePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf
++  INF MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
++
++  INF MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
++  INF MdeModulePkg/Bus/Pci/SataControllerDxe/SataControllerDxe.inf
++  INF MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
++  INF MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
++
++  INF MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
++  #
++  # Build Shell from latest source code instead of prebuilt binary
++  #
++  INF ShellPkg/Application/Shell/Shell.inf
++
++  INF MdeModulePkg/Application/UiApp/UiApp.inf
++  #
++  # Bds
++  #
++  INF MdeModulePkg/Universal/DevicePathDxe/DevicePathDxe.inf
++
++  INF MdeModulePkg/Universal/MemoryTest/NullMemoryTestDxe/NullMemoryTestDxe.inf
++  INF MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
++  INF MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
++  INF MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
++
++[FV.FVMAIN_COMPACT]
++FvAlignment        = 16
++ERASE_POLARITY     = 1
++MEMORY_MAPPED      = TRUE
++STICKY_WRITE       = TRUE
++LOCK_CAP           = TRUE
++LOCK_STATUS        = TRUE
++WRITE_DISABLED_CAP = TRUE
++WRITE_ENABLED_CAP  = TRUE
++WRITE_STATUS       = TRUE
++WRITE_LOCK_CAP     = TRUE
++WRITE_LOCK_STATUS  = TRUE
++READ_DISABLED_CAP  = TRUE
++READ_ENABLED_CAP   = TRUE
++READ_STATUS        = TRUE
++READ_LOCK_CAP      = TRUE
++READ_LOCK_STATUS   = TRUE
++
++  APRIORI PEI {
++    INF  MdeModulePkg/Universal/PCD/Pei/Pcd.inf
++  }
++  INF ArmPlatformPkg/PrePeiCore/PrePeiCoreMPCore.inf
++  INF MdeModulePkg/Core/Pei/PeiMain.inf
++  INF ArmPlatformPkg/PlatformPei/PlatformPeim.inf
++
++  INF MdeModulePkg/Universal/FaultTolerantWritePei/FaultTolerantWritePei.inf
++  INF MdeModulePkg/Universal/Variable/Pei/VariablePei.inf
++
++  INF Silicon/Hisilicon/Drivers/VersionInfoPeim/VersionInfoPeim.inf
++
++  INF ArmPkg/Drivers/CpuPei/CpuPei.inf
++  INF MdeModulePkg/Universal/PCD/Pei/Pcd.inf
++  INF IntelFrameworkModulePkg/Universal/StatusCode/Pei/StatusCodePei.inf
++
++  INF MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
++
++  FILE FV_IMAGE = 9E21FD93-9C72-4c15-8C4B-E77F1DB2D792 {
++    SECTION GUIDED EE4E5898-3914-4259-9D6E-DC7BD79403CF PROCESSING_REQUIRED = TRUE {
++      SECTION FV_IMAGE = FVMAIN
++    }
++  }
++
++!include Silicon/Hisilicon/Hisilicon.fdf.inc
++
+diff --git a/Platform/Hisilicon/D06/Include/Library/CpldD06.h b/Platform/Hisilicon/D06/Include/Library/CpldD06.h
+new file mode 100644
+index 0000000000..be3548c8d1
+--- /dev/null
++++ b/Platform/Hisilicon/D06/Include/Library/CpldD06.h
+@@ -0,0 +1,37 @@
++/** @file
++
++  Copyright (c) 2018, Hisilicon Limited. All rights reserved.<BR>
++  Copyright (c) 2018, Linaro Limited. All rights reserved.<BR>
++
++  This program and the accompanying materials
++  are licensed and made available under the terms and conditions of the BSD License
++  which accompanies this distribution.  The full text of the license may be found at
++  http://opensource.org/licenses/bsd-license.php
++
++  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++
++**/
++
++#ifndef __CPLDD06_H__
++#define __CPLDD06_H__
++
++#define CPLD_BASE_ADDRESS                 0x80000000
++
++#define CPLD_BIOSINDICATE_FLAG            0x09
++#define CPLD_I2C_SWITCH_FLAG              0x17
++#define CPU_GET_I2C_CONTROL               BIT2
++#define BMC_I2C_STATUS                    BIT3
++
++#define CPLD_LOGIC_VERSION                (0x4)
++#define CPLD_LOGIC_COMPILE_YEAR          (0x1)
++#define CPLD_LOGIC_COMPILE_MONTH         (0x2)
++#define CPLD_LOGIC_COMPILE_DAY           (0x3)
++
++#define CPLD_RISER_PRSNT_FLAG             0x40
++#define CPLD_RISER2_BOARD_ID              0x44
++
++#define CPLD_X8_X8_X8_BOARD_ID            0x92
++#define CPLD_X16_X8_BOARD_ID              0x93
++
++#endif /* __CPLDD06_H__ */
+diff --git a/Silicon/Hisilicon/Hi1620/Include/Library/SerdesLib.h b/Silicon/Hisilicon/Hi1620/Include/Library/SerdesLib.h
+new file mode 100644
+index 0000000000..05f0f7020e
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Include/Library/SerdesLib.h
+@@ -0,0 +1,85 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#ifndef _SERDES_LIB_H_
++#define _SERDES_LIB_H_
++
++typedef enum {
++  EmHilink0Hccs1X8 = 0,
++  EmHilink0Pcie1X8 = 2,
++  EmHilink0Pcie1X4Pcie2X4 = 3,
++  EmHilink0Sas2X8 = 4,
++  EmHilink0Hccs1X8Width16,
++  EmHilink0Hccs1X8Width32,
++  EmHilink0Hccs1X8Speed5G,
++} HILINK0_MODE_TYPE;
++
++typedef enum {
++  EmHilink1Sas2X1 = 0,
++  EmHilink1Hccs0X8 = 1,
++  EmHilink1Pcie0X8 = 2,
++  EmHilink1Hccs0X8Width16,
++  EmHilink1Hccs0X8Width32,
++  EmHilink1Hccs0X8Speed5G,
++} HILINK1_MODE_TYPE;
++
++typedef enum {
++  EmHilink2Pcie2X8 = 0,
++  EmHilink2Hccs2X8 = 1,
++  EmHilink2Sas0X8 = 2,
++  EmHilink2Hccs2X8Width16,
++  EmHilink2Hccs2X8Width32,
++  EmHilink2Hccs2X8Speed5G,
++} HILINK2_MODE_TYPE;
++
++typedef enum {
++  EmHilink5Pcie3X4 = 0,
++  EmHilink5Pcie2X2Pcie3X2 = 1,
++  EmHilink5Sas1X4 = 2,
++} HILINK5_MODE_TYPE;
++
++
++typedef struct {
++  HILINK0_MODE_TYPE Hilink0Mode;
++  HILINK1_MODE_TYPE Hilink1Mode;
++  HILINK2_MODE_TYPE Hilink2Mode;
++  UINT32 Hilink3Mode;
++  UINT32 Hilink4Mode;
++  HILINK5_MODE_TYPE Hilink5Mode;
++  UINT32 Hilink6Mode;
++  UINT32 UseSsc;
++} SERDES_PARAM;
++
++#define SERDES_INVALID_MACRO_ID  0xFFFFFFFF
++#define SERDES_INVALID_LANE_NUM  0xFFFFFFFF
++#define SERDES_INVALID_RATE_MODE  0xFFFFFFFF
++
++typedef struct {
++  UINT32 MacroId;
++  UINT32 DsNum;
++  UINT32 DsCfg;
++} SERDES_POLARITY_INVERT;
++
++EFI_STATUS OemGetSerdesParam (SERDES_PARAM *ParamA, SERDES_PARAM *ParamB, UINT32 SocketId);
++extern SERDES_POLARITY_INVERT gSerdesPolarityTxDesc[];
++extern SERDES_POLARITY_INVERT gSerdesPolarityRxDesc[];
++UINT32 GetEthType (UINT8 EthChannel);
++VOID SerdesEnableCtleDfe (UINT32 NimbusId, UINT32 Macro, UINT32 Lane, UINT32 LaneMode);
++
++EFI_STATUS EfiSerdesInitWrap (UINT32 RateMode);
++INT32 SerdesReset (UINT32 SiclId, UINT32 Macro);
++VOID SerdesLoadFirmware (UINT32 SiclId, UINT32 Macro);
++INT32 h30_serdes_run_firmware (UINT32 nimbus_id, UINT32 macro, UINT8 DsMask, UINT8 ctle_mode);
++#endif
+diff --git a/Silicon/Hisilicon/Hi1620/Include/PlatformArch.h b/Silicon/Hisilicon/Hi1620/Include/PlatformArch.h
+new file mode 100644
+index 0000000000..9539cfdada
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Include/PlatformArch.h
+@@ -0,0 +1,61 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++
++
++#ifndef _PLATFORM_ARCH_H_
++#define _PLATFORM_ARCH_H_
++
++#define MAX_SOCKET      2
++#define MAX_DIE         4
++#define MAX_DDRC        4
++#define MAX_NODE        (MAX_SOCKET * MAX_DIE)
++#define MAX_CHANNEL     8
++#define MAX_DIMM        2
++#define MAX_RANK_CH     8
++#define MAX_RANK_DIMM   4
++#define MAX_DIMM_SIZE   256  // In GB
++// Max NUMA node number for each node type
++#define MAX_NUM_PER_TYPE 8
++
++#define RASC_BASE                (0x1800)
++#define RASC_CFG_INFOIDX_REG     (RASC_BASE + 0x58)  /* configuration register for Rank statistical information */
++#define RASC_CFG_SPLVL_REG       (RASC_BASE + 0xD4)  /* configuration register for Sparing level */
++
++//
++// ACPI table information used to initialize tables.
++//
++#define EFI_ACPI_ARM_OEM_ID           'H','I','S','I',' ',' '   // OEMID 6 bytes long
++#define EFI_ACPI_ARM_OEM_TABLE_ID     SIGNATURE_64 ('H','I','P','0','8',' ',' ',' ') // OEM table id 8 bytes long
++#define EFI_ACPI_ARM_OEM_REVISION     0x00000000
++#define EFI_ACPI_ARM_CREATOR_ID       SIGNATURE_32 ('H','I','S','I')
++#define EFI_ACPI_ARM_CREATOR_REVISION 0x20151124
++
++// A macro to initialise the common header part of EFI ACPI tables as defined by
++// EFI_ACPI_DESCRIPTION_HEADER structure.
++#define ARM_ACPI_HEADER(Signature, Type, Revision) {            \
++  Signature,                      /* UINT32  Signature */       \
++  sizeof (Type),                  /* UINT32  Length */          \
++  Revision,                       /* UINT8   Revision */        \
++  0,                              /* UINT8   Checksum */        \
++  { EFI_ACPI_ARM_OEM_ID },        /* UINT8   OemId[6] */        \
++  EFI_ACPI_ARM_OEM_TABLE_ID,      /* UINT64  OemTableId */      \
++  EFI_ACPI_ARM_OEM_REVISION,      /* UINT32  OemRevision */     \
++  EFI_ACPI_ARM_CREATOR_ID,        /* UINT32  CreatorId */       \
++  EFI_ACPI_ARM_CREATOR_REVISION   /* UINT32  CreatorRevision */ \
++  }
++
++#endif
++
+diff --git a/Silicon/Hisilicon/Include/Library/OemAddressMapLib.h b/Silicon/Hisilicon/Include/Library/OemAddressMapLib.h
+index 21498b7056..332a79343f 100644
+--- a/Silicon/Hisilicon/Include/Library/OemAddressMapLib.h
++++ b/Silicon/Hisilicon/Include/Library/OemAddressMapLib.h
+@@ -27,7 +27,13 @@ typedef struct _DDRC_BASE_ID{
+ UINTN OemGetPoeSubBase (UINT32 NodeId);
+ UINTN OemGetPeriSubBase (UINT32 NodeId);
+ UINTN OemGetAlgSubBase (UINT32 NodeId);
++UINTN OemGetCfgbusBase (UINT32 NodeId);
++UINTN OemGetGicSubBase (UINT32 NodeId);
++UINTN OemGetHACSubBase (UINT32 NodeId);
++UINTN OemGetIOMGMTSubBase (UINT32 NodeId);
++UINTN OemGetNetworkSubBase (UINT32 NodeId);
+ UINTN OemGetM3SubBase (UINT32 NodeId);
++UINTN OemGetPCIeSubBase (UINT32 NodeId);
+ 
+ VOID OemAddressMapInit(VOID);
+ 
+diff --git a/Silicon/Hisilicon/Include/Library/OemNicLib.h b/Silicon/Hisilicon/Include/Library/OemNicLib.h
+new file mode 100644
+index 0000000000..66fe9a2e9b
+--- /dev/null
++++ b/Silicon/Hisilicon/Include/Library/OemNicLib.h
+@@ -0,0 +1,57 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++
++#ifndef _OEM_NIC_LIB_H_
++#define _OEM_NIC_LIB_H_
++
++#define ETH_MAX_PORT          8
++#define ETH_DEBUG_PORT0       6
++#define ETH_DEBUG_PORT1       7
++
++#define ETH_SPEED_10M     6
++#define ETH_SPEED_100M    7
++#define ETH_SPEED_1000M   8
++#define ETH_SPEED_10KM    9
++#define ETH_HALF_DUPLEX   0
++#define ETH_FULL_DUPLEX   1
++
++#define ETH_GDD_ID                          0x001378e0
++#define ETH_PHY_BCM5241_ID                  0x0143bc30
++#define ETH_PHY_MVL88E1145_ID               0x01410cd0
++#define ETH_PHY_MVL88E1119_ID               0x01410e80
++#define ETH_PHY_MVL88E1512_ID               0x01410dd0
++#define ETH_PHY_MVL88E1543_ID               0x01410ea0
++#define ETH_PHY_NLP3142_ID                  0x00000412
++
++#define ETH_INVALID                         0xffffffff
++
++typedef struct {
++  UINT32 Valid;
++  UINT32 Speed;
++  UINT32 Duplex;
++  UINT32 PhyId;
++  UINT32 PhyAddr;
++} ETH_PRODUCT_DESC;
++
++BOOLEAN OemIsInitEth (UINT32 Port);
++UINT32 OemEthFindFirstSP ();
++ETH_PRODUCT_DESC *OemEthInit (UINT32 port);
++UINT32 GetCpu1FiberType (UINT8 *Fiber1Type, UINT8 *Fiber2Type);
++UINT32 GetCpu2FiberType (UINT8 *Fiber1Type, UINT8 *Fiber2Type, UINT8 *Fiber100Ge);
++EFI_STATUS EFIAPI OemGetMac (IN OUT EFI_MAC_ADDRESS *Mac, IN UINTN Port);
++EFI_STATUS EFIAPI OemSetMac (IN EFI_MAC_ADDRESS *Mac, IN UINTN Port);
++
++#endif
+-- 
+2.17.0
+

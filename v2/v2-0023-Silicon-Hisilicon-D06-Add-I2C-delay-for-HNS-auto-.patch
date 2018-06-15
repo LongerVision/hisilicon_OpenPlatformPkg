@@ -1,0 +1,80 @@
+From 4ed38a68168e94f2fd04d774102b5286b968d921 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Wed, 2 May 2018 17:04:30 +0800
+Subject: [PATCH edk2-platforms v2 23/43] Silicon/Hisilicon/D06: Add I2C delay
+ for HNS auto config
+
+Because I2C Port5 salve device connect under I2C extender
+(9545 device), it will cost more time to access I2C slave
+device, so add delay time for HNS auto config.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Silicon/Hisilicon/Library/I2CLib/I2CHw.h  |  3 +++
+ Silicon/Hisilicon/Library/I2CLib/I2CLib.c | 21 +++++++++++++++-----
+ 2 files changed, 19 insertions(+), 5 deletions(-)
+
+diff --git a/Silicon/Hisilicon/Library/I2CLib/I2CHw.h b/Silicon/Hisilicon/Library/I2CLib/I2CHw.h
+index fa954c7937..d77aea509e 100644
+--- a/Silicon/Hisilicon/Library/I2CLib/I2CHw.h
++++ b/Silicon/Hisilicon/Library/I2CLib/I2CHw.h
+@@ -19,6 +19,9 @@
+ #include <Uefi.h>
+ #include <Library/IoLib.h>
+ 
++// The HNS I2C port 5 is under I2C extender
++#define I2C_EXTENDER_PORT_HNS        5
++
+ #define I2C_READ_TIMEOUT             500
+ #define I2C_DRV_ONCE_WRITE_BYTES_NUM 8
+ #define I2C_DRV_ONCE_READ_BYTES_NUM  8
+diff --git a/Silicon/Hisilicon/Library/I2CLib/I2CLib.c b/Silicon/Hisilicon/Library/I2CLib/I2CLib.c
+index d67ddc7f9b..59633106ce 100644
+--- a/Silicon/Hisilicon/Library/I2CLib/I2CLib.c
++++ b/Silicon/Hisilicon/Library/I2CLib/I2CLib.c
+@@ -258,8 +258,13 @@ CheckI2CTimeOut (
+   if (Transfer == I2CTx) {
+     Fifo = I2C_GetTxStatus (Socket, Port);
+     while (Fifo != 0) {
+-      // This is a empirical value for I2C delay. MemoryFance is no need here.
+-      I2C_Delay (2);
++      if (Port == I2C_EXTENDER_PORT_HNS) {
++        // This is a empirical value for I2C delay. MemoryFance is no need here.
++        I2C_Delay (1000);
++      } else {
++        // This is a empirical value for I2C delay. MemoryFance is no need here.
++        I2C_Delay (2);
++      }
+       if (++Times > I2C_READ_TIMEOUT) {
+         (VOID)I2C_Disable (Socket, Port);
+         return EFI_TIMEOUT;
+@@ -269,8 +274,13 @@ CheckI2CTimeOut (
+   } else {
+     Fifo = I2C_GetRxStatus (Socket, Port);
+     while (Fifo == 0) {
+-      // This is a empirical value for I2C delay. MemoryFance is no need here.
+-      I2C_Delay (2);
++      if (Port == I2C_EXTENDER_PORT_HNS) {
++        // This is a empirical value for I2C delay. MemoryFance is no need here.
++        I2C_Delay (1000);
++      } else {
++        // This is a empirical value for I2C delay. MemoryFance is no need here.
++        I2C_Delay (2);
++      }
+       if (++Times > I2C_READ_TIMEOUT) {
+         (VOID)I2C_Disable (Socket, Port);
+         return EFI_TIMEOUT;
+@@ -369,7 +379,8 @@ I2CWrite(
+     Times = 0;
+     Fifo = I2C_GetTxStatus (I2cInfo->Socket, I2cInfo->Port);
+     while (Fifo > I2C_TXRX_THRESHOLD) {
+-      I2C_Delay (2);
++      // This is a empirical value for I2C delay. MemoryFance is no need here.
++      I2C_Delay (1000);
+       if (++Times > I2C_READ_TIMEOUT) {
+         (VOID)I2C_Disable (I2cInfo->Socket, I2cInfo->Port);
+         return EFI_TIMEOUT;
+-- 
+2.17.0
+

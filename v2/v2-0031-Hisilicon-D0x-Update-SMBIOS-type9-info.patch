@@ -1,0 +1,325 @@
+From 1f6fc1e19fc8168dd3b161d308474e0a833df265 Mon Sep 17 00:00:00 2001
+From: Sun Yuanchen <sunyuanchen@huawei.com>
+Date: Mon, 2 Jul 2018 19:53:39 +0800
+Subject: [PATCH edk2-platforms v2 31/43] Hisilicon/D0x: Update SMBIOS type9
+ info
+
+Move board level code to OemMiscLibD0x for unifying D0x.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Sun Yuanchen <sunyuanchen@huawei.com>
+---
+ Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.inf |  1 +
+ Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.inf     |  1 +
+ Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf     |  4 +
+ Platform/Hisilicon/D06/Include/Library/CpldD06.h                   |  2 +
+ Silicon/Hisilicon/Include/Library/OemMiscLib.h                     |  1 +
+ Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.c   | 24 ++++++
+ Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.c       | 27 +++++-
+ Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c       | 90 ++++++++++++++++++++
+ Silicon/Hisilicon/Drivers/Smbios/AddSmbiosType9/AddSmbiosType9.c   | 14 +--
+ 9 files changed, 151 insertions(+), 13 deletions(-)
+
+diff --git a/Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.inf b/Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.inf
+index 310bbaea84..0fa7fdf80f 100644
+--- a/Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.inf
++++ b/Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.inf
+@@ -34,6 +34,7 @@
+   Silicon/Hisilicon/HisiPkg.dec
+ 
+ [LibraryClasses]
++  BaseMemoryLib
+   PcdLib
+   TimerLib
+ 
+diff --git a/Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.inf b/Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.inf
+index bf44ff7440..022c3e940a 100644
+--- a/Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.inf
++++ b/Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.inf
+@@ -33,6 +33,7 @@
+   Silicon/Hisilicon/HisiPkg.dec
+ 
+ [LibraryClasses]
++  BaseMemoryLib
+   PcdLib
+   TimerLib
+ 
+diff --git a/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf b/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf
+index 8f68f7cec5..bd984a6fe3 100644
+--- a/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf
++++ b/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf
+@@ -30,9 +30,13 @@
+   ArmPkg/ArmPkg.dec
+   MdeModulePkg/MdeModulePkg.dec
+   MdePkg/MdePkg.dec
++  Platform/Hisilicon/D06/D06.dec
+   Silicon/Hisilicon/HisiPkg.dec
+ 
+ [LibraryClasses]
++  BaseMemoryLib
++  CpldIoLib
++  IoLib
+   PcdLib
+   SerdesLib
+   TimerLib
+diff --git a/Platform/Hisilicon/D06/Include/Library/CpldD06.h b/Platform/Hisilicon/D06/Include/Library/CpldD06.h
+index be3548c8d1..ec9b49f4e7 100644
+--- a/Platform/Hisilicon/D06/Include/Library/CpldD06.h
++++ b/Platform/Hisilicon/D06/Include/Library/CpldD06.h
+@@ -29,6 +29,8 @@
+ #define CPLD_LOGIC_COMPILE_DAY           (0x3)
+ 
+ #define CPLD_RISER_PRSNT_FLAG             0x40
++#define CPU1_RISER_PRESENT                BIT6
++#define CPU0_RISER_PRESENT                BIT7
+ #define CPLD_RISER2_BOARD_ID              0x44
+ 
+ #define CPLD_X8_X8_X8_BOARD_ID            0x92
+diff --git a/Silicon/Hisilicon/Include/Library/OemMiscLib.h b/Silicon/Hisilicon/Include/Library/OemMiscLib.h
+index efecb9aa77..86ea6a1b3d 100644
+--- a/Silicon/Hisilicon/Include/Library/OemMiscLib.h
++++ b/Silicon/Hisilicon/Include/Library/OemMiscLib.h
+@@ -34,6 +34,7 @@ typedef struct _REPORT_PCIEDIDVID2BMC{
+     UINTN   Slot;
+ }REPORT_PCIEDIDVID2BMC;
+ extern REPORT_PCIEDIDVID2BMC PcieDeviceToReport[PCIEDEVICE_REPORT_MAX];
++extern VOID GetPciDidVid (REPORT_PCIEDIDVID2BMC *Report);
+ 
+ BOOLEAN OemIsSocketPresent (UINTN Socket);
+ VOID CoreSelectBoot(VOID);
+diff --git a/Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.c b/Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.c
+index fa1039bda1..c80500276f 100644
+--- a/Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.c
++++ b/Platform/Hisilicon/D03/Library/OemMiscLib2P/OemMiscLib2PHi1610.c
+@@ -15,6 +15,7 @@
+ 
+ #include <Uefi.h>
+ 
++#include <Library/BaseMemoryLib.h>
+ #include <Library/DebugLib.h>
+ #include <Library/IoLib.h>
+ #include <Library/TimerLib.h>
+@@ -31,6 +32,29 @@ REPORT_PCIEDIDVID2BMC  PcieDeviceToReport[PCIEDEVICE_REPORT_MAX] = {
+       {0xFFFF,0xFFFF,0xFFFF,0xFFFF}
+ };
+ 
++REPORT_PCIEDIDVID2BMC PcieDeviceToReport_2P[PCIEDEVICE_REPORT_MAX] = {
++  {0x79,0,0,0},
++  {0xFF,0xFF,0xFF,1},
++  {0xC1,0,0,2},
++  {0xF9,0,0,3},
++  {0xFF,0xFF,0xFF,4},
++  {0x11,0,0,5},
++  {0x31,0,0,6},
++  {0x21,0,0,7}
++};
++
++VOID
++GetPciDidVid (
++  REPORT_PCIEDIDVID2BMC *Report
++  )
++{
++  if (OemIsMpBoot ()) {
++    (VOID)CopyMem ((VOID *)Report, (VOID *)PcieDeviceToReport_2P, sizeof (PcieDeviceToReport_2P));
++  } else {
++    (VOID)CopyMem ((VOID *)Report, (VOID *)PcieDeviceToReport, sizeof (PcieDeviceToReport));
++  }
++}
++
+ // Right now we only support 1P
+ BOOLEAN OemIsSocketPresent (UINTN Socket)
+ {
+diff --git a/Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.c b/Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.c
+index b17eeada16..4c4c944dbe 100644
+--- a/Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.c
++++ b/Platform/Hisilicon/D05/Library/OemMiscLibD05/OemMiscLibD05.c
+@@ -1,7 +1,7 @@
+ /** @file
+ *
+-*  Copyright (c) 2016, Hisilicon Limited. All rights reserved.
+-*  Copyright (c) 2016, Linaro Limited. All rights reserved.
++*  Copyright (c) 2016 - 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2016 - 2018, Linaro Limited. All rights reserved.
+ *
+ *  This program and the accompanying materials
+ *  are licensed and made available under the terms and conditions of the BSD License
+@@ -16,6 +16,7 @@
+ #include <PlatformArch.h>
+ #include <Uefi.h>
+ 
++#include <Library/BaseMemoryLib.h>
+ #include <Library/DebugLib.h>
+ #include <Library/IoLib.h>
+ #include <Library/LpcLib.h>
+@@ -37,6 +38,28 @@ REPORT_PCIEDIDVID2BMC  PcieDeviceToReport[PCIEDEVICE_REPORT_MAX] = {
+   {0xFFFF,0xFFFF,0xFFFF,0xFFFF}
+ };
+ 
++REPORT_PCIEDIDVID2BMC PcieDeviceToReport_2P[PCIEDEVICE_REPORT_MAX] = {
++  {0x79,0,0,0},
++  {0xFF,0xFF,0xFF,1},
++  {0xC1,0,0,2},
++  {0xF9,0,0,3},
++  {0xFF,0xFF,0xFF,4},
++  {0x11,0,0,5},
++  {0x31,0,0,6},
++  {0x21,0,0,7}
++};
++
++VOID
++GetPciDidVid (
++  REPORT_PCIEDIDVID2BMC *Report
++  )
++{
++  if (OemIsMpBoot ()) {
++    (VOID)CopyMem ((VOID *)Report, (VOID *)PcieDeviceToReport_2P, sizeof (PcieDeviceToReport_2P));
++  } else {
++    (VOID)CopyMem ((VOID *)Report, (VOID *)PcieDeviceToReport, sizeof (PcieDeviceToReport));
++  }
++}
+ 
+ BOOLEAN OemIsSocketPresent (UINTN Socket)
+ {
+diff --git a/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c b/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c
+index 2cd360d49f..be11c88992 100644
+--- a/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c
++++ b/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c
+@@ -15,6 +15,8 @@
+ 
+ #include <Uefi.h>
+ #include <PlatformArch.h>
++#include <Library/BaseMemoryLib.h>
++#include <Library/CpldD06.h>
+ #include <Library/DebugLib.h>
+ #include <Library/IoLib.h>
+ #include <Library/LpcLib.h>
+@@ -33,6 +35,94 @@ REPORT_PCIEDIDVID2BMC PcieDeviceToReport[PCIEDEVICE_REPORT_MAX] = {
+   {0xFFFF,0xFFFF,0xFFFF,0xFFFF}
+ };
+ 
++//Cpu0 Riser type is (X16 + X8) & Cpu1 Riser type is (X16 + X8)
++REPORT_PCIEDIDVID2BMC PcieDeviceToReport_2P_Type1 [PCIEDEVICE_REPORT_MAX] = {
++  {0x01,0,0,0},
++  {0x03,0,0,1},
++  {0xFF,0xFF,0xFF,2},
++  {0x81,0,0,3},
++  {0x84,0,0,4},
++  {0xFF,0xFF,0xFF,5}
++};
++
++//Cpu0 Riser type is (X16 + X8) & Cpu1 Riser type is (3 * X8)
++REPORT_PCIEDIDVID2BMC PcieDeviceToReport_2P_Type2 [PCIEDEVICE_REPORT_MAX] = {
++  {0x01,0,0,0},
++  {0x03,0,0,1},
++  {0xFF,0xFF,0xFF,2},
++  {0xFF,0xFF,0xFF,3},
++  {0x81,0,0,4},
++  {0x85,0,0,5}
++};
++
++//Cpu0 Riser type is (3 * X8) & Cpu1 Riser type is (X16 + X8)
++REPORT_PCIEDIDVID2BMC PcieDeviceToReport_2P_Type3 [PCIEDEVICE_REPORT_MAX] = {
++  {0xFF,0xFF,0xFF,0},
++  {0x01,0,0,1},
++  {0x04,0,0,2},
++  {0x81,0,0,3},
++  {0x84,0,0,4},
++  {0xFF,0xFF,0xFF,5}
++};
++
++//Cpu0 Riser type is (3 * X8) & Cpu1 Riser type is (3 * X8)
++REPORT_PCIEDIDVID2BMC PcieDeviceToReport_2P_Type4 [PCIEDEVICE_REPORT_MAX] = {
++  {0xFF,0xFF,0xFF,0},
++  {0x01,0,0,1},
++  {0x04,0,0,2},
++  {0xFF,0xFF,0xFF,3},
++  {0x81,0,0,4},
++  {0x85,0,0,5}
++};
++
++VOID
++GetPciDidVid (
++  REPORT_PCIEDIDVID2BMC *Report
++  )
++{
++  UINT32                             PresentStatus;
++  UINT32                             CardType;
++  UINT8                              Cpu0CardType = 0;
++  UINT8                              Cpu1CardType = 0;
++
++  PresentStatus = MmioRead32 (CPLD_BASE_ADDRESS + CPLD_RISER_PRSNT_FLAG);
++  CardType = MmioRead32 (CPLD_BASE_ADDRESS + CPLD_RISER2_BOARD_ID);
++
++  // Offset 0x40: Bit7 = 1 CPU0 Riser present
++  if ((PresentStatus & CPU0_RISER_PRESENT) != 0) {
++    Cpu0CardType = (UINT8) (PresentStatus >> 8);
++  }
++
++  // Offset 0x40: Bit6 = 1 CPU1 Riser present
++  if ((PresentStatus & CPU1_RISER_PRESENT) != 0) {
++    Cpu1CardType = (UINT8)CardType;
++  }
++
++  if (OemIsMpBoot ()) {
++    if (Cpu0CardType == CPLD_X16_X8_BOARD_ID) {
++      if (Cpu1CardType == CPLD_X16_X8_BOARD_ID) {
++        (VOID)CopyMem ((VOID *)Report, (VOID *)PcieDeviceToReport_2P_Type1,
++                        sizeof (PcieDeviceToReport_2P_Type1));
++      } else {
++        (VOID)CopyMem ((VOID *)Report, (VOID *)PcieDeviceToReport_2P_Type2,
++                        sizeof (PcieDeviceToReport_2P_Type2));
++      }
++    } else {
++      if (Cpu1CardType == CPLD_X16_X8_BOARD_ID) {
++        (VOID)CopyMem ((VOID *)Report, (VOID *)PcieDeviceToReport_2P_Type3,
++                        sizeof (PcieDeviceToReport_2P_Type3));
++      } else {
++        (VOID)CopyMem ((VOID *)Report, (VOID *)PcieDeviceToReport_2P_Type4,
++                        sizeof (PcieDeviceToReport_2P_Type4));
++      }
++    }
++  } else {
++    (VOID)CopyMem ((VOID *)Report, (VOID *)PcieDeviceToReport,
++                    sizeof (PcieDeviceToReport));
++  }
++}
++
++
+ // Right now we only support 1P
+ BOOLEAN
+ OemIsSocketPresent (
+diff --git a/Silicon/Hisilicon/Drivers/Smbios/AddSmbiosType9/AddSmbiosType9.c b/Silicon/Hisilicon/Drivers/Smbios/AddSmbiosType9/AddSmbiosType9.c
+index 8d8dacd3e0..cc1131577d 100644
+--- a/Silicon/Hisilicon/Drivers/Smbios/AddSmbiosType9/AddSmbiosType9.c
++++ b/Silicon/Hisilicon/Drivers/Smbios/AddSmbiosType9/AddSmbiosType9.c
+@@ -18,12 +18,6 @@
+ extern SMBIOS_TABLE_TYPE9 gPcieSlotInfo[];
+ extern UINT8 OemGetPcieSlotNumber ();
+ 
+-REPORT_PCIEDIDVID2BMC  PcieDeviceToReport_2P[PCIEDEVICE_REPORT_MAX] = {
+-      {67,0,0,0},
+-      {225,0,0,3},
+-      {0xFFFF,0xFFFF,0xFFFF,0xFFFF},
+-      {0xFFFF,0xFFFF,0xFFFF,0xFFFF}
+-};
+ VOID
+ EFIAPI
+ UpdateSmbiosType9Info(
+@@ -41,11 +35,9 @@ UpdateSmbiosType9Info(
+     UINTN                              FunctionNumber;
+     UINTN                              Index;
+     REPORT_PCIEDIDVID2BMC              ReportPcieDidVid[PCIEDEVICE_REPORT_MAX];
+-    if(OemIsMpBoot()){
+-        (VOID)CopyMem((VOID *)ReportPcieDidVid,(VOID *)PcieDeviceToReport_2P,sizeof(PcieDeviceToReport_2P));
+-    } else {
+-        (VOID)CopyMem((VOID *)ReportPcieDidVid,(VOID *)PcieDeviceToReport,sizeof(PcieDeviceToReport));
+-    }
++
++    GetPciDidVid ((VOID *) ReportPcieDidVid);
++
+     Status = gBS->LocateHandleBuffer (
+                                       ByProtocol,
+                                       &gEfiPciIoProtocolGuid,
+-- 
+2.17.0
+

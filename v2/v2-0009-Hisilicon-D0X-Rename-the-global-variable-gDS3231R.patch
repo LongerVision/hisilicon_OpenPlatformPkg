@@ -1,0 +1,142 @@
+From edcaba67c20c15d40ec09fd0f4fc38dc86349cd2 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Fri, 29 Jun 2018 15:33:43 +0800
+Subject: [PATCH edk2-platforms v2 09/43] Hisilicon/D0X: Rename the global
+ variable gDS3231RtcDevice
+
+The global variable gDS3231RtcDevice is used by several
+modules included common module in HwPkg. Renaming it
+with a general name is proper.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Silicon/Hisilicon/Include/Library/OemMiscLib.h                                 | 2 +-
+ Platform/Hisilicon/D03/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c | 8 ++++----
+ Platform/Hisilicon/D03/Library/OemMiscLib2P/BoardFeature2PHi1610.c             | 2 +-
+ Platform/Hisilicon/D05/Library/OemMiscLibD05/BoardFeatureD05.c                 | 2 +-
+ Silicon/Hisilicon/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c      | 8 ++++----
+ 5 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/Silicon/Hisilicon/Include/Library/OemMiscLib.h b/Silicon/Hisilicon/Include/Library/OemMiscLib.h
+index 6f18c0fa72..87cb498dd7 100644
+--- a/Silicon/Hisilicon/Include/Library/OemMiscLib.h
++++ b/Silicon/Hisilicon/Include/Library/OemMiscLib.h
+@@ -34,7 +34,7 @@ extern REPORT_PCIEDIDVID2BMC PcieDeviceToReport[PCIEDEVICE_REPORT_MAX];
+ BOOLEAN OemIsSocketPresent (UINTN Socket);
+ VOID CoreSelectBoot(VOID);
+ VOID OemPcieResetAndOffReset(void);
+-extern I2C_DEVICE gDS3231RtcDevice;
++extern I2C_DEVICE gRtcDevice;
+ 
+ UINTN OemGetSocketNumber(VOID);
+ UINTN OemGetDdrChannel (VOID);
+diff --git a/Platform/Hisilicon/D03/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c b/Platform/Hisilicon/D03/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c
+index 07fa52aa78..f6dbcf6b75 100644
+--- a/Platform/Hisilicon/D03/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c
++++ b/Platform/Hisilicon/D03/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c
+@@ -41,7 +41,7 @@
+ #include <Library/CpldD03.h>
+ #include <Library/CpldIoLib.h>
+ 
+-extern I2C_DEVICE gDS3231RtcDevice;
++extern I2C_DEVICE gRtcDevice;
+ 
+ STATIC BOOLEAN       mDS3231Initialized = FALSE;
+ 
+@@ -117,7 +117,7 @@ InitializeDS3231 (
+   // Prepare the hardware
+   (VOID)IdentifyDS3231();
+ 
+-  (VOID) CopyMem(&Dev, &gDS3231RtcDevice, sizeof(Dev));
++  (VOID) CopyMem (&Dev, &gRtcDevice, sizeof(Dev));
+ 
+   Status = I2CInit(Dev.Socket,Dev.Port,Normal);
+   if (EFI_ERROR (Status)) {
+@@ -199,7 +199,7 @@ LibGetTime (
+     }
+   }
+ 
+-  (VOID) CopyMem(&Dev, &gDS3231RtcDevice, sizeof(Dev));
++  (VOID) CopyMem (&Dev, &gRtcDevice, sizeof(Dev));
+ 
+   Status |= I2CRead(&Dev,DS3231_REGADDR_MONTH,1,&Temp);
+ 
+@@ -299,7 +299,7 @@ LibSetTime (
+     }
+   }
+ 
+-  (VOID) CopyMem(&Dev, &gDS3231RtcDevice, sizeof(Dev));
++  (VOID) CopyMem (&Dev, &gRtcDevice, sizeof(Dev));
+ 
+   Temp = ((Time->Second/10)<<4) | (Time->Second%10);
+   MicroSecondDelay(1000);
+diff --git a/Platform/Hisilicon/D03/Library/OemMiscLib2P/BoardFeature2PHi1610.c b/Platform/Hisilicon/D03/Library/OemMiscLib2P/BoardFeature2PHi1610.c
+index 66d62895a6..4771cb900c 100644
+--- a/Platform/Hisilicon/D03/Library/OemMiscLib2P/BoardFeature2PHi1610.c
++++ b/Platform/Hisilicon/D03/Library/OemMiscLib2P/BoardFeature2PHi1610.c
+@@ -25,7 +25,7 @@
+ #include <Library/I2CLib.h>
+ #include <Library/HiiLib.h>
+ 
+-I2C_DEVICE gDS3231RtcDevice = {
++I2C_DEVICE gRtcDevice = {
+     .Socket = 0,
+     .Port = 6,
+     .DeviceType = DEVICE_TYPE_SPD,
+diff --git a/Platform/Hisilicon/D05/Library/OemMiscLibD05/BoardFeatureD05.c b/Platform/Hisilicon/D05/Library/OemMiscLibD05/BoardFeatureD05.c
+index 15a509be5d..ae4c194070 100644
+--- a/Platform/Hisilicon/D05/Library/OemMiscLibD05/BoardFeatureD05.c
++++ b/Platform/Hisilicon/D05/Library/OemMiscLibD05/BoardFeatureD05.c
+@@ -26,7 +26,7 @@
+ #include <Protocol/Smbios.h>
+ 
+ 
+-I2C_DEVICE gDS3231RtcDevice = {
++I2C_DEVICE gRtcDevice = {
+   .Socket = 0,
+   .Port = 4,
+   .DeviceType = DEVICE_TYPE_SPD,
+diff --git a/Silicon/Hisilicon/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c b/Silicon/Hisilicon/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c
+index 02d6d7f14d..105eb15635 100644
+--- a/Silicon/Hisilicon/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c
++++ b/Silicon/Hisilicon/Library/DS3231RealTimeClockLib/DS3231RealTimeClockLib.c
+@@ -39,7 +39,7 @@
+ #include <Library/I2CLib.h>
+ #include "DS3231RealTimeClock.h"
+ 
+-extern I2C_DEVICE gDS3231RtcDevice;
++extern I2C_DEVICE gRtcDevice;
+ 
+ STATIC BOOLEAN       mDS3231Initialized = FALSE;
+ 
+@@ -67,7 +67,7 @@ InitializeDS3231 (
+   // Prepare the hardware
+   (VOID)IdentifyDS3231();
+ 
+-  (VOID) CopyMem(&Dev, &gDS3231RtcDevice, sizeof(Dev));
++  (VOID) CopyMem (&Dev, &gRtcDevice, sizeof(Dev));
+ 
+   Status = I2CInit(Dev.Socket,Dev.Port,Normal);
+   if (EFI_ERROR (Status)) {
+@@ -143,7 +143,7 @@ LibGetTime (
+     }
+   }
+ 
+-  (VOID) CopyMem(&Dev, &gDS3231RtcDevice, sizeof(Dev));
++  (VOID) CopyMem (&Dev, &gRtcDevice, sizeof(Dev));
+ 
+ 
+   Status |= I2CRead(&Dev,DS3231_REGADDR_MONTH,1,&Temp);
+@@ -233,7 +233,7 @@ LibSetTime (
+     }
+   }
+ 
+-  (VOID) CopyMem(&Dev, &gDS3231RtcDevice, sizeof(Dev));
++  (VOID) CopyMem (&Dev, &gRtcDevice, sizeof(Dev));
+ 
+   Temp = ((Time->Second/10)<<4) | (Time->Second%10);
+   MicroSecondDelay(1000);
+-- 
+2.17.0
+

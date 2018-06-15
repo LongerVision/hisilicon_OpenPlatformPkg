@@ -1,0 +1,149 @@
+From 74db81672b83c782223a1e68963e4dbb090f592d Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Sat, 21 Jul 2018 14:31:06 +0800
+Subject: [PATCH edk2-platforms v2 12/43] Platform/Hisilicon/D06: Add
+ edk2-non-osi components for D06
+
+Add PcdCoreCount to fix build issue while add binary components.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D06/D06.dsc                                                 |  7 +++++++
+ Platform/Hisilicon/D06/D06.fdf                                                 | 17 +++++++++++++++++
+ Silicon/Hisilicon/Drivers/Smbios/ProcessorSubClassDxe/ProcessorSubClassDxe.inf |  2 ++
+ 3 files changed, 26 insertions(+)
+
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+index 27358f8c78..94454569f6 100644
+--- a/Platform/Hisilicon/D06/D06.dsc
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -41,6 +41,8 @@
+ 
+   I2CLib|Silicon/Hisilicon/Library/I2CLib/I2CLib.inf
+   TimerLib|ArmPkg/Library/ArmArchTimerLib/ArmArchTimerLib.inf
++  IpmiCmdLib|Silicon/Hisilicon/Library/IpmiCmdLib/IpmiCmdLib.inf
++
+   NetLib|MdeModulePkg/Library/DxeNetLib/DxeNetLib.inf
+   DpcLib|MdeModulePkg/Library/DxeDpcLib/DxeDpcLib.inf
+   HiiLib|MdeModulePkg/Library/UefiHiiLib/UefiHiiLib.inf
+@@ -64,8 +66,12 @@
+ 
+   CpldIoLib|Silicon/Hisilicon/Library/CpldIoLib/CpldIoLib.inf
+ 
++  SerdesLib|Silicon/Hisilicon/Hi1620/Library/Hi1620Serdes/Hi1620SerdesLib.inf
++
+   TimeBaseLib|EmbeddedPkg/Library/TimeBaseLib/TimeBaseLib.inf
+   RealTimeClockLib|Silicon/Hisilicon/Library/M41T83RealTimeClockLib/M41T83RealTimeClockLib.inf
++  OemAddressMapLib|Platform/Hisilicon/D06/Library/OemAddressMapD06/OemAddressMapD06.inf
++  PlatformSysCtrlLib|Silicon/Hisilicon/Hi1620/Library/PlatformSysCtrlLibHi1620/PlatformSysCtrlLibHi1620.inf
+ 
+   CapsuleLib|MdeModulePkg/Library/DxeCapsuleLibNull/DxeCapsuleLibNull.inf
+   GenericBdsLib|IntelFrameworkModulePkg/Library/GenericBdsLib/GenericBdsLib.inf
+@@ -81,6 +87,7 @@
+   # USB Requirements
+   UefiUsbLib|MdePkg/Library/UefiUsbLib/UefiUsbLib.inf
+ 
++  LpcLib|Silicon/Hisilicon/Hi1620/Library/LpcLibHi1620/LpcLib.inf
+   SerialPortLib|ArmPlatformPkg/Library/PL011SerialPortLib/PL011SerialPortLib.inf
+ !if $(SECURE_BOOT_ENABLE) == TRUE
+   FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
+diff --git a/Platform/Hisilicon/D06/D06.fdf b/Platform/Hisilicon/D06/D06.fdf
+index 9567ede0ad..07fe096f61 100644
+--- a/Platform/Hisilicon/D06/D06.fdf
++++ b/Platform/Hisilicon/D06/D06.fdf
+@@ -56,6 +56,7 @@ NumBlocks     = 0x40
+ 
+ 0x00000000|0x00100000
+ gArmTokenSpaceGuid.PcdSecureFvBaseAddress|gArmTokenSpaceGuid.PcdSecureFvSize
++FILE = Platform/Hisilicon/D06/Sec/FVMAIN_SEC.Fv
+ 
+ 0x00100000|0x00280000
+ gArmTokenSpaceGuid.PcdFvBaseAddress|gArmTokenSpaceGuid.PcdFvSize
+@@ -163,6 +164,7 @@ READ_LOCK_STATUS   = TRUE
+   INF MdeModulePkg/Core/Dxe/DxeMain.inf
+   INF MdeModulePkg/Universal/PCD/Dxe/Pcd.inf
+ 
++  INF Platform/Hisilicon/D06/Drivers/IoInitDxe/IoInitDxe.inf
+   #
+   # PI DXE Drivers producing Architectural Protocols (EFI Services)
+   #
+@@ -170,6 +172,7 @@ READ_LOCK_STATUS   = TRUE
+   INF MdeModulePkg/Core/RuntimeDxe/RuntimeDxe.inf
+ 
+   INF MdeModulePkg/Universal/SecurityStubDxe/SecurityStubDxe.inf
++  INF Platform/Hisilicon/D06/Drivers/SFC/SfcDxeDriver.inf
+ 
+ 
+   INF Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.inf
+@@ -225,10 +228,15 @@ READ_LOCK_STATUS   = TRUE
+   INF MdeModulePkg/Bus/Usb/UsbMouseDxe/UsbMouseDxe.inf
+   INF MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
+ 
++  INF Platform/Hisilicon/D06/Drivers/Ipmi/IpmiInterfaceDxe/IpmiInterfaceDxe.inf
++  INF Platform/Hisilicon/D06/Drivers/GetInfoFromBmc/GetInfoFromBmc.inf
+   INF MdeModulePkg/Universal/SmbiosDxe/SmbiosDxe.inf
+   INF Silicon/Hisilicon/Drivers/Smbios/SmbiosMiscDxe/SmbiosMiscDxe.inf
+   INF Silicon/Hisilicon/Drivers/Smbios/AddSmbiosType9/AddSmbiosType9.inf
++  INF Platform/Hisilicon/D06/Drivers/TransferSmbiosInfo/TransSmbiosInfo.inf
++  INF Platform/Hisilicon/D06/Drivers/IpmiMiscOpDxe/IpmiMiscOpDxe.inf
+ 
++  INF Platform/Hisilicon/D06/Drivers/IpmiWatchdogDxe/IpmiWatchdogDxe.inf
+ 
+ 
+   INF Silicon/Hisilicon/Drivers/Smbios/MemorySubClassDxe/MemorySubClassDxe.inf
+@@ -246,6 +254,7 @@ READ_LOCK_STATUS   = TRUE
+   #
+   #Network
+   #
++  INF Platform/Hisilicon/D06/Drivers/Net/SnpHi1620NewDxe/SnpDxe.inf
+ 
+   INF MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
+   INF MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
+@@ -282,8 +291,14 @@ READ_LOCK_STATUS   = TRUE
+   INF ArmPkg/Drivers/ArmPciCpuIo2Dxe/ArmPciCpuIo2Dxe.inf
+   INF MdeModulePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf
+   INF MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
++  INF Platform/Hisilicon/D06/Drivers/PcieRasInitDxe/PcieRasInitDxe.inf
++  INF Platform/Hisilicon/D06/Drivers/RasInitDxe/RasInitDxe.inf
+ 
++  # VGA Driver
++  #
++  INF Platform/Hisilicon/D06/Drivers/Sm750Dxe/UefiSmi.inf
+   INF MdeModulePkg/Bus/Pci/NvmExpressDxe/NvmExpressDxe.inf
++  INF Platform/Hisilicon/D06/Drivers/Sas/SasDxeDriver.inf
+   INF MdeModulePkg/Bus/Pci/SataControllerDxe/SataControllerDxe.inf
+   INF MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
+   INF MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
+@@ -335,6 +350,8 @@ READ_LOCK_STATUS   = TRUE
+ 
+   INF Silicon/Hisilicon/Drivers/VersionInfoPeim/VersionInfoPeim.inf
+ 
++  INF Platform/Hisilicon/D06/Drivers/Ipmi/IpmiInterfacePei/IpmiInterfacePei.inf
++  INF Platform/Hisilicon/D06/MemoryInitPei/MemoryInitPeim.inf
+   INF ArmPkg/Drivers/CpuPei/CpuPei.inf
+   INF MdeModulePkg/Universal/PCD/Pei/Pcd.inf
+   INF IntelFrameworkModulePkg/Universal/StatusCode/Pei/StatusCodePei.inf
+diff --git a/Silicon/Hisilicon/Drivers/Smbios/ProcessorSubClassDxe/ProcessorSubClassDxe.inf b/Silicon/Hisilicon/Drivers/Smbios/ProcessorSubClassDxe/ProcessorSubClassDxe.inf
+index 2275586ff3..a47806f391 100644
+--- a/Silicon/Hisilicon/Drivers/Smbios/ProcessorSubClassDxe/ProcessorSubClassDxe.inf
++++ b/Silicon/Hisilicon/Drivers/Smbios/ProcessorSubClassDxe/ProcessorSubClassDxe.inf
+@@ -28,6 +28,7 @@
+ 
+ [Packages]
+   ArmPkg/ArmPkg.dec
++  ArmPlatformPkg/ArmPlatformPkg.dec
+   MdePkg/MdePkg.dec
+   MdeModulePkg/MdeModulePkg.dec
+   IntelFrameworkPkg/IntelFrameworkPkg.dec
+@@ -52,6 +53,7 @@
+   gEfiSmbiosProtocolGuid                       # PROTOCOL ALWAYS_CONSUMED
+ 
+ [Pcd]
++  gArmPlatformTokenSpaceGuid.PcdCoreCount
+   gHisiTokenSpaceGuid.PcdCPUInfo
+   gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz
+ 
+-- 
+2.17.0
+

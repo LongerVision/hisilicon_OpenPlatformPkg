@@ -1,0 +1,751 @@
+From ad190a05d535c5d242a404418b14496cc323fc47 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Fri, 15 Jun 2018 17:47:45 +0800
+Subject: [PATCH edk2-platforms v2 13/43] Hisilicon/D06: Add OemMiscLibD06
+
+This library include BoardFeatureD06.c and OemMiscLibD06.c c file,
+use for several modules like PciHostBridgeLib and Smbios.
+Enlarge macro PCIEDEVICE_REPORT_MAX for D06.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D06/D06.dsc                                          |   1 +
+ Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf          |  47 +++
+ Silicon/Hisilicon/Include/Library/OemMiscLib.h                          |   6 +-
+ Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06.c          | 432 ++++++++++++++++++++
+ Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c            | 132 ++++++
+ Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06Strings.uni |  64 +++
+ 6 files changed, 681 insertions(+), 1 deletion(-)
+
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+index 94454569f6..9ca7160dad 100644
+--- a/Platform/Hisilicon/D06/D06.dsc
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -70,6 +70,7 @@
+ 
+   TimeBaseLib|EmbeddedPkg/Library/TimeBaseLib/TimeBaseLib.inf
+   RealTimeClockLib|Silicon/Hisilicon/Library/M41T83RealTimeClockLib/M41T83RealTimeClockLib.inf
++  OemMiscLib|Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf
+   OemAddressMapLib|Platform/Hisilicon/D06/Library/OemAddressMapD06/OemAddressMapD06.inf
+   PlatformSysCtrlLib|Silicon/Hisilicon/Hi1620/Library/PlatformSysCtrlLibHi1620/PlatformSysCtrlLibHi1620.inf
+ 
+diff --git a/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf b/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf
+new file mode 100644
+index 0000000000..8f68f7cec5
+--- /dev/null
++++ b/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.inf
+@@ -0,0 +1,47 @@
++#/** @file
++#
++#    Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++#    Copyright (c) 2018, Linaro Limited. All rights reserved.
++#
++#    This program and the accompanying materials
++#    are licensed and made available under the terms and conditions of the BSD License
++#    which accompanies this distribution. The full text of the license may be found at
++#    http://opensource.org/licenses/bsd-license.php
++#
++#    THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++#    WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++#
++#**/
++
++[Defines]
++  INF_VERSION                    = 0x0001001A
++  BASE_NAME                      = OemMiscLib
++  FILE_GUID                      = 3002911C-C160-4C46-93BB-782846673EEA
++  MODULE_TYPE                    = BASE
++  VERSION_STRING                 = 1.0
++  LIBRARY_CLASS                  = OemMiscLib
++
++[Sources.common]
++  BoardFeatureD06.c
++  BoardFeatureD06Strings.uni
++  OemMiscLibD06.c
++
++[Packages]
++  ArmPkg/ArmPkg.dec
++  MdeModulePkg/MdeModulePkg.dec
++  MdePkg/MdePkg.dec
++  Silicon/Hisilicon/HisiPkg.dec
++
++[LibraryClasses]
++  PcdLib
++  SerdesLib
++  TimerLib
++
++[Ppis]
++  gEfiPeiReadOnlyVariable2PpiGuid   ## SOMETIMES_CONSUMES
++
++[Pcd]
++  gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz
++  gHisiTokenSpaceGuid.PcdIsMPBoot
++  gHisiTokenSpaceGuid.PcdSocketMask
++  gHisiTokenSpaceGuid.PcdTrustedFirmwareEnable
+diff --git a/Silicon/Hisilicon/Include/Library/OemMiscLib.h b/Silicon/Hisilicon/Include/Library/OemMiscLib.h
+index 87cb498dd7..efecb9aa77 100644
+--- a/Silicon/Hisilicon/Include/Library/OemMiscLib.h
++++ b/Silicon/Hisilicon/Include/Library/OemMiscLib.h
+@@ -22,7 +22,11 @@
+ #include <PlatformArch.h>
+ #include <Library/I2CLib.h>
+ 
+-#define PCIEDEVICE_REPORT_MAX      4
++#define PCIEDEVICE_REPORT_MAX      8
++#define MAX_PROCESSOR_SOCKETS      MAX_SOCKET
++#define MAX_MEMORY_CHANNELS        MAX_CHANNEL
++#define MAX_DIMM_PER_CHANNEL       MAX_DIMM
++
+ typedef struct _REPORT_PCIEDIDVID2BMC{
+     UINTN   Bus;
+     UINTN   Device;
+diff --git a/Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06.c b/Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06.c
+new file mode 100644
+index 0000000000..7e3f2e2a0e
+--- /dev/null
++++ b/Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06.c
+@@ -0,0 +1,432 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#include <Uefi.h>
++#include <IndustryStandard/SmBios.h>
++#include <Library/BaseMemoryLib.h>
++#include <Library/DebugLib.h>
++#include <Library/HiiLib.h>
++#include <Library/I2CLib.h>
++#include <Library/IoLib.h>
++#include <Library/OemMiscLib.h>
++#include <Library/SerdesLib.h>
++#include <Protocol/Smbios.h>
++
++#include <PlatformArch.h>
++
++I2C_DEVICE gRtcDevice = {
++  .Socket = 0,
++  .Port = 5,
++  .DeviceType = DEVICE_TYPE_SPD,
++  .SlaveDeviceAddress = 0x68
++};
++
++SERDES_POLARITY_INVERT gSerdesPolarityTxDesc[] =
++{
++  {SERDES_INVALID_MACRO_ID, SERDES_INVALID_LANE_NUM}
++};
++
++SERDES_POLARITY_INVERT gSerdesPolarityRxDesc[] =
++{
++  {SERDES_INVALID_MACRO_ID, SERDES_INVALID_LANE_NUM}
++};
++
++SERDES_PARAM gSerdesParamNA = {
++  .Hilink0Mode = EmHilink0Hccs1X8Width16,
++  .Hilink1Mode = EmHilink1Hccs0X8Width16,
++  .Hilink2Mode = EmHilink2Pcie2X8,
++  .Hilink3Mode = 0x0,
++  .Hilink4Mode = 0xF,
++  .Hilink5Mode = EmHilink5Sas1X4,
++  .Hilink6Mode = 0x0,
++  .UseSsc      = 0,
++};
++
++SERDES_PARAM gSerdesParamNB = {
++  .Hilink0Mode = EmHilink0Pcie1X8,
++  .Hilink1Mode = EmHilink1Pcie0X8,
++  .Hilink2Mode = EmHilink2Sas0X8,
++  .Hilink3Mode = 0x0,
++  .Hilink4Mode = 0xF,
++  .Hilink5Mode = EmHilink5Pcie2X2Pcie3X2,
++  .Hilink6Mode = 0xF,
++  .UseSsc      = 0,
++};
++
++SERDES_PARAM gSerdesParamS1NA = {
++  .Hilink0Mode = EmHilink0Hccs1X8Width16,
++  .Hilink1Mode = EmHilink1Hccs0X8Width16,
++  .Hilink2Mode = EmHilink2Pcie2X8,
++  .Hilink3Mode = 0x0,
++  .Hilink4Mode = 0xF,
++  .Hilink5Mode = EmHilink5Sas1X4,
++  .Hilink6Mode = 0x0,
++  .UseSsc      = 0,
++};
++
++SERDES_PARAM gSerdesParamS1NB = {
++  .Hilink0Mode = EmHilink0Pcie1X8,
++  .Hilink1Mode = EmHilink1Pcie0X8,
++  .Hilink2Mode = EmHilink2Sas0X8,
++  .Hilink3Mode = 0x0,
++  .Hilink4Mode = 0xF,
++  .Hilink5Mode = EmHilink5Pcie2X2Pcie3X2,
++  .Hilink6Mode = 0xF,
++  .UseSsc      = 0,
++};
++
++
++EFI_STATUS
++OemGetSerdesParam (
++  OUT SERDES_PARAM *ParamA,
++  OUT SERDES_PARAM *ParamB,
++  IN  UINT32       SocketId
++ )
++{
++  if (NULL == ParamA) {
++    DEBUG ((DEBUG_ERROR, "[%a]:[%dL] Param == NULL!\n", __FUNCTION__, __LINE__));
++    return EFI_INVALID_PARAMETER;
++  } if (NULL == ParamB) {
++    DEBUG ((DEBUG_ERROR, "[%a]:[%dL] Param == NULL!\n", __FUNCTION__, __LINE__));
++    return EFI_INVALID_PARAMETER;
++  }
++
++  if (0 == SocketId) {
++    (VOID) CopyMem (ParamA, &gSerdesParamNA, sizeof (*ParamA));
++    (VOID) CopyMem (ParamB, &gSerdesParamNB, sizeof (*ParamB));
++  } else {
++    (VOID) CopyMem (ParamA, &gSerdesParamS1NA, sizeof (*ParamA));
++    (VOID) CopyMem (ParamB, &gSerdesParamS1NB, sizeof (*ParamB));
++  }
++
++  return EFI_SUCCESS;
++}
++
++VOID
++OemPcieResetAndOffReset (
++  VOID
++  )
++{
++  return;
++}
++
++SMBIOS_TABLE_TYPE9 gPcieSlotInfo[] = {
++  // PCIe0 Slot 1
++  {
++    {                                       // Hdr
++        EFI_SMBIOS_TYPE_SYSTEM_SLOTS,       // Type,
++        0,                                  // Length,
++        0                                   // Handle
++    },
++    1,                                      // SlotDesignation
++    SlotTypePciExpressX16,                  // SlotType
++    SlotDataBusWidth16X,                    // SlotDataBusWidth
++    SlotUsageAvailable,                     // SlotUsage
++    SlotLengthOther,                        // SlotLength
++    0x0001,                                 // SlotId
++    {                                       // SlotCharacteristics1
++        0,                                  // CharacteristicsUnknown  :1;
++        0,                                  // Provides50Volts         :1;
++        0,                                  // Provides33Volts         :1;
++        0,                                  // SharedSlot              :1;
++        0,                                  // PcCard16Supported       :1;
++        0,                                  // CardBusSupported        :1;
++        0,                                  // ZoomVideoSupported      :1;
++        0                                   // ModemRingResumeSupported:1;
++    },
++    {                                       // SlotCharacteristics2
++        0,                                  // PmeSignalSupported      :1;
++        0,                                  // HotPlugDevicesSupported :1;
++        0,                                  // SmbusSignalSupported    :1;
++        0                                   // Reserved                :5;
++    },
++    0x00,                                   // SegmentGroupNum
++    0x00,                                   // BusNum
++    0                                       // DevFuncNum
++  },
++  {
++      {                                       // Hdr
++          EFI_SMBIOS_TYPE_SYSTEM_SLOTS,       // Type,
++          0,                                  // Length,
++          0                                   // Handle
++      },
++      1,                                      // SlotDesignation
++      SlotTypePciExpressX8,                   // SlotType
++      SlotDataBusWidth8X,                     // SlotDataBusWidth
++      SlotUsageAvailable,                     // SlotUsage
++      SlotLengthOther,                        // SlotLength
++      0x0002,                                 // SlotId
++      {                                       // SlotCharacteristics1
++          0,                                  // CharacteristicsUnknown  :1;
++          0,                                  // Provides50Volts         :1;
++          0,                                  // Provides33Volts         :1;
++          0,                                  // SharedSlot              :1;
++          0,                                  // PcCard16Supported       :1;
++          0,                                  // CardBusSupported        :1;
++          0,                                  // ZoomVideoSupported      :1;
++          0                                   // ModemRingResumeSupported:1;
++      },
++      {                                       // SlotCharacteristics2
++          0,                                  // PmeSignalSupported      :1;
++          0,                                  // HotPlugDevicesSupported :1;
++          0,                                  // SmbusSignalSupported    :1;
++          0                                   // Reserved                :5;
++      },
++      0x00,                                   // SegmentGroupNum
++      0x00,                                   // BusNum
++      0                                       // DevFuncNum
++  },
++  {
++      {                                       // Hdr
++          EFI_SMBIOS_TYPE_SYSTEM_SLOTS,       // Type,
++          0,                                  // Length,
++          0                                   // Handle
++      },
++      1,                                      // SlotDesignation
++      SlotTypePciExpressX8,                   // SlotType
++      SlotDataBusWidth8X,                     // SlotDataBusWidth
++      SlotUsageAvailable,                     // SlotUsage
++      SlotLengthOther,                        // SlotLength
++      0x0003,                                 // SlotId
++      {                                       // SlotCharacteristics1
++          0,                                  // CharacteristicsUnknown  :1;
++          0,                                  // Provides50Volts         :1;
++          0,                                  // Provides33Volts         :1;
++          0,                                  // SharedSlot              :1;
++          0,                                  // PcCard16Supported       :1;
++          0,                                  // CardBusSupported        :1;
++          0,                                  // ZoomVideoSupported      :1;
++          0                                   // ModemRingResumeSupported:1;
++      },
++      {                                       // SlotCharacteristics2
++          0,                                  // PmeSignalSupported      :1;
++          0,                                  // HotPlugDevicesSupported :1;
++          0,                                  // SmbusSignalSupported    :1;
++          0                                   // Reserved                :5;
++      },
++      0x00,                                   // SegmentGroupNum
++      0x00,                                   // BusNum
++      0                                       // DevFuncNum
++  },
++
++
++  {
++      {                                       // Hdr
++          EFI_SMBIOS_TYPE_SYSTEM_SLOTS,       // Type,
++          0,                                  // Length,
++          0                                   // Handle
++      },
++      1,                                      // SlotDesignation
++      SlotTypePciExpressX8,                   // SlotType
++      SlotDataBusWidth8X,                     // SlotDataBusWidth
++      SlotUsageAvailable,                     // SlotUsage
++      SlotLengthOther,                        // SlotLength
++      0x0004,                                 // SlotId
++      {                                       // SlotCharacteristics1
++          0,                                  // CharacteristicsUnknown  :1;
++          0,                                  // Provides50Volts         :1;
++          0,                                  // Provides33Volts         :1;
++          0,                                  // SharedSlot              :1;
++          0,                                  // PcCard16Supported       :1;
++          0,                                  // CardBusSupported        :1;
++          0,                                  // ZoomVideoSupported      :1;
++          0                                   // ModemRingResumeSupported:1;
++      },
++      {                                       // SlotCharacteristics2
++          0,                                  // PmeSignalSupported      :1;
++          0,                                  // HotPlugDevicesSupported :1;
++          0,                                  // SmbusSignalSupported    :1;
++          0                                   // Reserved                :5;
++      },
++      0x00,                                   // SegmentGroupNum
++      0x00,                                   // BusNum
++      0                                       // DevFuncNum
++  },
++
++  {
++      {                                       // Hdr
++          EFI_SMBIOS_TYPE_SYSTEM_SLOTS,       // Type,
++          0,                                  // Length,
++          0                                   // Handle
++      },
++      1,                                      // SlotDesignation
++      SlotTypePciExpressX16,                  // SlotType
++      SlotDataBusWidth16X,                    // SlotDataBusWidth
++      SlotUsageAvailable,                     // SlotUsage
++      SlotLengthOther,                        // SlotLength
++      0x0005,                                 // SlotId
++      {                                       // SlotCharacteristics1
++          0,                                  // CharacteristicsUnknown  :1;
++          0,                                  // Provides50Volts         :1;
++          0,                                  // Provides33Volts         :1;
++          0,                                  // SharedSlot              :1;
++          0,                                  // PcCard16Supported       :1;
++          0,                                  // CardBusSupported        :1;
++          0,                                  // ZoomVideoSupported      :1;
++          0                                   // ModemRingResumeSupported:1;
++      },
++      {                                       // SlotCharacteristics2
++          0,                                  // PmeSignalSupported      :1;
++          0,                                  // HotPlugDevicesSupported :1;
++          0,                                  // SmbusSignalSupported    :1;
++          0                                   // Reserved                :5;
++      },
++      0x00,                                   // SegmentGroupNum
++      0x00,                                   // BusNum
++      0                                       // DevFuncNum
++  },
++  {
++      {                                       // Hdr
++          EFI_SMBIOS_TYPE_SYSTEM_SLOTS,       // Type,
++          0,                                  // Length,
++          0                                   // Handle
++      },
++      1,                                      // SlotDesignation
++      SlotTypePciExpressX8,                   // SlotType
++      SlotDataBusWidth8X,                     // SlotDataBusWidth
++      SlotUsageAvailable,                     // SlotUsage
++      SlotLengthOther,                        // SlotLength
++      0x0006,                                 // SlotId
++      {                                       // SlotCharacteristics1
++          0,                                  // CharacteristicsUnknown  :1;
++          0,                                  // Provides50Volts         :1;
++          0,                                  // Provides33Volts         :1;
++          0,                                  // SharedSlot              :1;
++          0,                                  // PcCard16Supported       :1;
++          0,                                  // CardBusSupported        :1;
++          0,                                  // ZoomVideoSupported      :1;
++          0                                   // ModemRingResumeSupported:1;
++      },
++      {                                       // SlotCharacteristics2
++          0,                                  // PmeSignalSupported      :1;
++          0,                                  // HotPlugDevicesSupported :1;
++          0,                                  // SmbusSignalSupported    :1;
++          0                                   // Reserved                :5;
++      },
++      0x00,                                   // SegmentGroupNum
++      0x00,                                   // BusNum
++      0                                       // DevFuncNum
++  },
++  {
++      {                                       // Hdr
++          EFI_SMBIOS_TYPE_SYSTEM_SLOTS,       // Type,
++          0,                                  // Length,
++          0                                   // Handle
++      },
++      1,                                      // SlotDesignation
++      SlotTypePciExpressX8,                   // SlotType
++      SlotDataBusWidth8X,                     // SlotDataBusWidth
++      SlotUsageAvailable,                     // SlotUsage
++      SlotLengthOther,                        // SlotLength
++      0x0007,                                 // SlotId
++      {                                       // SlotCharacteristics1
++          0,                                  // CharacteristicsUnknown  :1;
++          0,                                  // Provides50Volts         :1;
++          0,                                  // Provides33Volts         :1;
++          0,                                  // SharedSlot              :1;
++          0,                                  // PcCard16Supported       :1;
++          0,                                  // CardBusSupported        :1;
++          0,                                  // ZoomVideoSupported      :1;
++          0                                   // ModemRingResumeSupported:1;
++      },
++      {                                       // SlotCharacteristics2
++          0,                                  // PmeSignalSupported      :1;
++          0,                                  // HotPlugDevicesSupported :1;
++          0,                                  // SmbusSignalSupported    :1;
++          0                                   // Reserved                :5;
++      },
++      0x00,                                   // SegmentGroupNum
++      0x00,                                   // BusNum
++      0                                       // DevFuncNum
++  },
++  {
++      {                                       // Hdr
++          EFI_SMBIOS_TYPE_SYSTEM_SLOTS,       // Type,
++          0,                                  // Length,
++          0                                   // Handle
++      },
++      1,                                      // SlotDesignation
++      SlotTypePciExpressX8,                   // SlotType
++      SlotDataBusWidth8X,                     // SlotDataBusWidth
++      SlotUsageAvailable,                     // SlotUsage
++      SlotLengthOther,                        // SlotLength
++      0x0008,                                 // SlotId
++      {                                       // SlotCharacteristics1
++          0,                                  // CharacteristicsUnknown  :1;
++          0,                                  // Provides50Volts         :1;
++          0,                                  // Provides33Volts         :1;
++          0,                                  // SharedSlot              :1;
++          0,                                  // PcCard16Supported       :1;
++          0,                                  // CardBusSupported        :1;
++          0,                                  // ZoomVideoSupported      :1;
++          0                                   // ModemRingResumeSupported:1;
++      },
++      {                                       // SlotCharacteristics2
++          0,                                  // PmeSignalSupported      :1;
++          0,                                  // HotPlugDevicesSupported :1;
++          0,                                  // SmbusSignalSupported    :1;
++          0                                   // Reserved                :5;
++      },
++      0x00,                                   // SegmentGroupNum
++      0x00,                                   // BusNum
++      0                                       // DevFuncNum
++  },
++
++  };
++
++UINT8
++OemGetPcieSlotNumber (
++  VOID
++  )
++{
++  return sizeof (gPcieSlotInfo) / sizeof (SMBIOS_TABLE_TYPE9);
++}
++
++EFI_STRING_ID gDimmToDevLocator[MAX_SOCKET][MAX_CHANNEL][MAX_DIMM] = {
++  {{STRING_TOKEN(STR_LEMON_C10_DIMM_000), STRING_TOKEN(STR_LEMON_C10_DIMM_001)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_010), STRING_TOKEN(STR_LEMON_C10_DIMM_011)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_020), STRING_TOKEN(STR_LEMON_C10_DIMM_021)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_030), STRING_TOKEN(STR_LEMON_C10_DIMM_031)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_040), STRING_TOKEN(STR_LEMON_C10_DIMM_041)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_050), STRING_TOKEN(STR_LEMON_C10_DIMM_051)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_060), STRING_TOKEN(STR_LEMON_C10_DIMM_061)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_070), STRING_TOKEN(STR_LEMON_C10_DIMM_071)}},
++
++  {{STRING_TOKEN(STR_LEMON_C10_DIMM_100), STRING_TOKEN(STR_LEMON_C10_DIMM_101)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_110), STRING_TOKEN(STR_LEMON_C10_DIMM_111)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_120), STRING_TOKEN(STR_LEMON_C10_DIMM_121)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_130), STRING_TOKEN(STR_LEMON_C10_DIMM_131)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_140), STRING_TOKEN(STR_LEMON_C10_DIMM_141)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_150), STRING_TOKEN(STR_LEMON_C10_DIMM_151)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_160), STRING_TOKEN(STR_LEMON_C10_DIMM_161)},
++   {STRING_TOKEN(STR_LEMON_C10_DIMM_170), STRING_TOKEN(STR_LEMON_C10_DIMM_171)}}
++};
++
++EFI_HII_HANDLE
++EFIAPI
++OemGetPackages (
++  VOID
++  )
++{
++  return HiiAddPackages (
++           &gEfiCallerIdGuid,
++           NULL,
++           OemMiscLibStrings,
++           NULL,
++           NULL
++           );
++}
++
++
+diff --git a/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c b/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c
+new file mode 100644
+index 0000000000..2cd360d49f
+--- /dev/null
++++ b/Platform/Hisilicon/D06/Library/OemMiscLibD06/OemMiscLibD06.c
+@@ -0,0 +1,132 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#include <Uefi.h>
++#include <PlatformArch.h>
++#include <Library/DebugLib.h>
++#include <Library/IoLib.h>
++#include <Library/LpcLib.h>
++#include <Library/OemAddressMapLib.h>
++#include <Library/OemMiscLib.h>
++#include <Library/PcdLib.h>
++#include <Library/PlatformSysCtrlLib.h>
++#include <Library/SerdesLib.h>
++#include <Library/SerialPortLib.h>
++#include <Library/TimerLib.h>
++
++REPORT_PCIEDIDVID2BMC PcieDeviceToReport[PCIEDEVICE_REPORT_MAX] = {
++  {67,0,0,0},
++  {225,0,0,3},
++  {0xFFFF,0xFFFF,0xFFFF,0xFFFF},
++  {0xFFFF,0xFFFF,0xFFFF,0xFFFF}
++};
++
++// Right now we only support 1P
++BOOLEAN
++OemIsSocketPresent (
++  UINTN Socket
++  )
++{
++  UINT32 SocketMask = PcdGet32 (PcdSocketMask);
++  return (BOOLEAN)((SocketMask & (1 << Socket)) ? TRUE : FALSE);
++}
++
++
++UINTN
++OemGetSocketNumber (
++  VOID
++  )
++{
++  if(!OemIsMpBoot ()) {
++    return 1;
++  }
++
++  return MAX_PROCESSOR_SOCKETS;
++}
++
++
++UINTN
++OemGetDdrChannel (
++  VOID
++  )
++{
++  return MAX_MEMORY_CHANNELS;
++}
++
++
++UINTN
++OemGetDimmSlot (
++  UINTN Socket,
++  UINTN Channel
++  )
++{
++  return MAX_DIMM_PER_CHANNEL;
++}
++
++
++VOID
++CoreSelectBoot (
++  VOID
++  )
++{
++  if (!PcdGet64 (PcdTrustedFirmwareEnable))
++  {
++    StartupAp ();
++  }
++
++  return;
++}
++
++BOOLEAN
++OemIsMpBoot (
++  VOID
++  )
++{
++  return PcdGet32 (PcdIsMPBoot);
++}
++
++VOID
++OemLpcInit (
++  VOID
++  )
++{
++  LpcInit ();
++  return;
++}
++
++UINT32
++OemIsWarmBoot (
++  VOID
++  )
++{
++  return 0;
++}
++
++VOID
++OemBiosSwitch (
++  UINT32 Master
++  )
++{
++  (VOID)Master;
++  return;
++}
++
++BOOLEAN
++OemIsNeedDisableExpanderBuffer (
++  VOID
++  )
++{
++  return TRUE;
++}
+diff --git a/Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06Strings.uni b/Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06Strings.uni
+new file mode 100644
+index 0000000000..046fa05dff
+--- /dev/null
++++ b/Platform/Hisilicon/D06/Library/OemMiscLibD06/BoardFeatureD06Strings.uni
+@@ -0,0 +1,64 @@
++// *++
++//
++// Copyright (c) 2006 - 2010, Intel Corporation. All rights reserved.<BR>
++//
++// This program and the accompanying materials
++// are licensed and made available under the terms and conditions of the BSD License
++// which accompanies this distribution.  The full text of the license may be found at
++// http://opensource.org/licenses/bsd-license.php
++//
++// THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++// WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++//
++// --*/
++
++/=#
++
++#langdef en-US "English"
++
++//
++// Begin English Language Strings
++//
++#string STR_MEMORY_SUBCLASS_UNKNOWN    #language en-US  "Unknown"
++
++//
++// DIMM Device Locator strings
++
++// D06
++#string STR_LEMON_C10_DIMM_000     #language en-US "J5"
++#string STR_LEMON_C10_DIMM_001     #language en-US "J6"
++#string STR_LEMON_C10_DIMM_010     #language en-US "J7"
++#string STR_LEMON_C10_DIMM_011     #language en-US "J8"
++#string STR_LEMON_C10_DIMM_020     #language en-US "J9"
++#string STR_LEMON_C10_DIMM_021     #language en-US "J10"
++#string STR_LEMON_C10_DIMM_030     #language en-US "J11"
++#string STR_LEMON_C10_DIMM_031     #language en-US "J12"
++#string STR_LEMON_C10_DIMM_040     #language en-US "J13"
++#string STR_LEMON_C10_DIMM_041     #language en-US "J14"
++#string STR_LEMON_C10_DIMM_050     #language en-US "J15"
++#string STR_LEMON_C10_DIMM_051     #language en-US "J16"
++#string STR_LEMON_C10_DIMM_060     #language en-US "J17"
++#string STR_LEMON_C10_DIMM_061     #language en-US "J18"
++#string STR_LEMON_C10_DIMM_070     #language en-US "J19"
++#string STR_LEMON_C10_DIMM_071     #language en-US "J20"
++#string STR_LEMON_C10_DIMM_100     #language en-US "J21"
++#string STR_LEMON_C10_DIMM_101     #language en-US "J22"
++#string STR_LEMON_C10_DIMM_110     #language en-US "J23"
++#string STR_LEMON_C10_DIMM_111     #language en-US "J24"
++#string STR_LEMON_C10_DIMM_120     #language en-US "J25"
++#string STR_LEMON_C10_DIMM_121     #language en-US "J26"
++#string STR_LEMON_C10_DIMM_130     #language en-US "J27"
++#string STR_LEMON_C10_DIMM_131     #language en-US "J28"
++#string STR_LEMON_C10_DIMM_140     #language en-US "J29"
++#string STR_LEMON_C10_DIMM_141     #language en-US "J30"
++#string STR_LEMON_C10_DIMM_150     #language en-US "J31"
++#string STR_LEMON_C10_DIMM_151     #language en-US "J32"
++#string STR_LEMON_C10_DIMM_160     #language en-US "J33"
++#string STR_LEMON_C10_DIMM_161     #language en-US "J34"
++#string STR_LEMON_C10_DIMM_170     #language en-US "J35"
++#string STR_LEMON_C10_DIMM_171     #language en-US "J36"
++
++//
++// End English Language Strings
++//
++
+-- 
+2.17.0
+

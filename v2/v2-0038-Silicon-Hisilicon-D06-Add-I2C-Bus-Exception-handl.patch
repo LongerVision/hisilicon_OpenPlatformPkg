@@ -1,0 +1,38 @@
+From 32cf35394afae023397a9809a3519a5c677a1b50 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Wed, 11 Jul 2018 14:16:24 +0800
+Subject: [PATCH edk2-platforms v2 38/43] Silicon/Hisilicon/D06: Add I2C Bus
+ Exception handle function
+
+During the period of I2c accessing, if the board is reset
+unexpectedly, and because the I2c client can not reset,
+the SDA will be always pull down, then it cause I2C bus
+Exception.
+
+Follow the Hi1620 I2C FS chapter 1.8.2 design, add I2C
+Bus Exception handle function. It will Config SCL and SDA
+to GPIO, and set the reversal frequency of SCL to 10KHz.
+
+The implementation of functions is in edk2-non-osi.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Silicon/Hisilicon/Include/Library/PlatformSysCtrlLib.h | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Silicon/Hisilicon/Include/Library/PlatformSysCtrlLib.h b/Silicon/Hisilicon/Include/Library/PlatformSysCtrlLib.h
+index 3ccfc6bee3..a232e52ed7 100644
+--- a/Silicon/Hisilicon/Include/Library/PlatformSysCtrlLib.h
++++ b/Silicon/Hisilicon/Include/Library/PlatformSysCtrlLib.h
+@@ -106,4 +106,7 @@ VOID DisableClusterClock(UINTN CpuClusterBase);
+ VOID EnableClusterClock(UINTN CpuClusterBase);
+ VOID DisableSocketClock (UINT8 Skt);
+ 
++EFI_STATUS EFIAPI HandleI2CException (UINT32 Socket, UINT32 Port);
++EFI_STATUS EFIAPI HandleI2CExceptionBySocket (UINT32 Socket);
++
+ #endif
+-- 
+2.17.0
+

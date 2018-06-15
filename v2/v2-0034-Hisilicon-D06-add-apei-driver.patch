@@ -1,0 +1,2508 @@
+From dc942bcd12eb5573beda66cef0d848471327d655 Mon Sep 17 00:00:00 2001
+From: Luqi Jiang <jiangluqi@huawei.com>
+Date: Fri, 6 Jul 2018 11:22:30 +0800
+Subject: [PATCH edk2-platforms v2 34/43] Hisilicon/D06: add apei driver
+
+This driver provide a means for the platform to
+convey error information to OSPM.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Luqi Jiang <jiangluqi@huawei.com>
+---
+ Platform/Hisilicon/D06/D06.dsc                           |   1 +
+ Platform/Hisilicon/D06/D06.fdf                           |   1 +
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.inf           |  64 ++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.h             |  41 +++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.h        |  43 +++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.h        | 146 ++++++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.h | 110 ++++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.h        | 146 ++++++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.h        |  59 +++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.h    |  43 +++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.c             | 108 ++++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.c        |  92 +++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.c        | 349 ++++++++++++++++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.c | 330 +++++++++++++++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.c        | 374 ++++++++++++++++++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.c        | 119 +++++++
+ Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.c    | 337 ++++++++++++++++++
+ 17 files changed, 2363 insertions(+)
+
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+index c6de9f04ad..9550e0d497 100644
+--- a/Platform/Hisilicon/D06/D06.dsc
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -340,6 +340,7 @@
+   Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/AcpiTablesHi1620.inf
+   Silicon/Hisilicon/Drivers/AcpiPlatformDxe/AcpiPlatformDxe.inf
+ 
++  Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.inf
+   Silicon/Hisilicon/Hi1620/Pptt/Pptt.inf
+   #
+   # Usb Support
+diff --git a/Platform/Hisilicon/D06/D06.fdf b/Platform/Hisilicon/D06/D06.fdf
+index bd3ea47226..90379b8558 100644
+--- a/Platform/Hisilicon/D06/D06.fdf
++++ b/Platform/Hisilicon/D06/D06.fdf
+@@ -251,6 +251,7 @@ READ_LOCK_STATUS   = TRUE
+ 
+   INF RuleOverride=ACPITABLE Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/AcpiTablesHi1620.inf
+   INF Silicon/Hisilicon/Drivers/AcpiPlatformDxe/AcpiPlatformDxe.inf
++  INF Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.inf
+ 
+   INF Silicon/Hisilicon/Hi1620/Pptt/Pptt.inf
+ 
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.inf b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.inf
+new file mode 100644
+index 0000000000..7a75968da1
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.inf
+@@ -0,0 +1,64 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++[defines]
++  INF_VERSION                    = 0x0001001A
++  BASE_NAME                      = AcpiApei
++  FILE_GUID                      = E9570C39-EF68-4fc6-B921-C1954A87CCD2
++  MODULE_TYPE                    = DXE_DRIVER
++  VERSION_STRING                 = 1.0
++  ENTRY_POINT                    = ApeiEntryPoint
++
++[sources.common]
++  Apei.c
++  Bert/bert.c
++  Bert/bert.h
++  Einj/einj.c
++  Einj/einj.h
++  Erst/erst.c
++  Erst/erst.h
++  Hest/hest.c
++  Hest/hest.h
++  ErrorSource/Ghes.c
++  ErrorSource/Ghes.h
++  OemApeiHi1620.c
++
++[Packages]
++  ArmPkg/ArmPkg.dec
++  MdePkg/MdePkg.dec
++  Silicon/Hisilicon/HisiPkg.dec
++
++[LibraryClasses]
++  ArmSmcLib
++  BaseMemoryLib
++  DebugLib
++  HobLib
++  TimerLib
++  UefiDriverEntryPoint
++  UefiRuntimeServicesTableLib
++
++[Guids]
++  gOemConfigGuid
++
++[Protocols]
++  gEfiAcpiSdtProtocolGuid
++  gEfiAcpiTableProtocolGuid                     # PROTOCOL ALWAYS_CONSUMED
++
++[Pcd]
++  gHisiTokenSpaceGuid.PcdCpldBaseAddress
++  gHisiTokenSpaceGuid.PcdTrustedFirmwareEnable
++
++[Depex]
++  gEfiAcpiTableProtocolGuid AND gEfiAcpiSdtProtocolGuid
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.h b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.h
+new file mode 100644
+index 0000000000..ed8ec417cb
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.h
+@@ -0,0 +1,41 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++#ifndef _APEI_H_
++#define _APEI_H_
++
++#include <IndustryStandard/Acpi.h>
++#include <Protocol/AcpiSystemDescriptionTable.h>
++#include <Protocol/AcpiTable.h>
++
++#define EFI_ACPI_MAX_NUM_TABLES         20
++#define PRIVATE_ARM_SMC_ID_APEI         0x83000100
++#define PRIVATE_ARM_SMC_ID_APEI_S       0x83000101
++
++typedef struct {
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE  *HestCorrectedErrorGhesV2;
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE  *HestFatalErrorGhesV2;
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE  *HestRecoverableErrorGhesV2;
++  EFI_PHYSICAL_ADDRESS                                            HestTableAddress;
++  EFI_PHYSICAL_ADDRESS                                            EinjTableAddress;
++  EFI_PHYSICAL_ADDRESS                                            EinjDataStruct;
++  VOID                                                            *ErstContext;
++} APEI_TRUSTED_FIRMWARE_STRUCTURE;
++
++extern EFI_ACPI_TABLE_PROTOCOL       *mAcpiTableProtocol;
++extern EFI_ACPI_SDT_PROTOCOL         *mAcpiSdtProtocol;
++extern APEI_TRUSTED_FIRMWARE_STRUCTURE     *mApeiTrustedfirmwareData;
++
++
++#endif    // _APEI_H_
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.h b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.h
+new file mode 100644
+index 0000000000..36a0c58966
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.h
+@@ -0,0 +1,43 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#ifndef _BERT_H_
++#define _BERT_H_
++
++#include "Apei.h"
++#include <Guid/Cper.h>
++
++typedef struct _BERT_CONTEXT {
++  EFI_ACPI_6_0_BOOT_ERROR_RECORD_TABLE_HEADER   *BertHeader;
++  VOID                                          *Block;
++  UINT32                                        BlockSize;
++} BERT_CONTEXT;
++
++EFI_STATUS
++OemInitBertTable (
++  IN EFI_HANDLE    ImageHandle
++);
++VOID
++BertSetAcpiTable (
++  IN BERT_CONTEXT *Context
++);
++EFI_STATUS
++BertHeaderCreator (
++  BERT_CONTEXT  *Context,
++  UINT32        ErrorBlockSize
++);
++
++
++#endif    // _BERT_H_
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.h b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.h
+new file mode 100644
+index 0000000000..85aa52f450
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.h
+@@ -0,0 +1,146 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#ifndef _EINJ_H_
++#define _EINJ_H_
++
++#include "Apei.h"
++
++#define EINJ_ACTION_NO             10
++#define EINJ_BEGIN_OPERATION_VALUE 0xFFFF
++#define EINJ_END_OPERATION_VALUE   0
++#define EINJ_WRITE_MASK            0xFFFFFFFF
++#define EINJ_READ_VALUE            0xFFFF
++#define EINJ_READ_MASK             0xFFFFFFFF
++
++#define EINJ_TRIGGER_ERROR_ACTION_NO                                    1
++
++#define EFI_ACPI_EINJ_SET_ERROR_TYPE_WITH_ADDRESS                       0x08
++#define EFI_ACPI_EINJ_GET_EXCUTE_OPERATION_TIMINGS                      0x09
++
++
++extern EFI_ACPI_TABLE_PROTOCOL            *mAcpiTableProtocol;
++extern EFI_ACPI_SDT_PROTOCOL              *mAcpiSdtProtocol;
++extern APEI_TRUSTED_FIRMWARE_STRUCTURE    *mApeiTrustedfirmwareData;
++
++//
++// Error Type Definition
++//
++#define EINJ_PROCESSOR_CORRECTABLE                                      BIT0
++#define EINJ_PROCESSOR_UNCORRECTABLE_NONFATAL                           BIT1
++#define EINJ_PROCESSOR_UNCORRECTABLE_FATAL                              BIT2
++#define EINJ_MEMORY_CORRECTABLE                                         BIT3
++#define EINJ_MEMORY_UNCORRECTABLE_NONFATAL                              BIT4
++#define EINJ_MEMORY_UNCORRECTABLE_FATAL                                 BIT5
++#define EINJ_PCIE_CORRECTABLE                                           BIT6
++#define EINJ_PCIE_UNCORRECTABLE_NONFATAL                                BIT7
++#define EINJ_PCIE_UNCORRECTABLE_FATAL                                   BIT8
++#define EINJ_PLATFORM_CORRECTABLE                                       BIT9
++#define EINJ_PLATFORM_UNCORRECTABLE_NONFATAL                            BIT10
++#define EINJ_PLATFORM_UNCORRECTABLE_FATAL                               BIT11
++#define EINJ_VENDOR_DEFINED_ERROR_TYPE                                  BIT31
++
++#define EINJ_PROCESSOR_APIC_VALID                                       BIT0
++#define EINJ_MEMORY_ADDRESS_VALID                                       BIT1
++#define EINJ_PCIE_SBDF_VALID                                            BIT2
++
++///
++/// EINJ Table
++///
++typedef struct {
++  EFI_ACPI_6_0_ERROR_INJECTION_TABLE_HEADER        EinjTableHeader;
++  EFI_ACPI_6_0_EINJ_INJECTION_INSTRUCTION_ENTRY    EinjInstructionEntry[EINJ_ACTION_NO];
++} EINJ_TABLE;
++
++typedef struct {
++  EFI_ACPI_6_0_EINJ_TRIGGER_ACTION_TABLE           TriggerErrorHeader;
++  EFI_ACPI_6_0_EINJ_INJECTION_INSTRUCTION_ENTRY    ErrorInstructionEntry[EINJ_TRIGGER_ERROR_ACTION_NO];
++} EINJ_TRIGGER_ERROR_ACTION;
++
++typedef struct {
++  UINT32 Reserved: 8;
++  UINT32 Function: 3;
++  UINT32 Device: 5;
++  UINT32 PrimaryOrDeviceBus: 8;
++  UINT32 Segment: 8;
++} EINJ_PCIE_SBDF;
++
++typedef struct {
++  UINT32         ErrorType;
++  UINT32         VendorErrorTypeOffset;
++  UINT32         Flags;
++  UINT32         ApicId;
++  UINT64         MemAddress;
++  UINT64         MemAddressRange;
++  EINJ_PCIE_SBDF PcieSBDF;
++} EINJ_SET_ERROR_TYPE_WITH_ADDRESS;
++
++typedef struct {
++  UINT32 Length;
++  UINT32 SBDF;
++  UINT16 VendorId;
++  UINT16 DeviceId;
++  UINT8  RevId;
++  UINT8  Reserved[3];
++} EINJ_VENDOR_ERROR_TYPE;
++
++typedef struct {
++  UINT64                           OperationBegin;
++  UINT64                           ErrorType;
++  UINT64                           ErrorCapabilities;
++  UINT64                           BusyStatus;
++  UINT64                           CommandStatus;
++  UINT64                           Timming;
++  EINJ_TRIGGER_ERROR_ACTION        *TriggerErrorActionTablePtr;
++  EINJ_SET_ERROR_TYPE_WITH_ADDRESS ErrorTypeWithAddress;
++  EINJ_VENDOR_ERROR_TYPE           VendorErrorTypeExtension;
++  EINJ_TRIGGER_ERROR_ACTION        TriggerErrorActionTable;
++} EINJ_DATA_STRUCTURE;
++
++// V2
++typedef struct _EINJ_CONTEXT {
++  EINJ_TABLE                                    *EINJ;
++  EINJ_DATA_STRUCTURE                           *EinjData;
++  EFI_ACPI_6_0_EINJ_INJECTION_INSTRUCTION_ENTRY *GetErrorTypeEntry;
++  EFI_ACPI_6_0_EINJ_INJECTION_INSTRUCTION_ENTRY *ExecuteOperationEntry;
++} EINJ_CONTEXT;
++
++
++EFI_STATUS
++InitEinjTable(VOID);
++// Version2
++EFI_STATUS
++EinjConfigErrorInjectCapability(
++  EINJ_CONTEXT  *Context,
++  UINT32        BitsSupportedErrorType
++);
++EFI_STATUS
++EinjHeaderCreator(
++  EINJ_CONTEXT  *Context
++);
++/***OEM***/
++EFI_STATUS
++OemInitEinjTable(VOID);
++EFI_STATUS
++OemEinjConfigExecuteOperationEntry(
++  EINJ_CONTEXT *Context
++);
++VOID
++EinjSetAcpiTable(
++  EINJ_CONTEXT *Context
++);
++
++
++#endif    // _EINJ_H_
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.h b/Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.h
+new file mode 100644
+index 0000000000..44cd1f9577
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.h
+@@ -0,0 +1,110 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#ifndef GENERIC_HARDWARE_ERROR_SOURCE
++#define GENERIC_HARDWARE_ERROR_SOURCE
++#include "Apei.h"
++
++
++typedef struct {
++  UINT64 AckRegister;
++  UINT64 ErrorStatusBlockAddress;
++} GHES_REGISTER;
++
++typedef enum {
++  PROCESSOR_GENERIC   = 0,
++  PROCESSOR_IA32_X64  = 1,
++  PROCESSOR_IPF       = 2,
++  PROCESSOR_ARM       = 3,
++  PLATFORM_MEMORY     = 4,
++  PLATFORM_MEMORY2    = 5,
++  PCIE_EXPRESS        = 6,
++  FIRMWARE_ERROR      = 7,
++  PCI_BUS             = 8,
++  PCI_COMPONENT       = 9
++} EFI_CPER_SECTION_TYPE;
++typedef enum {
++  RECOVERABLE = 0,
++  FATAL = 1,
++  CORRECTED = 2,
++  NONE = 3
++} ERROR_SEVERITY;
++
++EFI_ACPI_6_1_GENERIC_ERROR_STATUS_STRUCTURE*
++ErrorBlockInitial(
++  VOID   *Block,
++  UINT32 Severity
++);
++BOOLEAN ErrorBlockAddErrorData (
++  IN VOID                  *ErrorBlock,
++  IN UINT32                MaxBlockLength,
++  IN EFI_CPER_SECTION_TYPE TypeOfErrorData,
++  IN VOID                  *GenericErrorData,
++  IN UINT32                SizeOfGenericErrorData,
++  IN ERROR_SEVERITY        ErrorSeverity,
++  IN BOOLEAN               Correctable
++);
++BOOLEAN ErrorBlockAddErrorData (
++  IN VOID                  *ErrorBlock,
++  IN UINT32                MaxBlockLength,
++  IN EFI_CPER_SECTION_TYPE TypeOfErrorData,
++  IN VOID                  *GenericErrorData,
++  IN UINT32                SizeOfGenericErrorData,
++  IN ERROR_SEVERITY        ErrorSeverity,
++  IN BOOLEAN               Correctable
++);
++
++VOID
++GhesV2Initial (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE  *GhesV2,
++  UINT32                                                          BlockLength
++);
++
++/**
++@param type - one of HARDWARE_ERROR_NOTIFICATION Type, GSIV For ARM,and SCI for X86,
++              Notice: Windows OS hadn't support to GSIV, 20171026
++*/
++VOID
++GhesV2AddNotification (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE  *This,
++  UINT8                                                           Type
++);
++
++
++EFI_STATUS
++GhesV2LinkErrorBlock (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE *GhesV2,
++  GHES_REGISTER                                                  *Register,
++  VOID                                                           *ErrorBlock
++);
++VOID
++GhesV1Initial (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE *GhesV1,
++  UINT32                                               BlockLength
++);
++VOID
++GhesV1AddNotification (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE *This,
++  UINT8                                                Type
++);
++EFI_STATUS
++GhesV1LinkErrorBlock (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE *This,
++  UINT64                                               *ptrBlockAddress,
++  VOID                                                 *ErrorBlock
++);
++
++
++#endif
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.h b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.h
+new file mode 100644
+index 0000000000..ca43c83fa0
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.h
+@@ -0,0 +1,146 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#ifndef _ERST_H_
++#define _ERST_H_
++
++#include "Apei.h"
++
++#define ERST_STATUS_SUCCESS                 EFI_ACPI_6_1_ERST_STATUS_SUCCESS
++#define ERST_STATUS_NOT_ENOUGH_SPACE        EFI_ACPI_6_1_ERST_STATUS_NOT_ENOUGH_SPACE
++#define ERST_STATUS_HARDWARE_NOT_AVAILABLE  EFI_ACPI_6_1_ERST_STATUS_HARDWARE_NOT_AVAILABLE
++#define ERST_STATUS_FAILED                  EFI_ACPI_6_1_ERST_STATUS_FAILED
++#define ERST_STATUS_RECORD_STORE_EMPTY      EFI_ACPI_6_1_ERST_STATUS_RECORD_STORE_EMPTY
++#define ERST_STATUS_RECORD_NOT_FOUND        EFI_ACPI_6_1_ERST_STATUS_RECORD_NOT_FOUND
++
++#define ERST_BEGIN_WRITE_VALUE              0x01
++#define ERST_BEGIN_WRITE_MASK               0xFFFFFFFFFFFFFFFF
++#define ERST_BEGIN_READ_VALUE               0x02
++#define ERST_BEGIN_READ_MASK                0xFFFFFFFFFFFFFFFF
++#define ERST_BEGIN_CLEAR_VALUE              0x03
++#define ERST_BEGIN_CLEAR_MASK               0xFFFFFFFFFFFFFFFF
++#define ERST_END_OPERATION_VALUE            0x04
++#define ERST_END_OPERATION_MASK             0xFFFFFFFFFFFFFFFF
++#define ERST_MASK                           0xFFFFFFFFFFFFFFFF
++
++#define ERST_BEGIN_WRITE_OPERATION          EFI_ACPI_6_1_ERST_BEGIN_WRITE_OPERATION
++#define ERST_BEGIN_READ_OPERATION           EFI_ACPI_6_1_ERST_BEGIN_READ_OPERATION
++#define ERST_BEGIN_CLEAR_OPERATION          EFI_ACPI_6_1_ERST_BEGIN_CLEAR_OPERATION
++#define ERST_END_OPERATION                  EFI_ACPI_6_1_ERST_END_OPERATION
++#define ERST_BEGIN_DUMMY_WRITE_OPERATION    EFI_ACPI_6_1_ERST_BEGIN_DUMMY_WRITE_OPERATION
++
++#define ERST_ACTION_NO                      16
++
++#define ERST_RECORD_FREE                    0x00
++#define ERST_RECORD_INUSE                   0x01
++
++#define ERST_RECORD_STORE_IN_NVRAM          0
++#define ERST_RECORD_STORE_IN_MEM            1
++#define ERST_RECORD_STORE_IN_SPI_FLASH      2
++
++#define ERST_LOG_ATTR_NVRAM                 0x02
++
++typedef struct {
++  UINT64 OperationId;
++  UINT64 RecordOffset;
++  UINT64 BusyStatus;
++  UINT64 CommandStatus;
++  UINT64 GetRecordId;
++  UINT64 SetRecordId;
++  UINT64 RecordCount;
++  UINT64 DummyWrite;
++  UINT64 Reserved;
++  UINT64 ErrorLogAddrRange;
++  UINT64 ErrorLogAddrRangeLength;
++  UINT64 ErrorLogAttributes;
++  UINT64 NvRamLogAddrNext;
++  UINT64 NvRamLogSizeRemain;
++} ERST_DATA_STRUCTURE;
++
++typedef struct {
++  UINT16 Signature;
++  UINT16 Data0;
++  UINT16 Data1;
++  UINT8  Data2;
++  UINT8  Attributes; //0: free
++} ERST_ERROR_RECORD_INFO;
++
++///
++/// ERST Table
++///
++
++
++
++typedef struct _ERST_CONTEXT {
++  UINT64 Operation;                  // WRITE,READ,CLEAR,END,
++  UINT64 DummyWrite;                 //DUMMY_WRITE_OPEATION
++  UINT64 RecordOffset;               // Offset form the buffer(error log  adress range)
++  UINT32 BusyStatus;
++  UINT32 CommandStatus;
++  UINT64 KeyRecordId;                //OS Set the Record ID To Read/Write/Search
++  UINT64 MaxTimeOfExecuteOperation;
++  UINT64 RecordCount;                // Num of Record In NVRAM
++  UINT64 ErrorLogAddressRange;       // Address Of Range Top
++  UINT64 ErrorLogAddressRangeLength; // Address Of Range Top
++  UINT64 ErrorLogAttributes;
++  VOID   *NvRamLogAddrRange;
++  UINT64 NvRamLogAddrRangeLength;
++  UINT64 NvRamRecordOffset;
++  UINT64 NvRamNextVallidRecordId;    //Get RecordId entry
++  UINT64 NvRamNextValidRecordOffset;
++  UINT64 NvRamAllRecordLength;
++} ERST_RT_CONTEXT;
++
++typedef struct _ERST_BOOT_CONTEXT {
++  EFI_ACPI_6_1_ERROR_RECORD_SERIALIZATION_TABLE_HEADER *ErstHeader;
++  EFI_ACPI_6_1_ERST_SERIALIZATION_INSTRUCTION_ENTRY    *ExecuteOperationEntry;
++  EFI_ACPI_6_1_ERST_SERIALIZATION_INSTRUCTION_ENTRY    *GetErrorLogAddrRangeAttributes;
++  ERST_RT_CONTEXT                                      *Rt;
++} ERST_BOOT_CONTEXT;
++
++extern EFI_ACPI_TABLE_PROTOCOL              *mAcpiTableProtocol;
++extern APEI_TRUSTED_FIRMWARE_STRUCTURE      *mApeiTrustedfirmwareData;
++
++EFI_STATUS
++ErstHeaderCreator(
++  ERST_BOOT_CONTEXT  *Context,
++  UINT64             BufferSize,//ERST_DATASTORE_SIZE
++  VOID               *NvRamAddrRange,
++  UINT64             NvRamAllRecordLength,
++  UINT64             NvRamAddrRangeLength
++);
++
++VOID
++SetAttributeOfErrorLogAddressRange (
++  ERST_BOOT_CONTEXT  *Context,
++  UINT64             Attribute
++);
++
++/***OEM***/
++EFI_STATUS
++OemInitErstTable (VOID);
++
++EFI_STATUS
++OemErstConfigExecuteOperationEntry (
++  ERST_BOOT_CONTEXT *Context
++);
++
++VOID
++ErstSetAcpiTable (
++  ERST_BOOT_CONTEXT *Context
++);
++
++
++#endif    // _ERST_H_
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.h b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.h
+new file mode 100644
+index 0000000000..94f66496e6
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.h
+@@ -0,0 +1,59 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#ifndef _HEST_H_
++#define _HEST_H_
++
++#include "Apei.h"
++
++
++typedef struct _HEST_CONTEXT {
++  EFI_ACPI_6_1_HARDWARE_ERROR_SOURCE_TABLE_HEADER  *HestHeader;         // pointer to hest header
++  UINT32                                           OccupiedMemorySize; // allocated memory size for hest
++  VOID                                             *KeyErrorSource;     // key error source, valtile
++} HEST_CONTEXT;
++
++EFI_STATUS
++HestAddErrorSourceDescriptor (
++  IN OUT HEST_CONTEXT  *Context,
++  IN VOID              *ErrorSourceDescriptor,
++  IN UINT32            SizeOfDescriptor
++);
++VOID
++HestSetAcpiTable (
++  IN HEST_CONTEXT *Context
++);
++EFI_STATUS
++HestHeaderCreator (
++  HEST_CONTEXT  *Context,
++  UINT32        PreAllocatedHestSize
++);
++
++/**
++* OEM Interface declaration
++* 1.Interface is not realized default
++* 2.OEM should implement this interface
++*/
++extern
++VOID
++OemHestInitialNotification (VOID);
++
++extern
++EFI_STATUS
++OemInitHestTable(
++  IN EFI_HANDLE ImageHandle
++);
++
++#endif    // _HEST_H_
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.h b/Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.h
+new file mode 100644
+index 0000000000..e6fb386a62
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.h
+@@ -0,0 +1,43 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#ifndef OEM_APEI_HI1620_H_H
++#define OEM_APEI_HI1620_H_H
++#define GPIO0_BASE             0x94100000
++#define GPIO1_BASE             0x94110000
++#define GPIO_INT_MASK          0x34
++#define GPIO_INT_EN            0x30
++#define GPIO_SWPORT_DDR        0x04
++#define GPIO_INT_TYPE          0x38
++#define GPIO_INT_POLARITY      0x3c
++#define GPIO_LS_SYNC           0x60
++#define GPIO_INT_COMB          0xffc
++#define IOMUX_REG_BASE         0x94190000
++#define IOMG051                0xCC
++#define IOMG052                0xD0
++#define PAD_EX_INT1            0x4
++#define CPLD_GPIO10_INT_OFFSET 0xfc
++#define CPLD_BASE_ADDR         0x80000000
++#define CPLD_MASK              0x01030000
++#define CPLD_VALUE             0x01020000
++
++#define MAX_GHES                          3
++#define GENERIC_HARDWARE_ERROR_BLOCK_SIZE 0x1000
++#define HEST_TABLE_SIZE                   0x2000
++#define BOOT_ERROR_REGION_SIZE            0x1000
++#define GPIO_HEST_NOTIFIED_PIN            BIT8
++
++#define ERST_DATASTORE_SIZE               0x2000
++#endif
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.c b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.c
+new file mode 100644
+index 0000000000..8769d88bff
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Apei.c
+@@ -0,0 +1,108 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++#include <Library/ArmSmcLib.h>
++#include <Library/BaseMemoryLib.h>
++#include <Library/DebugLib.h>
++#include <Library/IoLib.h>
++#include <Library/MemoryAllocationLib.h>
++#include <Library/OemConfigData.h>
++#include <Library/UefiBootServicesTableLib.h>
++#include <Library/UefiLib.h>
++#include <Library/UefiRuntimeServicesTableLib.h>
++#include "Apei.h"
++#include "PlatformArch.h"
++#include "bert.h"
++#include "einj.h"
++#include "erst.h"
++#include "hest.h"
++
++EFI_ACPI_TABLE_PROTOCOL        *mAcpiTableProtocol = NULL;
++EFI_ACPI_SDT_PROTOCOL          *mAcpiSdtProtocol = NULL;
++APEI_TRUSTED_FIRMWARE_STRUCTURE      *mApeiTrustedfirmwareData;
++
++EFI_STATUS
++EFIAPI
++ApeiEntryPoint (
++  IN EFI_HANDLE          ImageHandle,
++  IN EFI_SYSTEM_TABLE    *SystemTable
++)
++{
++  EFI_STATUS              Status;
++  ARM_SMC_ARGS            SmcRegs = {0};
++  UINTN                   Size = sizeof (OEM_CONFIG_DATA);
++  OEM_CONFIG_DATA         SetupData;
++
++  Status = gRT->GetVariable (
++             OEM_CONFIG_NAME,
++             &gOemConfigGuid,
++             NULL,
++             &Size,
++             &SetupData
++             );
++  if (EFI_ERROR (Status)) {
++    SetupData.EnRasSupport = 1;
++    DEBUG ((DEBUG_ERROR, "[%a]GetVariable %r.Get default variable value\n",
++      __FUNCTION__, Status));
++  }
++  if (!SetupData.EnRasSupport) {
++    return EFI_ABORTED;
++  }
++  if (PcdGet64 (PcdTrustedFirmwareEnable) == 0) {
++    return EFI_ABORTED;
++  }
++  Status = gBS->LocateProtocol (
++                  &gEfiAcpiTableProtocolGuid,
++                  NULL,
++                  (VOID**)&mAcpiTableProtocol);
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  Status = gBS->LocateProtocol (
++                &gEfiAcpiSdtProtocolGuid,
++                NULL,
++                (VOID**)&mAcpiSdtProtocol);
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  Status = gBS->AllocatePool (
++             EfiReservedMemoryType,
++             sizeof (APEI_TRUSTED_FIRMWARE_STRUCTURE),
++             (VOID**)&mApeiTrustedfirmwareData
++           );
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  gBS->SetMem (
++    mApeiTrustedfirmwareData,
++    sizeof (APEI_TRUSTED_FIRMWARE_STRUCTURE),
++    0
++  );
++  Status = EFI_SUCCESS;
++  Status |= OemInitBertTable (ImageHandle);
++  Status |= OemInitHestTable (ImageHandle);
++  Status |= OemInitErstTable ();
++  Status |= OemInitEinjTable ();
++  // smc call
++  DEBUG ((DEBUG_INFO, "[%a]:[%dL]: %r\n", __FUNCTION__, __LINE__, Status));
++  if (Status == EFI_SUCCESS) {
++    SmcRegs.Arg0 = PRIVATE_ARM_SMC_ID_APEI;
++    SmcRegs.Arg1 = (UINTN)mApeiTrustedfirmwareData;
++    ArmCallSmc (&SmcRegs);
++  }
++  DEBUG ((DEBUG_INFO, "Acpi Apei init done.\n"));
++  return EFI_SUCCESS;
++}
++
++
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.c b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.c
+new file mode 100644
+index 0000000000..2953e22690
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Bert/bert.c
+@@ -0,0 +1,92 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#include "bert.h"
++#include "ErrorSource/Ghes.h"
++#include <Library/BaseLib.h>
++#include <Library/BaseMemoryLib.h>
++#include <Library/DebugLib.h>
++#include <Library/MemoryAllocationLib.h>
++#include "PlatformArch.h"
++
++VOID
++BertSetAcpiTable (
++  IN BERT_CONTEXT *Context
++)
++{
++  UINTN          AcpiTableHandle;
++  EFI_STATUS     Status;
++  if (Context == NULL) {
++    return;
++  }
++  EFI_ACPI_6_0_BOOT_ERROR_RECORD_TABLE_HEADER* Bert = Context->BertHeader;
++  Bert->Header.Checksum = CalculateCheckSum8 ((UINT8*)(Bert), Bert->Header.Length);
++  AcpiTableHandle = 0;
++  Status = mAcpiTableProtocol->InstallAcpiTable (
++                                 mAcpiTableProtocol,
++                                 Bert,
++                                 Bert->Header.Length,
++                                 &AcpiTableHandle);
++  ASSERT_EFI_ERROR (Status);
++  return;
++}
++
++BOOLEAN
++BertAddGenericErrorData (
++  IN EFI_ACPI_6_0_BOOT_ERROR_RECORD_TABLE_HEADER *Bert,
++  IN EFI_CPER_SECTION_TYPE                       TypeOfErrorData,
++  IN VOID                                        *GenericErrorData,
++  IN UINT32                                      SizeOfGenericErrorData,
++  IN ERROR_SEVERITY                              ErrorSeverity,
++  IN BOOLEAN                                     Correctable
++)
++{
++  DEBUG ((DEBUG_ERROR, "[%a]:[%dL]: \n", __FUNCTION__, __LINE__));
++  BOOLEAN Status = ErrorBlockAddErrorData (
++                     (VOID*)Bert->BootErrorRegion,
++                     Bert->BootErrorRegionLength,
++                     TypeOfErrorData,
++                     GenericErrorData,
++                     SizeOfGenericErrorData,
++                     ErrorSeverity,
++                     Correctable);
++  return Status;
++}
++
++EFI_STATUS
++BertHeaderCreator (
++  IN BERT_CONTEXT  *Context,
++  IN UINT32        ErrorBlockSize
++)
++{
++  if (Context == NULL) {
++    return EFI_INVALID_PARAMETER;
++  }
++  Context->BertHeader = AllocateZeroPool (sizeof (EFI_ACPI_6_0_BOOT_ERROR_RECORD_TABLE_HEADER));
++  Context->Block = AllocateReservedZeroPool (ErrorBlockSize);
++  Context->BlockSize = ErrorBlockSize;
++  *Context->BertHeader = (EFI_ACPI_6_0_BOOT_ERROR_RECORD_TABLE_HEADER) {
++    ARM_ACPI_HEADER (
++      EFI_ACPI_6_0_BOOT_ERROR_RECORD_TABLE_SIGNATURE,
++      EFI_ACPI_6_0_BOOT_ERROR_RECORD_TABLE_HEADER,
++      EFI_ACPI_6_0_BOOT_ERROR_RECORD_TABLE_REVISION
++      ),
++    Context->BlockSize,
++    (UINT64)Context->Block
++  };
++  return EFI_SUCCESS;
++}
++
++
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.c b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.c
+new file mode 100644
+index 0000000000..c53f4cdb3c
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Einj/einj.c
+@@ -0,0 +1,349 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++#include "einj.h"
++#include <IndustryStandard/Acpi62.h>
++#include <Library/BaseLib.h>
++#include <Library/DebugLib.h>
++#include <Library/MemoryAllocationLib.h>
++#include <Library/UefiBootServicesTableLib.h>
++#include "OemApeiHi1620.h"
++#include "PlatformArch.h"
++
++
++EINJ_TABLE mEinj = {
++  {
++    ARM_ACPI_HEADER (
++      EFI_ACPI_6_0_ERROR_INJECTION_TABLE_SIGNATURE,
++      EFI_ACPI_6_0_ERROR_INJECTION_TABLE_HEADER,
++      EFI_ACPI_6_0_ERROR_INJECTION_TABLE_REVISION
++    ),
++    sizeof (EFI_ACPI_6_0_ERROR_INJECTION_TABLE_HEADER),
++    0x0,
++    {
++      0x0,
++      0x0,
++      0x0
++    },
++    EINJ_ACTION_NO
++  },
++  {
++    {
++      // 0 EFI_ACPI_6_0_EINJ_BEGIN_INJECTION_OPERATION
++      EFI_ACPI_6_0_EINJ_BEGIN_INJECTION_OPERATION,
++      EFI_ACPI_6_0_EINJ_WRITE_REGISTER_VALUE,
++      EFI_ACPI_6_0_EINJ_PRESERVE_REGISTER,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      EINJ_BEGIN_OPERATION_VALUE,
++      EINJ_WRITE_MASK
++    },
++    {
++      // 1 EFI_ACPI_6_0_EINJ_GET_TRIGGER_ERROR_ACTION_TABLE
++      EFI_ACPI_6_0_EINJ_GET_TRIGGER_ERROR_ACTION_TABLE,
++      EFI_ACPI_6_0_EINJ_READ_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      EINJ_READ_MASK
++    },
++    {
++      // 2 EFI_ACPI_6_0_EINJ_SET_ERROR_TYPE
++      EFI_ACPI_6_0_EINJ_SET_ERROR_TYPE,
++      EFI_ACPI_6_0_EINJ_WRITE_REGISTER,
++      EFI_ACPI_6_0_EINJ_PRESERVE_REGISTER,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      EINJ_WRITE_MASK
++    },
++    {
++      // 3 EFI_ACPI_6_0_EINJ_GET_ERROR_TYPE
++      EFI_ACPI_6_0_EINJ_GET_ERROR_TYPE,
++      EFI_ACPI_6_0_EINJ_READ_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      0xFFFFFFFF
++    },
++    {
++      // 4 EFI_ACPI_6_0_EINJ_END_OPERATION
++      EFI_ACPI_6_0_EINJ_END_OPERATION,
++      EFI_ACPI_6_0_EINJ_WRITE_REGISTER_VALUE,
++      EFI_ACPI_6_0_EINJ_PRESERVE_REGISTER,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      EINJ_END_OPERATION_VALUE,
++      0xFFFFFFFF
++    },
++    {
++      // 5 EFI_ACPI_6_0_EINJ_EXECUTE_OPERATION
++      EFI_ACPI_6_0_EINJ_EXECUTE_OPERATION,
++      EFI_ACPI_6_0_EINJ_WRITE_REGISTER_VALUE,
++      EFI_ACPI_6_0_EINJ_PRESERVE_REGISTER,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        32,
++        0,
++        EFI_ACPI_6_0_DWORD,
++        GPIO1_BASE + GPIO_INT_MASK //0x40070008//0x4d000F00//GPIO0_BASE + GPIO0_SWPORT_DR_OFFSET
++      },
++      0,
++      0xFFFFFFFF //BIT0
++    },
++    {
++      // 6 EFI_ACPI_6_0_EINJ_CHECK_BUSY_STATUS
++      EFI_ACPI_6_0_EINJ_CHECK_BUSY_STATUS,
++      EFI_ACPI_6_0_EINJ_READ_REGISTER_VALUE,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0x01,
++      0x01
++    },
++    {
++      // 7 EFI_ACPI_6_0_EINJ_GET_COMMAND_STATUS
++      EFI_ACPI_6_0_EINJ_GET_COMMAND_STATUS,
++      EFI_ACPI_6_0_EINJ_READ_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      0x3
++    },
++    {
++      // 8 EFI_ACPI_EINJ_SET_ERROR_TYPE_WITH_ADDRESS
++      EFI_ACPI_EINJ_SET_ERROR_TYPE_WITH_ADDRESS,
++      EFI_ACPI_6_0_EINJ_WRITE_REGISTER,
++      EFI_ACPI_6_0_EINJ_PRESERVE_REGISTER,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      0xFFFFFF
++    },
++    {
++      // 9 EFI_ACPI_EINJ_GET_EXCUTE_OPERATION_TIMINGS
++      EFI_ACPI_EINJ_GET_EXCUTE_OPERATION_TIMINGS,
++      EFI_ACPI_6_0_EINJ_WRITE_REGISTER,
++      EFI_ACPI_6_0_EINJ_PRESERVE_REGISTER,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      0xFFFFFF
++    }
++  }
++};
++
++EINJ_TRIGGER_ERROR_ACTION mEinjTriggerErrorAction = {
++  {
++    sizeof (EFI_ACPI_6_0_EINJ_TRIGGER_ACTION_TABLE),
++    0,
++    sizeof (EINJ_TRIGGER_ERROR_ACTION),
++    EINJ_TRIGGER_ERROR_ACTION_NO
++  },
++  {
++    {
++      EFI_ACPI_6_0_EINJ_TRIGGER_ERROR,
++      EFI_ACPI_6_0_EINJ_NOOP,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_DWORD,
++        0
++      },
++      0,
++      0
++    }
++  }
++};
++
++
++VOID
++EinjSetAcpiTable (
++  EINJ_CONTEXT *Context
++)
++{
++  UINTN                   AcpiTableHandle;
++  EFI_STATUS              Status;
++  UINT8                   Checksum;
++  EFI_ACPI_SDT_HEADER     *Table;
++  EFI_ACPI_TABLE_VERSION  TableVersion;
++  UINTN                   TableKey;
++  UINTN                   i;
++
++  Context->EINJ->EinjTableHeader.Header.Length = sizeof (EINJ_TABLE);
++  Checksum = CalculateCheckSum8 (
++               (UINT8*)(Context->EINJ),
++               Context->EINJ->EinjTableHeader.Header.Length);
++  Context->EINJ->EinjTableHeader.Header.Checksum = Checksum;
++  AcpiTableHandle = 0;
++  Status = mAcpiTableProtocol->InstallAcpiTable (
++             mAcpiTableProtocol,
++             Context->EINJ,
++             Context->EINJ->EinjTableHeader.Header.Length,
++             &AcpiTableHandle
++           );
++  for (i = 0; i < EFI_ACPI_MAX_NUM_TABLES; i++) {
++    Status = mAcpiSdtProtocol->GetAcpiTable (i, &Table, &TableVersion, &TableKey);
++    if (EFI_ERROR (Status)) {
++      break;
++    }
++    if (Table->Signature != EFI_ACPI_6_0_ERROR_INJECTION_TABLE_SIGNATURE) {
++      continue;
++    }
++    mApeiTrustedfirmwareData->EinjTableAddress = (EFI_PHYSICAL_ADDRESS)Table;
++    mApeiTrustedfirmwareData->EinjDataStruct = (EFI_PHYSICAL_ADDRESS)Context->EinjData;
++  }
++  ASSERT_EFI_ERROR (Status) ;
++}
++//V2
++EFI_STATUS
++EinjHeaderCreator (
++  EINJ_CONTEXT *Context
++)
++{
++  EFI_STATUS           Status;
++  EINJ_DATA_STRUCTURE  *EinjData = NULL;
++  Status = gBS->AllocatePool (
++             EfiReservedMemoryType,
++             sizeof (EINJ_DATA_STRUCTURE),
++             (VOID**)&EinjData
++           );
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  gBS->SetMem (
++    EinjData,
++    sizeof (EINJ_DATA_STRUCTURE),
++    0
++  );
++
++  DEBUG ((DEBUG_INFO, "EINJ EinjData is at 0x%X,size =0x%x\n",
++          EinjData, sizeof (EINJ_DATA_STRUCTURE)));
++  EinjData->TriggerErrorActionTablePtr =
++    (EINJ_TRIGGER_ERROR_ACTION*)(&(EinjData->TriggerErrorActionTable));
++  gBS->CopyMem (
++         EinjData->TriggerErrorActionTablePtr,
++         &mEinjTriggerErrorAction,
++         sizeof (EINJ_TRIGGER_ERROR_ACTION));
++  EinjData->OperationBegin = 0;
++  EinjData->ErrorType = 0;
++  EinjData->ErrorCapabilities = 0xFFF;
++  EinjData->BusyStatus = 0;
++  EinjData->CommandStatus = 0;
++  mEinj.EinjInstructionEntry[0].RegisterRegion.Address =
++    (UINT64)(&(EinjData->OperationBegin));
++  mEinj.EinjInstructionEntry[1].RegisterRegion.Address =
++    (UINT64)(&(EinjData->TriggerErrorActionTablePtr));
++  mEinj.EinjInstructionEntry[2].RegisterRegion.Address =
++    (UINT64)(&(EinjData->ErrorType));
++  mEinj.EinjInstructionEntry[3].RegisterRegion.Address =
++    (UINT64)(&(EinjData->ErrorCapabilities));
++  mEinj.EinjInstructionEntry[4].RegisterRegion.Address =
++    (UINT64)(&(EinjData->OperationBegin));
++  mEinj.EinjInstructionEntry[6].RegisterRegion.Address =
++    (UINT64)(&(EinjData->BusyStatus));
++  mEinj.EinjInstructionEntry[7].RegisterRegion.Address =
++    (UINT64)(&(EinjData->CommandStatus));
++  mEinj.EinjInstructionEntry[8].RegisterRegion.Address =
++    (UINT64)(&(EinjData->ErrorTypeWithAddress));
++  mEinj.EinjInstructionEntry[9].RegisterRegion.Address =
++    (UINT64)(&(EinjData->Timming));
++  EinjData->ErrorTypeWithAddress.VendorErrorTypeOffset =
++    (UINT32)((UINTN)&(EinjData->VendorErrorTypeExtension) -
++    (UINTN)&(EinjData->ErrorTypeWithAddress));
++  Context->EinjData = EinjData;
++  Context->EINJ = &mEinj;
++  Context->ExecuteOperationEntry = &mEinj.EinjInstructionEntry[5];
++  Context->GetErrorTypeEntry = &mEinj.EinjInstructionEntry[3];
++  return EFI_SUCCESS;
++}
++
++
++EFI_STATUS
++EinjConfigErrorInjectCapability (
++  EINJ_CONTEXT* Context,
++  UINT32        BitsSupportedErrorType
++)
++{
++  EFI_ACPI_6_0_EINJ_INJECTION_INSTRUCTION_ENTRY* KeyEntry;
++  UINT32*                                        EinjCapablity;
++
++  KeyEntry = Context->GetErrorTypeEntry;
++  EinjCapablity = (UINT32*)KeyEntry->RegisterRegion.Address;
++  *EinjCapablity = BitsSupportedErrorType;
++  KeyEntry->Value = BitsSupportedErrorType;
++  return EFI_SUCCESS;
++}
++
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.c b/Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.c
+new file mode 100644
+index 0000000000..6d69b90e9b
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/ErrorSource/Ghes.c
+@@ -0,0 +1,330 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#include <Guid/Cper.h>
++#include "Ghes.h"
++#include <Library/DebugLib.h>
++#include <Library/UefiBootServicesTableLib.h>
++
++#define READ_ACK_PRESERVE 0xFFFFFFFE
++#define READ_ACK_WRITE 0x1
++
++EFI_ACPI_6_1_GENERIC_ERROR_STATUS_STRUCTURE*
++ErrorBlockInitial (
++  VOID   *Block,
++  UINT32 Severity
++)
++{
++  EFI_ACPI_6_1_GENERIC_ERROR_STATUS_STRUCTURE* BlockHeader = Block;
++  BlockHeader->BlockStatus = (EFI_ACPI_6_1_ERROR_BLOCK_STATUS) {0, 0, 0, 0, 0};
++  BlockHeader->RawDataOffset = 0;
++  BlockHeader->RawDataLength = 0;
++  BlockHeader->DataLength = 0;
++  BlockHeader->ErrorSeverity = Severity;
++  return BlockHeader;
++}
++
++
++BOOLEAN
++ErrorBlockUpdateStatusStructure (
++  VOID *ErrorBlock
++)
++{
++  if (ErrorBlock == NULL) {
++    return FALSE;
++  }
++  IN EFI_ACPI_6_1_GENERIC_ERROR_STATUS_STRUCTURE *BlockHeader =  ErrorBlock;
++  VOID *EntriesBegin = ErrorBlock + sizeof (EFI_ACPI_6_1_GENERIC_ERROR_STATUS_STRUCTURE);
++  if (BlockHeader->BlockStatus.ErrorDataEntryCount == 0) {
++    gBS->SetMem (EntriesBegin, BlockHeader->DataLength, 0);
++    BlockHeader->RawDataLength = 0;
++    BlockHeader->RawDataOffset = 0;
++    BlockHeader->DataLength = 0;
++  }
++  return TRUE;
++}
++
++
++BOOLEAN
++ErrorBlockAddErrorData (
++  IN VOID                  *ErrorBlock,
++  IN UINT32                MaxBlockLength,
++  IN EFI_CPER_SECTION_TYPE TypeOfErrorData,
++  IN VOID                  *GenericErrorData,
++  IN UINT32                SizeOfGenericErrorData,
++  IN ERROR_SEVERITY        ErrorSeverity,
++  IN BOOLEAN               Correctable
++)
++{
++  if (ErrorBlock == NULL || GenericErrorData == NULL) {
++    DEBUG ((DEBUG_ERROR, "[%a]:[%dL]Invalid Param \n", __FUNCTION__, __LINE__));
++    return FALSE;
++  }
++  EFI_ACPI_6_1_GENERIC_ERROR_DATA_ENTRY_STRUCTURE*  Entry;
++  EFI_ACPI_6_1_GENERIC_ERROR_STATUS_STRUCTURE* BlockHeader = ErrorBlock;
++  EFI_ACPI_6_1_ERROR_BLOCK_STATUS* BlockStatus = &BlockHeader->BlockStatus;
++  (VOID)ErrorBlockUpdateStatusStructure (ErrorBlock);
++  UINT32 ExpectedNewDataLength = BlockHeader->DataLength +
++           sizeof (EFI_ACPI_6_1_GENERIC_ERROR_DATA_ENTRY_STRUCTURE) +
++           SizeOfGenericErrorData;
++  if (sizeof (EFI_ACPI_6_1_GENERIC_ERROR_STATUS_STRUCTURE) + ExpectedNewDataLength >
++      MaxBlockLength) {
++    DEBUG ((DEBUG_ERROR, "[%a]:[%dL]Out of BlockSize \n", __FUNCTION__, __LINE__));
++    return FALSE;
++  }
++  // guid
++  EFI_GUID Guid;
++  switch (TypeOfErrorData) {
++    case PROCESSOR_GENERIC:
++      Guid = (EFI_GUID)EFI_ERROR_SECTION_PROCESSOR_GENERIC_GUID;
++      break;
++    case PROCESSOR_ARM:
++      Guid = (EFI_GUID)EFI_ERROR_SECTION_PROCESSOR_SPECIFIC_ARM_GUID;
++      break;
++    case PLATFORM_MEMORY:
++      Guid = (EFI_GUID)EFI_ERROR_SECTION_PLATFORM_MEMORY_GUID;
++      break;
++    case PLATFORM_MEMORY2:
++      Guid = (EFI_GUID)EFI_ERROR_SECTION_PLATFORM_MEMORY2_GUID;
++      break;
++    case PCIE_EXPRESS:
++      Guid = (EFI_GUID)EFI_ERROR_SECTION_PCIE_GUID;
++      break;
++    case FIRMWARE_ERROR:
++      Guid = (EFI_GUID)EFI_ERROR_SECTION_FW_ERROR_RECORD_GUID;
++      break;
++    case PCI_BUS:
++      Guid = (EFI_GUID)EFI_ERROR_SECTION_PCI_PCIX_BUS_GUID;
++      break;
++    case PCI_COMPONENT:
++      Guid = (EFI_GUID)EFI_ERROR_SECTION_PCI_DEVICE_GUID;
++      break;
++    default:
++      return FALSE;
++  }
++  //Block Status
++  if (Correctable == TRUE) {
++    if (BlockStatus->CorrectableErrorValid == 0) {
++      BlockStatus->CorrectableErrorValid = 1;
++    } else {
++      BlockStatus->MultipleCorrectableErrors = 1;
++    }
++  } else {
++    if (BlockStatus->UncorrectableErrorValid == 0) {
++      BlockStatus->UncorrectableErrorValid = 1;
++    } else {
++      BlockStatus->MultipleUncorrectableErrors = 1;
++    }
++  }
++  BlockStatus->ErrorDataEntryCount++;
++  // Entry
++  Entry = (EFI_ACPI_6_1_GENERIC_ERROR_DATA_ENTRY_STRUCTURE*)(ErrorBlock +
++           sizeof (EFI_ACPI_6_1_GENERIC_ERROR_STATUS_STRUCTURE) +
++           BlockHeader->DataLength);
++  gBS->SetMem (Entry, sizeof (EFI_ACPI_6_1_GENERIC_ERROR_DATA_ENTRY_STRUCTURE), 0);
++  gBS->CopyMem (&Entry->SectionType, &Guid, sizeof (EFI_GUID));
++  Entry->ErrorSeverity = ErrorSeverity;
++  Entry->Revision = EFI_ACPI_6_1_GENERIC_ERROR_DATA_ENTRY_REVISION;
++  Entry->ErrorDataLength = SizeOfGenericErrorData;
++  VOID*  GenericErrorDataFollowEntry = (VOID*)Entry +
++           sizeof (EFI_ACPI_6_1_GENERIC_ERROR_DATA_ENTRY_STRUCTURE);
++  gBS->CopyMem (
++         GenericErrorDataFollowEntry,
++         GenericErrorData,
++         SizeOfGenericErrorData);
++  // BlockHeader
++  BlockHeader->RawDataOffset = 0;
++  BlockHeader->RawDataLength = 0;
++  BlockHeader->DataLength = ExpectedNewDataLength;
++  return TRUE;
++}
++
++VOID
++GhesV2Initial (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE *GhesV2,
++  UINT32                                                         BlockLength
++)
++{
++  if (GhesV2 == NULL) {
++    return;
++  }
++  *GhesV2 = (EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE) {
++    .Type = EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_VERSION_2,
++    .SourceId = 0,
++    .RelatedSourceId = 0xFFFF,
++    .Flags = 0,
++    .Enabled = 1,
++    .NumberOfRecordsToPreAllocate = 1,//ERROR BLOCK
++    .MaxSectionsPerRecord = 1,// Num Entries(section)
++    .MaxRawDataLength = BlockLength, // Max Size Of a Raw Data
++    .ErrorStatusAddress = {
++      .AddressSpaceId = EFI_ACPI_6_1_SYSTEM_MEMORY,
++      .RegisterBitWidth = 64,
++      .RegisterBitOffset = 0,
++      .AccessSize = EFI_ACPI_6_1_QWORD,
++      .Address = 0
++    },
++    .NotificationStructure = {
++      .Type = EFI_ACPI_6_1_HARDWARE_ERROR_NOTIFICATION_GSIV,
++      .Length = sizeof (EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE),
++      .ConfigurationWriteEnable = {0, 0, 0, 0, 0, 0, 0} ,
++      .PollInterval = 0,
++      .Vector = 0,
++      .SwitchToPollingThresholdValue = 0,
++      .SwitchToPollingThresholdWindow = 0,
++      .ErrorThresholdValue = 0,
++      .ErrorThresholdWindow = 0
++    },
++    .ErrorStatusBlockLength = BlockLength,
++    .ReadAckRegister = {
++      .AddressSpaceId = EFI_ACPI_6_1_SYSTEM_MEMORY,
++      .RegisterBitWidth = 64,
++      .RegisterBitOffset = 0,
++      .AccessSize = EFI_ACPI_6_1_QWORD,
++      .Address = 0
++    },
++    .ReadAckPreserve = READ_ACK_PRESERVE,
++    .ReadAckWrite = READ_ACK_WRITE
++  };
++  return;
++}
++
++VOID
++GhesV2AddNotification (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE  *This,
++  UINT8                                                           Type
++)
++{
++  This->NotificationStructure = (EFI_ACPI_6_1_HARDWARE_ERROR_NOTIFICATION_STRUCTURE) {
++    .Type = Type,
++    .Length = sizeof (EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE),
++    .ConfigurationWriteEnable = {
++      .Type = 0,
++      .PollInterval = 1,
++      .SwitchToPollingThresholdValue = 1,
++      .SwitchToPollingThresholdWindow = 1,
++      .ErrorThresholdValue = 1,
++      .ErrorThresholdWindow = 1
++    },
++    .PollInterval = 20,
++    .Vector = 0,
++    .SwitchToPollingThresholdValue = 0,
++    .SwitchToPollingThresholdWindow = 0,
++    .ErrorThresholdValue = 0,
++    .ErrorThresholdWindow = 0
++  };
++  return;
++}
++
++EFI_STATUS
++GhesV2LinkErrorBlock (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE *GhesV2,
++  GHES_REGISTER                                                  *Register,
++  VOID                                                           *ErrorBlock
++)
++{
++  if (ErrorBlock == NULL || Register == NULL || GhesV2 == NULL) {
++    return EFI_INVALID_PARAMETER;
++  }
++
++  Register->ErrorStatusBlockAddress = (UINTN)ErrorBlock;
++  GhesV2->ErrorStatusAddress.Address = (UINTN)&(Register->ErrorStatusBlockAddress);
++  Register->AckRegister = READ_ACK_WRITE;
++  GhesV2->ReadAckRegister.Address = (UINT64)&(Register->AckRegister);
++  return EFI_SUCCESS;
++}
++
++
++VOID GhesV1Initial (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE *GhesV1,
++  UINT32 BlockLength
++)
++{
++  if (GhesV1 == NULL) {
++    return;
++  }
++  *GhesV1 = (EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE) {
++    .Type = EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR,
++    .SourceId = 0,
++    .RelatedSourceId = 0xFFFF,
++    .Flags = 0,
++    .Enabled = 1,
++    .NumberOfRecordsToPreAllocate = 1,//ERROR BLOCK
++    .MaxSectionsPerRecord = 1,// Num Entries(section)
++    .MaxRawDataLength = BlockLength, // Max Size Of a Raw Data
++    .ErrorStatusAddress = {
++      .AddressSpaceId = EFI_ACPI_6_1_SYSTEM_MEMORY,
++      .RegisterBitWidth = 64,
++      .RegisterBitOffset = 0,
++      .AccessSize = EFI_ACPI_6_1_QWORD,
++      .Address = 0
++    },
++    .NotificationStructure = {
++      .Type = EFI_ACPI_6_1_HARDWARE_ERROR_NOTIFICATION_GSIV,
++      .Length = sizeof (EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE),
++      .ConfigurationWriteEnable = {0, 0, 0, 0, 0, 0, 0},
++      .PollInterval = 0,
++      .Vector = 0,
++      .SwitchToPollingThresholdValue = 0,
++      .SwitchToPollingThresholdWindow = 0,
++      .ErrorThresholdValue = 0,
++      .ErrorThresholdWindow = 0
++    },
++    .ErrorStatusBlockLength = BlockLength,
++  };
++  return;
++}
++
++VOID
++GhesV1AddNotification (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE *This,
++  UINT8                                                Type
++)
++{
++  This->NotificationStructure = (EFI_ACPI_6_1_HARDWARE_ERROR_NOTIFICATION_STRUCTURE) {
++    .Type = Type,
++    .Length = sizeof (EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE),
++    .ConfigurationWriteEnable = {
++      .Type = 0,
++      .PollInterval = 1,
++      .SwitchToPollingThresholdValue = 1,
++      .SwitchToPollingThresholdWindow = 1,
++      .ErrorThresholdValue = 1,
++      .ErrorThresholdWindow = 1
++    },
++    .PollInterval = 20,
++    .Vector = 0,
++    .SwitchToPollingThresholdValue = 0,
++    .SwitchToPollingThresholdWindow = 0,
++    .ErrorThresholdValue = 0,
++    .ErrorThresholdWindow = 0
++  };
++  return;
++}
++
++EFI_STATUS GhesV1LinkErrorBlock (
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE *This,
++  UINT64                                               *ptrBlockAddress,
++  VOID                                                 *ErrorBlock
++)
++{
++  if (ErrorBlock == NULL || ptrBlockAddress == NULL || This == NULL) {
++    return EFI_INVALID_PARAMETER;
++  }
++  *ptrBlockAddress = (UINTN)ErrorBlock;
++  This->ErrorStatusAddress.Address = (UINTN) ptrBlockAddress;
++  return EFI_SUCCESS;
++}
++
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.c b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.c
+new file mode 100644
+index 0000000000..80d7d43c5b
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Erst/erst.c
+@@ -0,0 +1,374 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++#include "erst.h"
++#include <Guid/Cper.h>
++#include <Library/BaseLib.h>
++#include <Library/DebugLib.h>
++#include <Library/MemoryAllocationLib.h>
++#include "PlatformArch.h"
++
++typedef struct {
++  EFI_ACPI_6_1_ERROR_RECORD_SERIALIZATION_TABLE_HEADER ErstTableHeader;
++  EFI_ACPI_6_1_ERST_SERIALIZATION_INSTRUCTION_ENTRY    ErstInstructionEntry[ERST_ACTION_NO];
++} ERST_TABLE;
++
++ERST_TABLE mErst = {
++  {
++    ARM_ACPI_HEADER (
++      EFI_ACPI_6_0_ERROR_RECORD_SERIALIZATION_TABLE_SIGNATURE,
++      EFI_ACPI_6_0_ERROR_RECORD_SERIALIZATION_TABLE_HEADER,
++      EFI_ACPI_6_0_ERROR_RECORD_SERIALIZATION_TABLE_REVISION
++    ),
++    sizeof (EFI_ACPI_6_0_ERROR_RECORD_SERIALIZATION_TABLE_HEADER),
++    {
++      0x0,
++      0x0,
++      0x0,
++      0x0
++    },
++    ERST_ACTION_NO,
++  },
++  {
++    {
++      // 0 EFI_ACPI_6_0_ERST_BEGIN_WRITE_OPERATION
++      EFI_ACPI_6_0_ERST_BEGIN_WRITE_OPERATION,
++      EFI_ACPI_6_0_ERST_WRITE_REGISTER_VALUE,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      ERST_BEGIN_WRITE_VALUE,
++      ERST_BEGIN_WRITE_MASK
++    },
++    {
++      // 1 EFI_ACPI_6_0_ERST_BEGIN_READ_OPERATION
++      EFI_ACPI_6_0_ERST_BEGIN_READ_OPERATION,
++      EFI_ACPI_6_0_ERST_WRITE_REGISTER_VALUE,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      ERST_BEGIN_READ_VALUE,
++      ERST_BEGIN_READ_MASK
++    },
++    {
++      // 2 EFI_ACPI_6_0_ERST_BEGIN_CLEAR_OPERATION
++      EFI_ACPI_6_0_ERST_BEGIN_CLEAR_OPERATION,
++      EFI_ACPI_6_0_ERST_WRITE_REGISTER_VALUE,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      ERST_BEGIN_CLEAR_VALUE,
++      ERST_BEGIN_CLEAR_MASK
++    },
++    {
++      // 3 EFI_ACPI_6_0_ERST_END_OPERATION
++      EFI_ACPI_6_0_ERST_END_OPERATION,
++      EFI_ACPI_6_0_ERST_WRITE_REGISTER_VALUE,
++      EFI_ACPI_6_0_ERST_PRESERVE_REGISTER,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      ERST_END_OPERATION_VALUE,
++      ERST_END_OPERATION_MASK
++    },
++    {
++      // 4 EFI_ACPI_6_0_ERST_SET_RECORD_OFFSET
++      EFI_ACPI_6_0_ERST_SET_RECORD_OFFSET,
++      EFI_ACPI_6_0_ERST_WRITE_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    },
++    {
++      // 5 EFI_ACPI_6_0_ERST_EXECUTE_OPERATION
++      EFI_ACPI_6_0_ERST_EXECUTE_OPERATION,
++      EFI_ACPI_6_0_ERST_WRITE_REGISTER_VALUE,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_DWORD,
++        0x94730000
++      },
++      0x0002,
++      0x0002
++    },
++    {
++      // 6 EFI_ACPI_6_0_ERST_CHECK_BUSY_STATUS
++      EFI_ACPI_6_0_ERST_CHECK_BUSY_STATUS,
++      EFI_ACPI_6_0_ERST_READ_REGISTER_VALUE,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0x00000001,
++      0x00000001
++    },
++    {
++      // 7 EFI_ACPI_6_0_ERST_GET_COMMAND_STATUS
++      EFI_ACPI_6_0_ERST_GET_COMMAND_STATUS,
++      EFI_ACPI_6_0_ERST_READ_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    },
++    {
++      // 8 EFI_ACPI_6_0_ERST_GET_RECORD_IDENTIFIER
++      EFI_ACPI_6_0_ERST_GET_RECORD_IDENTIFIER,
++      EFI_ACPI_6_0_ERST_READ_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    },
++    {
++      // 9 EFI_ACPI_6_0_ERST_SET_RECORD_IDENTIFIER
++      EFI_ACPI_6_0_ERST_SET_RECORD_IDENTIFIER,
++      EFI_ACPI_6_0_ERST_WRITE_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    },
++    {
++      // A EFI_ACPI_6_0_ERST_GET_RECORD_COUNT
++      EFI_ACPI_6_0_ERST_GET_RECORD_COUNT,
++      EFI_ACPI_6_0_ERST_READ_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    },
++    {
++      // B EFI_ACPI_6_0_ERST_BEGIN_DUMMY_WRITE_OPERATION
++      EFI_ACPI_6_0_ERST_BEGIN_DUMMY_WRITE_OPERATION,
++      EFI_ACPI_6_0_ERST_WRITE_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    },
++    {
++      // C RESERVED
++      0x0C,
++      EFI_ACPI_6_0_ERST_WRITE_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    },
++    {
++      // D EFI_ACPI_6_0_ERST_GET_ERROR_LOG_ADDRESS_RANGE
++      EFI_ACPI_6_0_ERST_GET_ERROR_LOG_ADDRESS_RANGE,
++      EFI_ACPI_6_0_ERST_READ_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    },
++    {
++      // E EFI_ACPI_6_0_ERST_GET_ERROR_LOG_ADDRESS_RANGE_LENGTH
++      EFI_ACPI_6_0_ERST_GET_ERROR_LOG_ADDRESS_RANGE_LENGTH,
++      EFI_ACPI_6_0_ERST_READ_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    },
++    {
++      // F EFI_ACPI_6_0_ERST_GET_ERROR_LOG_ADDRESS_RANGE_ATTRIBUTES
++      EFI_ACPI_6_0_ERST_GET_ERROR_LOG_ADDRESS_RANGE_ATTRIBUTES,
++      EFI_ACPI_6_0_ERST_READ_REGISTER,
++      0,
++      0,
++      {
++        EFI_ACPI_6_0_SYSTEM_MEMORY,
++        64,
++        0,
++        EFI_ACPI_6_0_QWORD,
++        0
++      },
++      0,
++      ERST_MASK
++    }
++  }
++};
++
++VOID
++ErstSetAcpiTable (
++  ERST_BOOT_CONTEXT *Context
++)
++{
++  UINTN                     AcpiTableHandle;
++  EFI_STATUS                Status;
++  UINT8                     Checksum;
++  mErst.ErstTableHeader.Header.Length = sizeof (ERST_TABLE);
++  Checksum = CalculateCheckSum8 ((UINT8*)(&mErst), mErst.ErstTableHeader.Header.Length);
++  mErst.ErstTableHeader.Header.Checksum = Checksum;
++  AcpiTableHandle = 0;
++  Status = mAcpiTableProtocol->InstallAcpiTable (
++             mAcpiTableProtocol,
++             &mErst,
++             mErst.ErstTableHeader.Header.Length,
++             &AcpiTableHandle
++             );
++  ASSERT_EFI_ERROR (Status) ;
++}
++
++EFI_STATUS
++ErstHeaderCreator (
++  ERST_BOOT_CONTEXT  *Context,
++  UINT64             BufferSize,//ERST_DATASTORE_SIZE
++  VOID               *NvRamAddrRange,
++  UINT64             NvRamAllRecordLength,
++  UINT64             NvRamAddrRangeLength
++)
++{
++  EFI_STATUS            Status = EFI_SUCCESS;
++  ERST_RT_CONTEXT       *ErstRtCtx;
++  //
++  ErstRtCtx = AllocateReservedZeroPool (sizeof (ERST_RT_CONTEXT));
++  ErstRtCtx->Operation = ERST_END_OPERATION;
++  ErstRtCtx->RecordOffset = 0;
++  ErstRtCtx->BusyStatus = 0;
++  ErstRtCtx->CommandStatus = 0;
++  ErstRtCtx->KeyRecordId = 0;
++  ErstRtCtx->MaxTimeOfExecuteOperation = MAX_UINT64;
++  ErstRtCtx->RecordCount = 0;
++  ErstRtCtx->ErrorLogAddressRange = (UINT64)AllocateReservedZeroPool (BufferSize);
++  ErstRtCtx->ErrorLogAddressRangeLength = BufferSize;
++  ErstRtCtx->ErrorLogAttributes = 0;
++  ErstRtCtx->NvRamLogAddrRange = NvRamAddrRange;
++  ErstRtCtx->NvRamLogAddrRangeLength = NvRamAddrRangeLength;
++  ErstRtCtx->NvRamRecordOffset = 0;
++  ErstRtCtx->NvRamNextVallidRecordId = MAX_UINT64;
++  ErstRtCtx->NvRamNextValidRecordOffset = 0;
++  ErstRtCtx->NvRamAllRecordLength = NvRamAllRecordLength;
++  mErst.ErstInstructionEntry[0].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->Operation));
++  mErst.ErstInstructionEntry[1].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->Operation));
++  mErst.ErstInstructionEntry[2].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->Operation));
++  mErst.ErstInstructionEntry[3].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->Operation));
++  mErst.ErstInstructionEntry[4].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->RecordOffset));
++  mErst.ErstInstructionEntry[6].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->BusyStatus));
++  mErst.ErstInstructionEntry[7].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->CommandStatus));
++  mErst.ErstInstructionEntry[8].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->NvRamNextVallidRecordId));
++  mErst.ErstInstructionEntry[9].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->KeyRecordId));
++  mErst.ErstInstructionEntry[10].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->RecordCount));
++  mErst.ErstInstructionEntry[11].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->DummyWrite));
++  mErst.ErstInstructionEntry[12].RegisterRegion.Address = 0;
++  mErst.ErstInstructionEntry[13].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->ErrorLogAddressRange));
++  mErst.ErstInstructionEntry[14].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->ErrorLogAddressRangeLength));
++  mErst.ErstInstructionEntry[15].RegisterRegion.Address = (UINT64)(&(ErstRtCtx->ErrorLogAttributes));
++  Context->ErstHeader = (EFI_ACPI_6_1_ERROR_RECORD_SERIALIZATION_TABLE_HEADER*)&mErst;
++  Context->ExecuteOperationEntry = &(mErst.ErstInstructionEntry[5]);
++  Context->GetErrorLogAddrRangeAttributes = &(mErst.ErstInstructionEntry[15]);
++  Context->Rt = ErstRtCtx;
++  return Status;
++};
++
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.c b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.c
+new file mode 100644
+index 0000000000..eea73af229
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/Hest/hest.c
+@@ -0,0 +1,119 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#include "ErrorSource/Ghes.h"
++#include "hest.h"
++#include <IndustryStandard/Acpi62.h>
++#include <Library/BaseLib.h>
++#include <Library/DebugLib.h>
++#include <Library/MemoryAllocationLib.h>
++#include <Library/UefiBootServicesTableLib.h>
++#include "PlatformArch.h"
++
++EFI_STATUS HestAddErrorSourceDescriptor (
++  IN OUT HEST_CONTEXT  *Context,
++  IN VOID              *ErrorSourceDescriptor,
++  IN UINT32            SizeOfDescriptor
++)
++{
++  UINT16                                          *pSourceId;
++  VOID                                            *Descriptor;
++  EFI_ACPI_6_1_HARDWARE_ERROR_SOURCE_TABLE_HEADER *HestHeader;
++
++  if ((Context == NULL) || (ErrorSourceDescriptor == NULL)) {
++    return EFI_INVALID_PARAMETER;
++  }
++  HestHeader = Context->HestHeader;
++  if (HestHeader->Header.Length + SizeOfDescriptor > Context->OccupiedMemorySize) {
++    DEBUG ((DEBUG_ERROR, "[%a]:[%dL]: Hest Size Too small\n", __FUNCTION__, __LINE__));
++    return EFI_BUFFER_TOO_SMALL;
++  }
++  Descriptor = (UINT8*)HestHeader + HestHeader->Header.Length;
++  gBS->CopyMem ((VOID*)Descriptor , ErrorSourceDescriptor, SizeOfDescriptor);
++  pSourceId = Descriptor + sizeof (UINT16);
++  *pSourceId = HestHeader->ErrorSourceCount;
++  HestHeader->Header.Length += SizeOfDescriptor;
++  HestHeader->ErrorSourceCount++;
++  Context->KeyErrorSource = Descriptor;
++  return EFI_SUCCESS;
++}
++
++VOID
++HestSetAcpiTable (
++  IN HEST_CONTEXT  *Context
++)
++{
++  UINTN                     AcpiTableHandle;
++  EFI_STATUS                Status;
++  UINT8                     Checksum;
++  EFI_ACPI_6_1_HARDWARE_ERROR_SOURCE_TABLE_HEADER *HestHeader;
++  EFI_ACPI_SDT_HEADER       *Table;
++  EFI_ACPI_TABLE_VERSION    TableVersion;
++  UINTN                     TableKey;
++  UINT32                    Index;
++  if (Context == NULL) {
++    DEBUG ((DEBUG_ERROR, "[%a]:[%dL]: ERROR\n", __FUNCTION__, __LINE__));
++    return;
++  }
++
++  HestHeader = Context->HestHeader;
++  Checksum = CalculateCheckSum8 ((UINT8*)(HestHeader),  HestHeader->Header.Length);
++  HestHeader->Header.Checksum = Checksum;
++  AcpiTableHandle = 0;
++  // see AcpiTableProtocol.c InstallAcpiTable
++  Status = mAcpiTableProtocol->InstallAcpiTable (
++                                  mAcpiTableProtocol,
++                                  HestHeader,
++                                  HestHeader->Header.Length,
++                                  &AcpiTableHandle);
++  for (Index = 0; Index < EFI_ACPI_MAX_NUM_TABLES; Index++) {
++    Status = mAcpiSdtProtocol->GetAcpiTable (Index, &Table, &TableVersion, &TableKey);
++    if (EFI_ERROR (Status)) {
++      break;
++    }
++    if (Table->Signature != EFI_ACPI_6_1_HARDWARE_ERROR_SOURCE_TABLE_SIGNATURE) {
++      continue;
++    }
++    mApeiTrustedfirmwareData->HestTableAddress = (EFI_PHYSICAL_ADDRESS)Table;
++    DEBUG ((DEBUG_ERROR, "Acpi HestSetAcpiTable Table = 0x%x.\n", (EFI_PHYSICAL_ADDRESS)Table));
++  }
++  DEBUG ((DEBUG_ERROR, "[%a]:[%dL]:OUT %llx, IN %llx \n", __FUNCTION__, __LINE__,
++          AcpiTableHandle, Context->HestHeader));
++  return;
++}
++
++EFI_STATUS
++HestHeaderCreator (
++  HEST_CONTEXT  *Context,
++  UINT32        PreAllocatedHestSize
++)
++{
++  DEBUG ((DEBUG_ERROR, "[%a]:[%dL]: \n", __FUNCTION__, __LINE__));
++  if (PreAllocatedHestSize < sizeof (EFI_ACPI_6_1_HARDWARE_ERROR_SOURCE_TABLE_HEADER)) {
++    return EFI_BUFFER_TOO_SMALL;
++  }
++  Context->HestHeader = AllocateReservedZeroPool (PreAllocatedHestSize);
++  *Context->HestHeader = (EFI_ACPI_6_1_HARDWARE_ERROR_SOURCE_TABLE_HEADER) {
++   ARM_ACPI_HEADER (
++      EFI_ACPI_6_1_HARDWARE_ERROR_SOURCE_TABLE_SIGNATURE,
++      EFI_ACPI_6_1_HARDWARE_ERROR_SOURCE_TABLE_HEADER,
++      EFI_ACPI_6_1_HARDWARE_ERROR_SOURCE_TABLE_REVISION
++    ),
++    0x0
++  };
++  Context->KeyErrorSource = Context->HestHeader + 1;
++  Context->OccupiedMemorySize = PreAllocatedHestSize;
++  return EFI_SUCCESS;
++}
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.c b/Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.c
+new file mode 100644
+index 0000000000..de972b8a9e
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Apei/OemApeiHi1620.c
+@@ -0,0 +1,337 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#include <Guid/Cper.h>
++#include <IndustryStandard/Acpi62.h>
++#include <Library/DebugLib.h>
++#include <Library/IoLib.h>
++#include <Library/MemoryAllocationLib.h>
++#include <Library/UefiBootServicesTableLib.h>
++
++#include "Bert/bert.h"
++#include "Einj/einj.h"
++#include "ErrorSource/Ghes.h"
++#include "Erst/erst.h"
++#include "Hest/hest.h"
++#include "OemApeiHi1620.h"
++
++VOID
++GpioCombInit (
++  UINTN  Base,
++  UINT32 Pin
++)
++{
++  UINT32 Val = MmioRead32 (Base + GPIO_INT_MASK);
++  MmioWrite32 (Base + GPIO_INT_MASK, Val | Pin);
++  Val = MmioRead32 (Base + GPIO_INT_EN);
++  MmioWrite32 (Base + GPIO_INT_EN, Val | Pin);
++  Val = MmioRead32 (Base + GPIO_SWPORT_DDR);
++  MmioWrite32 (Base + GPIO_SWPORT_DDR, Val & (~Pin));
++  Val = MmioRead32 (Base + GPIO_INT_TYPE);
++  MmioWrite32 (Base + GPIO_INT_TYPE, Val & (~Pin));
++  Val = MmioRead32 (Base + GPIO_INT_POLARITY);
++  MmioWrite32 (Base + GPIO_INT_POLARITY, Val | Pin);
++  Val = MmioRead32 (Base + GPIO_LS_SYNC);
++  MmioWrite32 (Base + GPIO_LS_SYNC, Val & (~Pin));
++  MmioWrite32 (Base + GPIO_INT_COMB, 1);
++  return;
++}
++/************************************************
++*************** HEST ***************
++************************************************/
++
++/*****************************************************************************
++* @param EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE* GhesV2,Vector of GhesV2
++* @param UINT8 NumOfGhesV2
++* @param_out
++* @retval EFI_STATUS
++*****************************************************************************/
++EFI_STATUS
++GhesV2ContextForHest (
++  IN EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE GhesV2[MAX_GHES],
++  IN UINT8                                                          NumOfGhesV2
++)
++{
++  // ensuce the size is expected
++  if ((GhesV2 == NULL) || (NumOfGhesV2 != MAX_GHES)) {
++    return EFI_INVALID_PARAMETER;
++  }
++
++  UINT8  NumOfBlockPerGhes = 1;
++  UINT8  Iter = 0;
++  UINT32 BlockMemorySize;
++  UINT32 ErrorSeverityArray[MAX_GHES] = {
++           EFI_ACPI_6_2_ERROR_SEVERITY_CORRECTABLE,
++           EFI_ACPI_6_2_ERROR_SEVERITY_FATAL,
++           EFI_ACPI_6_2_ERROR_SEVERITY_CORRECTED};
++  VOID   *ErrorBlockHead;
++  VOID   *ErrorBlock;
++  VOID   *BlockMemory;
++  GHES_REGISTER  *GhesRegisters;
++  EFI_STATUS     Status = EFI_SUCCESS;
++
++  BlockMemorySize = MAX_GHES *
++    (sizeof (GHES_REGISTER) + NumOfBlockPerGhes * GENERIC_HARDWARE_ERROR_BLOCK_SIZE);
++  Status = gBS->AllocatePool (
++             EfiReservedMemoryType,
++             BlockMemorySize,
++             &BlockMemory
++           );
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  gBS->SetMem (BlockMemory, BlockMemorySize, 0);
++  GhesRegisters = BlockMemory;
++  ErrorBlockHead = BlockMemory + MAX_GHES * sizeof (GHES_REGISTER);
++  ErrorBlock = ErrorBlockHead;
++  for (Iter = 0; Iter < MAX_GHES; Iter++) {
++    GhesV2Initial (&GhesV2[Iter], GENERIC_HARDWARE_ERROR_BLOCK_SIZE);
++    GhesV2AddNotification (&GhesV2[Iter], EFI_ACPI_6_1_HARDWARE_ERROR_NOTIFICATION_GSIV);
++    ErrorBlockInitial (ErrorBlock, ErrorSeverityArray[Iter]);
++    GhesV2LinkErrorBlock (&GhesV2[Iter], &GhesRegisters[Iter], ErrorBlock);
++    ErrorBlock += GhesV2[Iter].ErrorStatusBlockLength;
++  }
++  return EFI_SUCCESS;
++}
++/*****************************************************************************
++* @param EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE* GhesV2,Vector of GhesV2
++* @param UINT8 NumOfGhesV2
++* @param_out
++* @retval EFI_STATUS
++*****************************************************************************/
++
++EFI_STATUS
++GhesV1ContextForHest (
++  IN EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_STRUCTURE GhesV1[MAX_GHES],
++  IN UINT8                                                NumOfGhesV1
++)
++{
++  // ensuce the size is expected
++  if ((GhesV1 == NULL) || (NumOfGhesV1 != MAX_GHES)) {
++    return EFI_INVALID_PARAMETER;
++  }
++
++  UINT8      NumOfBlockPerGhes = 1;
++  UINT8      Iter = 0;
++  UINT32     BlockMemorySize = MAX_GHES *
++             (sizeof (UINT64) + NumOfBlockPerGhes * GENERIC_HARDWARE_ERROR_BLOCK_SIZE);
++  UINT32     ErrorSeverityArray[MAX_GHES] = {
++             EFI_ACPI_6_2_ERROR_SEVERITY_CORRECTABLE,
++             EFI_ACPI_6_2_ERROR_SEVERITY_FATAL,
++             EFI_ACPI_6_2_ERROR_SEVERITY_CORRECTED};
++  VOID       *ErrorBlockHead;
++  VOID       *ErrorBlock;
++  VOID       *BlockMemory;
++  UINT64     *ptrBlockAddress;
++  EFI_STATUS Status = EFI_SUCCESS;
++  Status = gBS->AllocatePool (
++             EfiReservedMemoryType,
++             BlockMemorySize,
++             &BlockMemory
++           );
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  gBS->SetMem (BlockMemory, BlockMemorySize, 0);
++  ptrBlockAddress = BlockMemory;
++  ErrorBlockHead = BlockMemory + MAX_GHES * sizeof (UINT64);
++  ErrorBlock = ErrorBlockHead;
++  for (Iter = 0; Iter < MAX_GHES; Iter++) {
++    GhesV1Initial (&GhesV1[Iter], GENERIC_HARDWARE_ERROR_BLOCK_SIZE);
++    GhesV1AddNotification (&GhesV1[Iter], EFI_ACPI_6_1_HARDWARE_ERROR_NOTIFICATION_GSIV);
++    ErrorBlockInitial (ErrorBlock, ErrorSeverityArray[Iter]);
++    GhesV1LinkErrorBlock (&GhesV1[Iter], &ptrBlockAddress[Iter], ErrorBlock);
++    ErrorBlock += GhesV1[Iter].ErrorStatusBlockLength;
++  }
++  return EFI_SUCCESS;
++}
++
++VOID
++OemHestInitialNotification ()
++{
++  // GPIO init
++  // use int_msk to simulate
++  UINTN Base = IOMUX_REG_BASE;
++  //GPIO9, in document 'PhosphorV680 Totemiomux' iomg051,
++  //Set GPIO9 to pad_ex_int1
++  MmioWrite32 (Base + IOMG051, PAD_EX_INT1);
++  return;
++}
++
++VOID
++OemEinjInitialNotification ()
++{
++  UINTN Base = IOMUX_REG_BASE;
++  //use TB_GPIO_PIN10 for EINJ
++  MmioWrite32 (Base + IOMG052, PAD_EX_INT1);
++  return;
++}
++
++EFI_STATUS
++OemInitHestTable (
++  IN EFI_HANDLE         ImageHandle
++)
++{
++  EFI_STATUS                                                     Status = EFI_SUCCESS;
++  HEST_CONTEXT                                                   HestContext;
++  EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE GhesV2[MAX_GHES];
++  Status = HestHeaderCreator (&HestContext, HEST_TABLE_SIZE);
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  Status = GhesV2ContextForHest(GhesV2, MAX_GHES);
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  Status |= HestAddErrorSourceDescriptor (
++              &HestContext,
++              &GhesV2[0],
++              sizeof (EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE)
++              );
++  mApeiTrustedfirmwareData->HestRecoverableErrorGhesV2 = HestContext.KeyErrorSource;
++  Status |= HestAddErrorSourceDescriptor (
++              &HestContext,
++              &GhesV2[1],
++              sizeof (EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE)
++              );
++  mApeiTrustedfirmwareData->HestFatalErrorGhesV2 = HestContext.KeyErrorSource;
++  Status |= HestAddErrorSourceDescriptor (
++              &HestContext,
++              &GhesV2[2],
++              sizeof (EFI_ACPI_6_1_GENERIC_HARDWARE_ERROR_SOURCE_VERSION_2_STRUCTURE)
++              );
++  mApeiTrustedfirmwareData->HestCorrectedErrorGhesV2 = HestContext.KeyErrorSource;
++  OemHestInitialNotification ();
++  HestSetAcpiTable (&HestContext);
++  return Status;
++}
++/************************************************
++*************** BERT ***************
++************************************************/
++
++EFI_STATUS
++OemInitBertTable (
++  IN EFI_HANDLE ImageHandle
++)
++{
++  BERT_CONTEXT Context;
++  BOOLEAN      Status;
++  Status = BertHeaderCreator (&Context, BOOT_ERROR_REGION_SIZE);
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  ErrorBlockInitial (Context.Block, EFI_ACPI_6_2_ERROR_SEVERITY_NONE);
++  BertSetAcpiTable (&Context);
++  DEBUG ((DEBUG_ERROR, "[%a]:[%dL]: %r\n", __FUNCTION__, __LINE__, Status));
++  return EFI_SUCCESS;
++}
++/************************************************
++*************** EINJ ***************
++************************************************/
++EFI_STATUS
++OemEinjConfigExecuteOperationEntry (
++  EINJ_CONTEXT *Context
++)
++{
++  EFI_ACPI_6_0_EINJ_INJECTION_INSTRUCTION_ENTRY* KeyEntry = Context->ExecuteOperationEntry;
++  OemEinjInitialNotification ();
++  //use TB_GPIO_PIN10 for EINJ
++  KeyEntry->RegisterRegion.Address = PcdGet64 (PcdCpldBaseAddress) + CPLD_GPIO10_INT_OFFSET;
++  KeyEntry->Mask = CPLD_MASK;
++  KeyEntry->Value = CPLD_VALUE;
++  return EFI_SUCCESS;
++}
++
++EFI_STATUS
++OemInitEinjTable (
++)
++{
++  EFI_STATUS    Status;
++  EINJ_CONTEXT  Context;
++  Status = EinjHeaderCreator (&Context);
++  if (EFI_ERROR (Status)) {
++    return Status;
++  }
++  (VOID)EinjConfigErrorInjectCapability (&Context, 0xFFF);// TBD
++  (VOID)OemEinjConfigExecuteOperationEntry (&Context);
++  EinjSetAcpiTable (&Context);
++  DEBUG ((DEBUG_ERROR, "[%a]:[%dL]: %d\n", __FUNCTION__, __LINE__, Status));
++  return EFI_SUCCESS;
++}
++/************************************************
++*************** ERST ***************
++************************************************/
++
++EFI_STATUS
++OemErstConfigExecuteOperationEntry (
++  ERST_BOOT_CONTEXT *Context
++)
++{
++  EFI_ACPI_6_1_ERST_SERIALIZATION_INSTRUCTION_ENTRY *KeyEntry;
++  KeyEntry = Context->ExecuteOperationEntry;
++  KeyEntry->RegisterRegion.Address = GPIO1_BASE + GPIO_INT_MASK;
++  KeyEntry->Value = 0x10;
++  KeyEntry->Mask = 0xFFFFFFFF;
++  GpioCombInit (GPIO1_BASE, 0xFFFF);
++  return EFI_SUCCESS;
++}
++
++BOOLEAN
++GetNvRamRegion (
++  OUT  VOID  **NvRamAddrRange,
++  OUT UINT64 *NvRamAddrRangeLength
++)
++{
++  UINT32 Store = ERST_RECORD_STORE_IN_MEM;
++  switch (Store) {
++    case (ERST_RECORD_STORE_IN_NVRAM):
++      break;
++    case (ERST_RECORD_STORE_IN_MEM):
++      * NvRamAddrRangeLength = ERST_DATASTORE_SIZE;
++      * NvRamAddrRange = AllocateReservedZeroPool (ERST_DATASTORE_SIZE);
++      break;
++    case (ERST_RECORD_STORE_IN_SPI_FLASH):
++      break;
++    default:
++      ;
++  }
++  return TRUE;
++}
++
++/***OEM***/
++EFI_STATUS
++OemInitErstTable (
++)
++{
++  EFI_STATUS        Status = ERST_STATUS_SUCCESS;
++  ERST_BOOT_CONTEXT Context;
++  UINT64            BufferSize = ERST_DATASTORE_SIZE;
++  VOID              *NvRamAddrRange;
++  UINT64            NvRamAddrRangeLength;
++  UINT64            NvRamAllRecordLength;
++
++  GetNvRamRegion (&NvRamAddrRange, &NvRamAddrRangeLength);
++  NvRamAllRecordLength = 0;
++  Status = ErstHeaderCreator (
++             &Context,
++             BufferSize,
++             NvRamAddrRange,
++             NvRamAllRecordLength,
++             NvRamAddrRangeLength);
++  OemErstConfigExecuteOperationEntry (&Context);
++  mApeiTrustedfirmwareData->ErstContext = (VOID*)Context.Rt;
++  ErstSetAcpiTable (&Context);
++  return Status;
++};
+-- 
+2.17.0
+

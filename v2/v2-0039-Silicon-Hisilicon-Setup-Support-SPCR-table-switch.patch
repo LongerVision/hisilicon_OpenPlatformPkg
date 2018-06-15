@@ -1,0 +1,84 @@
+From 7a637184582648fc75c233a3665be6fb9f3a043c Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Mon, 23 Jul 2018 17:20:16 +0800
+Subject: [PATCH edk2-platforms v2 39/43] Silicon/Hisilicon/Setup: Support SPCR
+ table switch
+
+If install SPCR table, KVM will not output while install or boot
+some OS, like ubuntu, so add SPCR switch setup item and set it
+disable by default.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+Signed-off-by: Heyi Guo <heyi.guo@linaro.org>
+---
+ Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/AcpiPlatformDxe.inf |  1 +
+ Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c   | 24 ++++++++++++++++++++
+ 2 files changed, 25 insertions(+)
+
+diff --git a/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/AcpiPlatformDxe.inf b/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/AcpiPlatformDxe.inf
+index 281a4f2ebd..3d133aff85 100644
+--- a/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/AcpiPlatformDxe.inf
++++ b/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/AcpiPlatformDxe.inf
+@@ -51,6 +51,7 @@
+ 
+ [Guids]
+   gHisiEfiMemoryMapGuid
++  gOemConfigGuid
+ 
+ [Pcd]
+   gEfiMdeModulePkgTokenSpaceGuid.PcdAcpiTableStorageFile    ## CONSUMES
+diff --git a/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c b/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c
+index 54f49977c3..32878ca4f9 100644
+--- a/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c
++++ b/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c
+@@ -16,8 +16,10 @@
+ #include <Library/DebugLib.h>
+ #include <Library/HobLib.h>
+ #include <Library/HwMemInitLib.h>
++#include <Library/OemConfigData.h>
+ #include <Library/OemMiscLib.h>
+ #include <Library/UefiBootServicesTableLib.h>
++#include <Library/UefiRuntimeServicesTableLib.h>
+ #include <Library/UefiLib.h>
+ 
+ #define CORECOUNT(X) ((X) * CORE_NUM_PER_SOCKET)
+@@ -114,6 +116,25 @@ UpdateSlit (
+   return  EFI_SUCCESS;
+ }
+ 
++STATIC
++EFI_STATUS
++IsNeedSpcr (
++  IN OUT EFI_ACPI_DESCRIPTION_HEADER  *Table
++  )
++{
++  EFI_STATUS                     Status;
++  OEM_CONFIG_DATA                SetupData;
++  UINTN                          DataSize = sizeof (OEM_CONFIG_DATA);
++
++  Status = gRT->GetVariable (OEM_CONFIG_NAME, &gOemConfigGuid, NULL, &DataSize, &SetupData);
++  if (!EFI_ERROR (Status) && (SetupData.EnableSpcr == FALSE)) {
++    return EFI_ABORTED;
++  }
++
++  return EFI_SUCCESS;
++}
++
++
+ EFI_STATUS
+ UpdateAcpiTable (
+   IN OUT EFI_ACPI_DESCRIPTION_HEADER      *TableHeader
+@@ -130,6 +151,9 @@ UpdateAcpiTable (
+   case EFI_ACPI_6_0_SYSTEM_LOCALITY_INFORMATION_TABLE_SIGNATURE:
+     Status = UpdateSlit (TableHeader);
+     break;
++  case EFI_ACPI_6_2_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE_SIGNATURE:
++    Status = IsNeedSpcr (TableHeader);
++    break;
+   }
+   return Status;
+ }
+-- 
+2.17.0
+

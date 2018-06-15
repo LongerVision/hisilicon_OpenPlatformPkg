@@ -1,0 +1,57 @@
+From 62503a986ac8cc1222edfff18f6d611c9091e915 Mon Sep 17 00:00:00 2001
+From: Sun Yuanchen <sunyuanchen@huawei.com>
+Date: Fri, 29 Jun 2018 15:16:39 +0800
+Subject: [PATCH edk2-platforms v2 04/43] Silicon/Hisilicon/D0x: Move dimm size
+ definition to PlatformArch.h
+
+Unify MemorySubClassDxe by Moving dimm size macro definition
+to PlatformArch.h
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Sun Yuanchen <sunyuanchen@huawei.com>
+---
+ Silicon/Hisilicon/Drivers/Smbios/MemorySubClassDxe/MemorySubClass.h | 2 --
+ Silicon/Hisilicon/Hi1610/Include/PlatformArch.h                     | 1 +
+ Silicon/Hisilicon/Hi1616/Include/PlatformArch.h                     | 1 +
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Silicon/Hisilicon/Drivers/Smbios/MemorySubClassDxe/MemorySubClass.h b/Silicon/Hisilicon/Drivers/Smbios/MemorySubClassDxe/MemorySubClass.h
+index c35ce39d61..0c201b4870 100644
+--- a/Silicon/Hisilicon/Drivers/Smbios/MemorySubClassDxe/MemorySubClass.h
++++ b/Silicon/Hisilicon/Drivers/Smbios/MemorySubClassDxe/MemorySubClass.h
+@@ -44,8 +44,6 @@
+ 
+ extern UINT8 MemorySubClassStrings[];
+ 
+-#define MAX_DIMM_SIZE       32  // In GB
+-
+ struct SPD_JEDEC_MANUFACTURER
+ {
+     UINT8  MfgIdLSB;
+diff --git a/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h b/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
+index 8e5913447c..2ff076901e 100644
+--- a/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
++++ b/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
+@@ -26,6 +26,7 @@
+ #define MAX_DIMM        3
+ #define MAX_RANK_CH     12
+ #define MAX_RANK_DIMM   4
++#define MAX_DIMM_SIZE   32  // In GB
+ // Max NUMA node number for each node type
+ #define MAX_NUM_PER_TYPE 8
+ 
+diff --git a/Silicon/Hisilicon/Hi1616/Include/PlatformArch.h b/Silicon/Hisilicon/Hi1616/Include/PlatformArch.h
+index 24167d1633..60a60593be 100644
+--- a/Silicon/Hisilicon/Hi1616/Include/PlatformArch.h
++++ b/Silicon/Hisilicon/Hi1616/Include/PlatformArch.h
+@@ -26,6 +26,7 @@
+ #define MAX_DIMM        3
+ #define MAX_RANK_CH     12
+ #define MAX_RANK_DIMM   4
++#define MAX_DIMM_SIZE   32  // In GB
+ // Max NUMA node number for each node type
+ #define MAX_NUM_PER_TYPE 8
+ 
+-- 
+2.17.0
+

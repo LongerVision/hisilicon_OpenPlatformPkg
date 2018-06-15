@@ -1,0 +1,43 @@
+From 13acafeb2fb0002885d6bc9bd6dd873c7c20f3ee Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Sat, 11 Aug 2018 22:18:03 +0800
+Subject: [PATCH edk2-platforms v2 24/43] Hisilicon/I2C: Fix a typo issue
+
+Modify spedd to Speed.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Silicon/Hisilicon/Library/I2CLib/I2CHw.h  | 2 +-
+ Silicon/Hisilicon/Library/I2CLib/I2CLib.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Silicon/Hisilicon/Library/I2CLib/I2CHw.h b/Silicon/Hisilicon/Library/I2CLib/I2CHw.h
+index d77aea509e..6fd7b8183e 100644
+--- a/Silicon/Hisilicon/Library/I2CLib/I2CHw.h
++++ b/Silicon/Hisilicon/Library/I2CLib/I2CHw.h
+@@ -81,7 +81,7 @@
+      struct
+      {
+         UINT32      master                : 1   ;
+-        UINT32      spedd                 : 2   ;
++        UINT32      Speed                 : 2   ;
+         UINT32      slave_10bit           : 1   ;
+         UINT32      master_10bit          : 1   ;
+         UINT32      restart_en            : 1   ;
+diff --git a/Silicon/Hisilicon/Library/I2CLib/I2CLib.c b/Silicon/Hisilicon/Library/I2CLib/I2CLib.c
+index 59633106ce..ed44ac204f 100644
+--- a/Silicon/Hisilicon/Library/I2CLib/I2CLib.c
++++ b/Silicon/Hisilicon/Library/I2CLib/I2CLib.c
+@@ -158,7 +158,7 @@ I2CInit (
+ 
+   I2C_REG_READ (Base + I2C_CON_OFFSET, I2cControlReg.Val32);
+   I2cControlReg.bits.master = 1;
+-  I2cControlReg.bits.spedd = 0x1;
++  I2cControlReg.bits.Speed = 0x1;
+   I2cControlReg.bits.restart_en = 1;
+   I2cControlReg.bits.slave_disable = 1;
+   I2C_REG_WRITE (Base + I2C_CON_OFFSET, I2cControlReg.Val32);
+-- 
+2.17.0
+

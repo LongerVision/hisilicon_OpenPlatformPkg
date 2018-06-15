@@ -1,0 +1,227 @@
+From 4fdd5ee39f9486e5cb599c6a5227cfdcf3e9cbbe Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Mon, 2 Jul 2018 16:54:26 +0800
+Subject: [PATCH edk2-platforms v2 32/43] Platform/Hisilicon/D06: Add
+ EarlyConfigPeim peim
+
+This peim configuare SMMU,BSP,MN(Miscellaneous Node).
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D06/D06.dsc                                |   1 +
+ Platform/Hisilicon/D06/D06.fdf                                |   1 +
+ Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.inf |  50 +++++++++
+ Silicon/Hisilicon/Include/Library/OemAddressMapLib.h          |   2 +
+ Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.c   | 107 ++++++++++++++++++++
+ 5 files changed, 161 insertions(+)
+
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+index 5571028f42..3de09ea870 100644
+--- a/Platform/Hisilicon/D06/D06.dsc
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -263,6 +263,7 @@
+   MdeModulePkg/Universal/FaultTolerantWritePei/FaultTolerantWritePei.inf
+   MdeModulePkg/Universal/Variable/Pei/VariablePei.inf
+ 
++  Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.inf
+   Silicon/Hisilicon/Drivers/VersionInfoPeim/VersionInfoPeim.inf
+ 
+   MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf {
+diff --git a/Platform/Hisilicon/D06/D06.fdf b/Platform/Hisilicon/D06/D06.fdf
+index 184d5d4dcf..bd3ea47226 100644
+--- a/Platform/Hisilicon/D06/D06.fdf
++++ b/Platform/Hisilicon/D06/D06.fdf
+@@ -359,6 +359,7 @@ READ_LOCK_STATUS   = TRUE
+   INF ArmPkg/Drivers/CpuPei/CpuPei.inf
+   INF MdeModulePkg/Universal/PCD/Pei/Pcd.inf
+   INF IntelFrameworkModulePkg/Universal/StatusCode/Pei/StatusCodePei.inf
++  INF Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.inf
+ 
+   INF MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
+ 
+diff --git a/Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.inf b/Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.inf
+new file mode 100644
+index 0000000000..8296ee02de
+--- /dev/null
++++ b/Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.inf
+@@ -0,0 +1,50 @@
++#/** @file
++#
++#    Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++#    Copyright (c) 2017, Linaro Limited. All rights reserved.
++#
++#    This program and the accompanying materials
++#    are licensed and made available under the terms and conditions of the BSD License
++#    which accompanies this distribution. The full text of the license may be found at
++#    http://opensource.org/licenses/bsd-license.php
++#
++#    THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++#    WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++#
++#**/
++
++
++[Defines]
++  INF_VERSION                    = 0x0001001A
++  BASE_NAME                      = EarlyConfigPeimD06
++  FILE_GUID                      = FB8C65EB-0199-40C3-A82B-029921A9E9B3
++  MODULE_TYPE                    = PEIM
++  VERSION_STRING                 = 1.0
++  ENTRY_POINT                    = EarlyConfigEntry
++
++[Sources.common]
++  EarlyConfigPeimD06.c
++
++[Packages]
++  ArmPkg/ArmPkg.dec
++  MdeModulePkg/MdeModulePkg.dec
++  MdePkg/MdePkg.dec
++  Silicon/Hisilicon/HisiPkg.dec
++
++[LibraryClasses]
++  ArmLib
++  CacheMaintenanceLib
++  DebugLib
++  IoLib
++  PcdLib
++  PeimEntryPoint
++  PlatformSysCtrlLib
++
++[Pcd]
++  gHisiTokenSpaceGuid.PcdMailBoxAddress
++  gHisiTokenSpaceGuid.PcdPeriSubctrlAddress
++  gHisiTokenSpaceGuid.PcdTrustedFirmwareEnable
++
++[Depex]
++## As we will clean mailbox in this module, need to wait memory init complete
++  gEfiPeiMemoryDiscoveredPpiGuid
+diff --git a/Silicon/Hisilicon/Include/Library/OemAddressMapLib.h b/Silicon/Hisilicon/Include/Library/OemAddressMapLib.h
+index 332a79343f..b330be09ba 100644
+--- a/Silicon/Hisilicon/Include/Library/OemAddressMapLib.h
++++ b/Silicon/Hisilicon/Include/Library/OemAddressMapLib.h
+@@ -16,6 +16,8 @@
+ #ifndef _OEM_ADDRESS_MAP_LIB_H_
+ #define _OEM_ADDRESS_MAP_LIB_H_
+ 
++#include "PlatformArch.h"
++
+ typedef struct _DDRC_BASE_ID{
+     UINTN  Base;
+     UINTN  Id;
+diff --git a/Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.c b/Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.c
+new file mode 100644
+index 0000000000..0790f7941a
+--- /dev/null
++++ b/Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.c
+@@ -0,0 +1,107 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++
++#include <Uefi.h>
++#include <Library/ArmLib.h>
++#include <Library/CacheMaintenanceLib.h>
++#include <Library/DebugLib.h>
++#include <Library/IoLib.h>
++#include <Library/OemAddressMapLib.h>
++#include <Library/OemMiscLib.h>
++#include <Library/PcdLib.h>
++#include <Library/PlatformSysCtrlLib.h>
++#include <PiPei.h>
++
++#define PERI_SUBCTRL_BASE                               (0x40000000)
++#define MDIO_SUBCTRL_BASE                               (0x60000000)
++#define PCIE2_SUBCTRL_BASE                              (0xA0000000)
++#define PCIE0_SUBCTRL_BASE                              (0xB0000000)
++#define ALG_BASE                                        (0xD0000000)
++
++#define SC_BROADCAST_EN_REG                             (0x16220)
++#define SC_BROADCAST_SCL1_ADDR0_REG                     (0x16230)
++#define SC_BROADCAST_SCL1_ADDR1_REG                     (0x16234)
++#define SC_BROADCAST_SCL2_ADDR0_REG                     (0x16238)
++#define SC_BROADCAST_SCL2_ADDR1_REG                     (0x1623C)
++#define SC_BROADCAST_SCL3_ADDR0_REG                     (0x16240)
++#define SC_BROADCAST_SCL3_ADDR1_REG                     (0x16244)
++#define PCIE_SUBCTRL_SC_DISP_DAW_EN_REG                 (0x1000)
++#define PCIE_SUBCTRL_SC_DISPATCH_DAW_ARRAY3_REG         (0x1010)
++#define PCIE_SUBCTRL_SC_DISPATCH_DAW_ARRAY4_REG         (0x1014)
++#define PCIE_SUBCTRL_SC_DISPATCH_DAW_ARRAY5_REG         (0x1018)
++#define PCIE_SUBCTRL_SC_DISPATCH_DAW_ARRAY6_REG         (0x101C)
++#define PCIE_SUBCTRL_SC_REMAP_CTRL_REG                  (0x1200)
++#define SC_ITS_M3_INT_MUX_SEL_REG                       (0x21F0)
++#define SC_TM_CLKEN0_REG                                (0x2050)
++
++#define SC_TM_CLKEN0_REG_VALUE                          (0x3)
++#define SC_BROADCAST_EN_REG_VALUE                       (0x7)
++#define SC_BROADCAST_SCLx_ADDRx_REG_VALUE0              (0x0)
++#define SC_BROADCAST_SCLx_ADDRx_REG_VALUE1              (0x40016260)
++#define SC_BROADCAST_SCLx_ADDRx_REG_VALUE2              (0x60016260)
++#define SC_BROADCAST_SCLx_ADDRx_REG_VALUE3              (0x400)
++#define SC_ITS_M3_INT_MUX_SEL_REG_VALUE                 (0x7)
++#define PCIE_SUBCTRL_SC_REMAP_CTRL_REG_VALUE0           (0x0)
++#define PCIE_SUBCTRL_SC_DISP_DAW_EN_REG_VALUE0          (0x27)
++#define PCIE_SUBCTRL_SC_DISP_DAW_EN_REG_VALUE1          (0x2F)
++#define PCIE_SUBCTRL_SC_DISP_DAW_EN_REG_VALUE2          (0x77)
++#define PCIE_SUBCTRL_SC_DISPATCH_DAW_ARRAY3_REG_VALUE0  (0x178033)
++#define PCIE_SUBCTRL_SC_DISPATCH_DAW_ARRAY4_REG_VALUE0  (0x17003c)
++#define PCIE_SUBCTRL_SC_DISPATCH_DAW_ARRAY5_REG_VALUE0  (0x15003d)
++#define PCIE_SUBCTRL_SC_DISPATCH_DAW_ARRAY5_REG_VALUE1  (0x170035)
++#define PCIE_SUBCTRL_SC_DISPATCH_DAW_ARRAY6_REG_VALUE0  (0x16003e)
++
++STATIC
++VOID
++QResetAp (
++  VOID
++  )
++{
++  MmioWrite64 (FixedPcdGet64 (PcdMailBoxAddress), 0x0);
++  (VOID)WriteBackInvalidateDataCacheRange (
++          (VOID *)FixedPcdGet64 (PcdMailBoxAddress),
++          sizeof (UINT64)
++          );
++
++  //SCCL A
++  if (!PcdGet64 (PcdTrustedFirmwareEnable)) {
++    StartupAp ();
++  }
++}
++
++
++EFI_STATUS
++EFIAPI
++EarlyConfigEntry (
++  IN       EFI_PEI_FILE_HANDLE  FileHandle,
++  IN CONST EFI_PEI_SERVICES     **PeiServices
++  )
++{
++  DEBUG ((DEBUG_INFO,"SMMU CONFIG........."));
++  (VOID)SmmuConfigForBios ();
++  DEBUG ((DEBUG_INFO,"Done\n"));
++
++  DEBUG ((DEBUG_INFO,"AP CONFIG........."));
++  (VOID)QResetAp ();
++  DEBUG ((DEBUG_INFO,"Done\n"));
++
++  DEBUG ((DEBUG_INFO,"MN CONFIG........."));
++  (VOID)MN_CONFIG ();
++  DEBUG ((DEBUG_INFO,"Done\n"));
++
++  return EFI_SUCCESS;
++}
++
+-- 
+2.17.0
+
