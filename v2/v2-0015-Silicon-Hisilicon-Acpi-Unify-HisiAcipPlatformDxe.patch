@@ -1,0 +1,126 @@
+From cb2f00d4a6634df9d4ae16cc0ec877a930de1604 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Fri, 22 Jun 2018 14:09:41 +0800
+Subject: [PATCH edk2-platforms v2 15/43] Silicon/Hisilicon/Acpi: Unify
+ HisiAcipPlatformDxe
+
+The EFI_ACPI_STATIC_RESOURCE_AFFINITY_TABLE struct is used by
+UpdateAcpiTable.c and Srat aslc. The struct may be different
+according to chips, so move some macro to PlatformArch.h.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Silicon/Hisilicon/Hi1610/Include/PlatformArch.h                 |  6 ++++
+ Silicon/Hisilicon/Hi1620/Include/PlatformArch.h                 |  6 ++++
+ Silicon/Hisilicon/Include/Library/AcpiNextLib.h                 | 31 ++++++++++++++------
+ Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c |  2 --
+ 4 files changed, 34 insertions(+), 11 deletions(-)
+
+diff --git a/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h b/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
+index f39ae0748c..1ebddca4e5 100644
+--- a/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
++++ b/Silicon/Hisilicon/Hi1610/Include/PlatformArch.h
+@@ -30,6 +30,12 @@
+ // Max NUMA node number for each node type
+ #define MAX_NUM_PER_TYPE 8
+ 
++// for acpi
++#define NODE_IN_SOCKET                                  2
++#define CORE_NUM_PER_SOCKET                             32
++#define EFI_ACPI_MEMORY_AFFINITY_STRUCTURE_COUNT        10
++#define EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE_COUNT       8
++
+ #define S1_BASE               0x40000000000
+ 
+ #define RASC_BASE                (0x5000)
+diff --git a/Silicon/Hisilicon/Hi1620/Include/PlatformArch.h b/Silicon/Hisilicon/Hi1620/Include/PlatformArch.h
+index 9539cfdada..f3ad45f6c6 100644
+--- a/Silicon/Hisilicon/Hi1620/Include/PlatformArch.h
++++ b/Silicon/Hisilicon/Hi1620/Include/PlatformArch.h
+@@ -57,5 +57,11 @@
+   EFI_ACPI_ARM_CREATOR_REVISION   /* UINT32  CreatorRevision */ \
+   }
+ 
++// for acpi
++#define NODE_IN_SOCKET                                  2
++#define CORE_NUM_PER_SOCKET                             48
++#define EFI_ACPI_MEMORY_AFFINITY_STRUCTURE_COUNT        16
++#define EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE_COUNT       1
++
+ #endif
+ 
+diff --git a/Silicon/Hisilicon/Include/Library/AcpiNextLib.h b/Silicon/Hisilicon/Include/Library/AcpiNextLib.h
+index fd05a3b960..2abffb65fc 100644
+--- a/Silicon/Hisilicon/Include/Library/AcpiNextLib.h
++++ b/Silicon/Hisilicon/Include/Library/AcpiNextLib.h
+@@ -19,6 +19,21 @@
+ #ifndef __ACPI_NEXT_LIB_H__
+ #define __ACPI_NEXT_LIB_H__
+ 
++#include <PlatformArch.h>
++
++///
++/// ITS Affinity Structure Definition
++///
++#pragma pack(1)
++typedef struct {
++  UINT8   Type;
++  UINT8   Length;
++  UINT32  ProximityDomain;
++  UINT16  Reserved;
++  UINT32  ItsHwId;
++} EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE;
++#pragma pack()
++
+ #define EFI_ACPI_6_1_GIC_ITS_INIT(GicITSHwId, GicITSBase) \
+   { \
+     EFI_ACPI_6_1_GIC_ITS, sizeof (EFI_ACPI_6_1_GIC_ITS_STRUCTURE), EFI_ACPI_RESERVED_WORD, \
+@@ -42,8 +57,8 @@
+ #define EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE_INIT(                                               \
+     ProximityDomain, ItsId)                                                                     \
+   {                                                                                             \
+-    4, sizeof (EFI_ACPI_6_2_GIC_ITS_AFFINITY_STRUCTURE), ProximityDomain,                           \
+-    {EFI_ACPI_RESERVED_BYTE, EFI_ACPI_RESERVED_BYTE}, ItsId                                                               \
++    4, sizeof (EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE), ProximityDomain,                           \
++    EFI_ACPI_RESERVED_WORD, ItsId                                                               \
+   }
+ 
+ #define EFI_ACPI_6_1_MEMORY_AFFINITY_STRUCTURE_INIT(                                              \
+@@ -75,15 +90,13 @@
+ // Define the number of each table type.
+ // This is where the table layout is modified.
+ //
+-#define EFI_ACPI_PROCESSOR_LOCAL_GICC_AFFINITY_STRUCTURE_COUNT  64
+-#define EFI_ACPI_MEMORY_AFFINITY_STRUCTURE_COUNT                10
+-#define EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE_COUNT               8
++#define EFI_ACPI_PROCESSOR_LOCAL_GICC_AFFINITY_STRUCTURE_COUNT  (MAX_SOCKET*CORE_NUM_PER_SOCKET)
+ 
+ typedef struct {
+-  EFI_ACPI_6_0_SYSTEM_RESOURCE_AFFINITY_TABLE_HEADER          Header;
+-  EFI_ACPI_6_0_MEMORY_AFFINITY_STRUCTURE                      Memory[EFI_ACPI_MEMORY_AFFINITY_STRUCTURE_COUNT];
+-  EFI_ACPI_6_0_GICC_AFFINITY_STRUCTURE                        Gicc[EFI_ACPI_PROCESSOR_LOCAL_GICC_AFFINITY_STRUCTURE_COUNT];
+-  EFI_ACPI_6_2_GIC_ITS_AFFINITY_STRUCTURE                     Its[EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE_COUNT];
++  EFI_ACPI_6_2_SYSTEM_RESOURCE_AFFINITY_TABLE_HEADER          Header;
++  EFI_ACPI_6_2_MEMORY_AFFINITY_STRUCTURE                      Memory[EFI_ACPI_MEMORY_AFFINITY_STRUCTURE_COUNT];
++  EFI_ACPI_6_2_GICC_AFFINITY_STRUCTURE                        Gicc[EFI_ACPI_PROCESSOR_LOCAL_GICC_AFFINITY_STRUCTURE_COUNT];
++  EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE                         Its[EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE_COUNT];
+ } EFI_ACPI_STATIC_RESOURCE_AFFINITY_TABLE;
+ 
+ #pragma pack()
+diff --git a/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c b/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c
+index f5869841dc..54f49977c3 100644
+--- a/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c
++++ b/Silicon/Hisilicon/Drivers/HisiAcpiPlatformDxe/UpdateAcpiTable.c
+@@ -20,8 +20,6 @@
+ #include <Library/UefiBootServicesTableLib.h>
+ #include <Library/UefiLib.h>
+ 
+-#define CORE_NUM_PER_SOCKET  32
+-#define NODE_IN_SOCKET       2
+ #define CORECOUNT(X) ((X) * CORE_NUM_PER_SOCKET)
+ 
+ STATIC
+-- 
+2.17.0
+

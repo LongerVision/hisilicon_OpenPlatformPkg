@@ -1,0 +1,45 @@
+From b9b60c7ac88cad3d1d568c80b72ae2c0cc31caaa Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Sun, 5 Aug 2018 21:58:57 +0800
+Subject: [PATCH edk2-platforms v2 06/43] Hisilicon/D0x: Move CustomData.Fv to
+ common path of Hisilicon
+
+The CustomData.Fv is moved to Platform/Hisilicon in edk2-non-osi,
+so update D0x fdf to reflect this.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D03/D03.fdf | 2 +-
+ Platform/Hisilicon/D05/D05.fdf | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Platform/Hisilicon/D03/D03.fdf b/Platform/Hisilicon/D03/D03.fdf
+index cf11aeccc8..4591f7b5b1 100644
+--- a/Platform/Hisilicon/D03/D03.fdf
++++ b/Platform/Hisilicon/D03/D03.fdf
+@@ -113,7 +113,7 @@ DATA = {
+ gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
+ 
+ 0x002F0000|0x00010000
+-FILE = Platform/Hisilicon/D03/CustomData.Fv
++FILE = Platform/Hisilicon/D0x-CustomData.Fv
+ 
+ ################################################################################
+ #
+diff --git a/Platform/Hisilicon/D05/D05.fdf b/Platform/Hisilicon/D05/D05.fdf
+index 701804360e..6227607ffe 100644
+--- a/Platform/Hisilicon/D05/D05.fdf
++++ b/Platform/Hisilicon/D05/D05.fdf
+@@ -113,7 +113,7 @@ DATA = {
+ gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
+ 
+ 0x002F0000|0x00010000
+-FILE = Platform/Hisilicon/D03/CustomData.Fv
++FILE = Platform/Hisilicon/D0x-CustomData.Fv
+ 
+ ################################################################################
+ #
+-- 
+2.17.0
+

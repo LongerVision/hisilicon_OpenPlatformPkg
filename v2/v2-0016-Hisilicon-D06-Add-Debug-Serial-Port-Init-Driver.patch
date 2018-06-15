@@ -1,0 +1,172 @@
+From 476730eb3dc5807555d4908abc39f2a5becc130c Mon Sep 17 00:00:00 2001
+From: Heyi Guo <heyi.guo@linaro.org>
+Date: Mon, 7 May 2018 15:45:38 +0800
+Subject: [PATCH edk2-platforms v2 16/43] Hisilicon/D06: Add Debug Serial Port
+ Init Driver
+
+Hi1620 have two physical PL011 serial ports on the board,
+one for serial port console (described by ACPI SPCR) and
+the other for standard debug port (described by ACPI DBG2).
+This driver is to initialize the debug UART, not the serial
+console.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Heyi Guo <heyi.guo@linaro.org>
+---
+ Platform/Hisilicon/D06/D06.dsc                                                               |  1 +
+ Platform/Hisilicon/D06/D06.fdf                                                               |  1 +
+ Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.inf | 48 +++++++++++++++
+ Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.c   | 64 ++++++++++++++++++++
+ 4 files changed, 114 insertions(+)
+
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+index 9ca7160dad..20d2d2a1b4 100644
+--- a/Platform/Hisilicon/D06/D06.dsc
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -422,6 +422,7 @@
+   # Memory test
+   #
+   MdeModulePkg/Universal/MemoryTest/NullMemoryTestDxe/NullMemoryTestDxe.inf
++  Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.inf
+   MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
+   MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
+   MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
+diff --git a/Platform/Hisilicon/D06/D06.fdf b/Platform/Hisilicon/D06/D06.fdf
+index 07fe096f61..8cac126ccf 100644
+--- a/Platform/Hisilicon/D06/D06.fdf
++++ b/Platform/Hisilicon/D06/D06.fdf
+@@ -303,6 +303,7 @@ READ_LOCK_STATUS   = TRUE
+   INF MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
+   INF MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
+ 
++  INF Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.inf
+   INF MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
+   #
+   # Build Shell from latest source code instead of prebuilt binary
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.inf b/Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.inf
+new file mode 100644
+index 0000000000..8c91bdf0f4
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.inf
+@@ -0,0 +1,48 @@
++#/** @file
++#
++#    Copyright (c) 2016 - 2018, Hisilicon Limited. All rights reserved.
++#    Copyright (c) 2016 - 2018, Linaro Limited. All rights reserved.
++#
++#    This program and the accompanying materials
++#    are licensed and made available under the terms and conditions of the BSD License
++#    which accompanies this distribution. The full text of the license may be found at
++#    http://opensource.org/licenses/bsd-license.php
++#
++#    THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++#    WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++#
++#**/
++
++[Defines]
++  INF_VERSION                    = 0x0001001A
++  BASE_NAME                      = Pl011DebugSerialPortInitDxe
++  FILE_GUID                      = 16D53E86-7EA4-47bd-861F-511EA9B8ABE0
++  MODULE_TYPE                    = DXE_DRIVER
++  VERSION_STRING                 = 1.0
++  ENTRY_POINT                    = SerialPortEntry
++
++[Sources.common]
++  Pl011DebugSerialPortInitDxe.c
++
++
++[Packages]
++  ArmPlatformPkg/ArmPlatformPkg.dec
++  MdeModulePkg/MdeModulePkg.dec
++  MdePkg/MdePkg.dec
++  Silicon/Hisilicon/HisiPkg.dec
++
++[LibraryClasses]
++  BaseLib
++  UefiDriverEntryPoint
++
++[Pcd]
++  gArmPlatformTokenSpaceGuid.PL011UartClkInHz
++  gArmPlatformTokenSpaceGuid.PcdSerialDbgRegisterBase
++  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate
++  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultDataBits
++  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultParity
++  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultStopBits
++
++[Depex]
++  TRUE
++
+diff --git a/Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.c b/Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.c
+new file mode 100644
+index 0000000000..8f83737327
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.c
+@@ -0,0 +1,64 @@
++/** @file
++
++    Copyright (c) 2016 - 2018, Hisilicon Limited. All rights reserved.
++    Copyright (c) 2016 - 2018, Linaro Limited. All rights reserved.
++
++    This program and the accompanying materials
++    are licensed and made available under the terms and conditions of the BSD License
++    which accompanies this distribution. The full text of the license may be found at
++    http://opensource.org/licenses/bsd-license.php
++
++    THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++    WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++
++**/
++
++#include <Uefi.h>
++#include <Library/BaseLib.h>
++#include <Library/DebugLib.h>
++#include <Library/PL011UartLib.h>
++#include <Library/PcdLib.h>
++#include <Library/SerialPortLib.h>
++
++RETURN_STATUS
++EFIAPI
++DebugSerialPortInitialize (
++  VOID
++  )
++{
++  UINT64              BaudRate;
++  UINT32              ReceiveFifoDepth;
++  EFI_PARITY_TYPE     Parity;
++  UINT8               DataBits;
++  EFI_STOP_BITS_TYPE  StopBits;
++
++  BaudRate = FixedPcdGet64 (PcdUartDefaultBaudRate);
++  ReceiveFifoDepth = 0;         // Use default FIFO depth
++  Parity = (EFI_PARITY_TYPE)FixedPcdGet8 (PcdUartDefaultParity);
++  DataBits = FixedPcdGet8 (PcdUartDefaultDataBits);
++  StopBits = (EFI_STOP_BITS_TYPE) FixedPcdGet8 (PcdUartDefaultStopBits);
++  return PL011UartInitializePort (
++           (UINTN)FixedPcdGet64 (PcdSerialDbgRegisterBase),
++           FixedPcdGet32 (PL011UartClkInHz),
++           &BaudRate,
++           &ReceiveFifoDepth,
++           &Parity,
++           &DataBits,
++           &StopBits
++           );
++}
++
++EFI_STATUS
++SerialPortEntry (
++  IN EFI_HANDLE         ImageHandle,
++  IN EFI_SYSTEM_TABLE   *SystemTable
++  )
++{
++  EFI_STATUS Status;
++  Status = DebugSerialPortInitialize ();
++  if (EFI_ERROR (Status)) {
++    DEBUG ((DEBUG_ERROR, "CPU1 TB serial port init ERROR: %r\n", Status));
++  }
++  return EFI_SUCCESS;
++}
++
+-- 
+2.17.0
+

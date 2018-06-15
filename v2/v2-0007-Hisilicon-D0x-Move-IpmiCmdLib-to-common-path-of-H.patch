@@ -1,0 +1,45 @@
+From 28d55a316e744b645be9c123d63a1f94880498c9 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Tue, 7 Aug 2018 23:01:10 +0800
+Subject: [PATCH edk2-platforms v2 07/43] Hisilicon/D0x: Move IpmiCmdLib to
+ common path of Hisilicon
+
+The IpmiCmdLib is moved to Silicon/Hisilicon in edk2-non-osi,
+so update D0x dsc to reflect this.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D03/D03.dsc | 2 +-
+ Platform/Hisilicon/D05/D05.dsc | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Platform/Hisilicon/D03/D03.dsc b/Platform/Hisilicon/D03/D03.dsc
+index 38548a0f23..c12790ba59 100644
+--- a/Platform/Hisilicon/D03/D03.dsc
++++ b/Platform/Hisilicon/D03/D03.dsc
+@@ -38,7 +38,7 @@
+   I2CLib|Silicon/Hisilicon/Library/I2CLib/I2CLib.inf
+   TimerLib|ArmPkg/Library/ArmArchTimerLib/ArmArchTimerLib.inf
+ 
+-  IpmiCmdLib|Silicon/Hisilicon/Hi1610/Library/IpmiCmdLib/IpmiCmdLib.inf
++  IpmiCmdLib|Silicon/Hisilicon/Library/IpmiCmdLib/IpmiCmdLib.inf
+ 
+   NetLib|MdeModulePkg/Library/DxeNetLib/DxeNetLib.inf
+   DpcLib|MdeModulePkg/Library/DxeDpcLib/DxeDpcLib.inf
+diff --git a/Platform/Hisilicon/D05/D05.dsc b/Platform/Hisilicon/D05/D05.dsc
+index f2bbf27639..94d386582e 100644
+--- a/Platform/Hisilicon/D05/D05.dsc
++++ b/Platform/Hisilicon/D05/D05.dsc
+@@ -41,7 +41,7 @@
+   I2CLib|Silicon/Hisilicon/Library/I2CLib/I2CLib.inf
+   TimerLib|ArmPkg/Library/ArmArchTimerLib/ArmArchTimerLib.inf
+ 
+-  IpmiCmdLib|Silicon/Hisilicon/Hi1610/Library/IpmiCmdLib/IpmiCmdLib.inf
++  IpmiCmdLib|Silicon/Hisilicon/Library/IpmiCmdLib/IpmiCmdLib.inf
+ 
+   NetLib|MdeModulePkg/Library/DxeNetLib/DxeNetLib.inf
+   DpcLib|MdeModulePkg/Library/DxeDpcLib/DxeDpcLib.inf
+-- 
+2.17.0
+

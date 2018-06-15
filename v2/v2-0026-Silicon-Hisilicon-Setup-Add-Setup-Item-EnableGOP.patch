@@ -1,0 +1,73 @@
+From 0f5bb8b897a91c05af02491a7e9a9569676c45c9 Mon Sep 17 00:00:00 2001
+From: Yang XinYi <yangxingyi@huawei.com>
+Date: Thu, 28 Jun 2018 10:49:44 +0800
+Subject: [PATCH edk2-platforms v2 26/43] Silicon/Hisilicon/Setup: Add Setup
+ Item "EnableGOP"
+
+Add Setup Item "EnableGOP" for D06, This Item only takes
+effect on VGA device SM750.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Yang XinYi <yangxingyi@huawei.com>
+---
+ Silicon/Hisilicon/Include/Library/OemConfigData.h            | 1 +
+ Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfig.c    | 1 +
+ Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.hfr | 7 +++++++
+ Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.uni | 4 ++--
+ 4 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/Silicon/Hisilicon/Include/Library/OemConfigData.h b/Silicon/Hisilicon/Include/Library/OemConfigData.h
+index 478821ae2c..e4d5917046 100644
+--- a/Silicon/Hisilicon/Include/Library/OemConfigData.h
++++ b/Silicon/Hisilicon/Include/Library/OemConfigData.h
+@@ -61,6 +61,7 @@ typedef struct {
+   UINT8         EnableSmmu;
+   UINT8         EnableFdtTable;
+   UINT8         EnableSpcr;
++  UINT8         EnableGOP;
+   /*RAS Config*/
+   UINT8         EnRasSupport;
+   UINT8         EnPoison;
+diff --git a/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfig.c b/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfig.c
+index 1e3635307c..3ecae3759a 100644
+--- a/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfig.c
++++ b/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/OemConfig.c
+@@ -295,6 +295,7 @@ OemConfigUiLibConstructor (
+       Configuration.EnableSmmu = 1;
+       Configuration.EnableFdtTable = 0;
+       Configuration.EnableSpcr = 0;
++      Configuration.EnableGOP = 0;
+       //
+       //Set the default value of the Ras option
+       //
+diff --git a/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.hfr b/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.hfr
+index 9e3ac73116..c0b6e294a6 100644
+--- a/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.hfr
++++ b/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.hfr
+@@ -38,4 +38,11 @@ form formid = MISC_CONFIG_FORM_ID,
+       option text = STRING_TOKEN(STR_ENABLED), value = 1, flags = 0;
+     endoneof;
+ 
++    oneof varid   = OEM_CONFIG_DATA.EnableGOP,
++      prompt      = STRING_TOKEN(STR_ENABLE_GOP_FRAME_BUFFER),
++      help        = STRING_TOKEN(STR_ENABLE_GOP_FRAME_BUFFER_HELP),
++      option text = STRING_TOKEN(STR_DISABLED), value = 0, flags = DEFAULT;
++      option text = STRING_TOKEN(STR_ENABLED), value = 1, flags = 0;
++    endoneof;
++
+ endform;
+diff --git a/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.uni b/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.uni
+index 53eb1622c4..2fd92fedff 100644
+--- a/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.uni
++++ b/Silicon/Hisilicon/Hi1620/Hi1620OemConfigUiLib/MiscConfig.uni
+@@ -23,5 +23,5 @@
+ #string STR_FDT_CONFIG_HELP            #language en-US  "Enable or Disable Fdt Table."
+ #string STR_ENABLE_SPCR_TABLE          #language en-US  "Support SPCR"
+ #string STR_ENABLE_SPCR_HELP           #language en-US  "Enable or Disable SPCR Table."
+-#string STR_ENABLE_GOP_FRAME_BUFFER    #language en-US  "Support GOP FB"
+-#string STR_ENABLE_GOP_FRAME_BUFFER_HELP     #language en-US  "Enable or Disable GOP frame buffer."
++#string STR_ENABLE_GOP_FRAME_BUFFER    #language en-US  "Support GOP FB for SM750"
++#string STR_ENABLE_GOP_FRAME_BUFFER_HELP     #language en-US  "Enable or Disable GOP frame buffer for SM750."
+-- 
+2.17.0
+

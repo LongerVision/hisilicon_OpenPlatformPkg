@@ -1,0 +1,434 @@
+From 896b986f7503e3150fd3fbfb5f8edead0c2a0f72 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Wed, 27 Jun 2018 16:05:26 +0800
+Subject: [PATCH edk2-platforms v2 36/43] Platform/Hisilicon/D06: Add capsule
+ upgrade support
+
+This module support updating the boot CPU firmware only.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D06/D06.dsc                                                           | 14 ++++
+ Platform/Hisilicon/D06/D06.fdf                                                           | 72 ++++++++++++++++-
+ Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf     | 50 ++++++++++++
+ Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptorPei.c    | 70 +++++++++++++++++
+ Platform/Hisilicon/D06/Capsule/SystemFirmwareUpdateConfig/SystemFirmwareUpdateConfig.ini | 46 +++++++++++
+ Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.aslc    | 81 ++++++++++++++++++++
+ 6 files changed, 332 insertions(+), 1 deletion(-)
+
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+index 9550e0d497..fad6fcc747 100644
+--- a/Platform/Hisilicon/D06/D06.dsc
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -121,6 +121,11 @@
+   gHisiTokenSpaceGuid.PcdIsItsSupported|TRUE
+   gArmTokenSpaceGuid.PcdArmGicV3WithV2Legacy|FALSE
+   gEfiMdeModulePkgTokenSpaceGuid.PcdHiiOsRuntimeSupport|FALSE
++[PcdsDynamicExDefault.common.DEFAULT]
++  gEfiSignedCapsulePkgTokenSpaceGuid.PcdEdkiiSystemFirmwareImageDescriptor|{0x0}|VOID*|0x100
++  gEfiMdeModulePkgTokenSpaceGuid.PcdSystemFmpCapsuleImageTypeIdGuid|{0x29, 0x3d, 0x4b, 0xd3, 0x85, 0x00, 0xb3, 0x4a, 0x8b, 0xe8, 0x84, 0x18, 0x8c, 0xc5, 0x04, 0x89}
++  gEfiSignedCapsulePkgTokenSpaceGuid.PcdEdkiiSystemFirmwareFileGuid|{0xcf, 0x4f, 0x2e, 0x64, 0xf7, 0x2d, 0x15, 0x44, 0x8b, 0x70, 0xa0, 0x39, 0x09, 0xc5, 0x7b, 0x55}
++
+ 
+ [PcdsFixedAtBuild.common]
+   gArmPlatformTokenSpaceGuid.PcdCoreCount|48
+@@ -266,6 +271,7 @@
+   Platform/Hisilicon/D06/EarlyConfigPeim/EarlyConfigPeimD06.inf
+   Silicon/Hisilicon/Drivers/VersionInfoPeim/VersionInfoPeim.inf
+ 
++  Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
+   MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf {
+     <LibraryClasses>
+       NULL|MdeModulePkg/Library/LzmaCustomDecompressLib/LzmaCustomDecompressLib.inf
+@@ -386,6 +392,8 @@
+   MdeModulePkg/Bus/Pci/SataControllerDxe/SataControllerDxe.inf
+   MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
+   MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
++  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareReportDxe.inf
++  MdeModulePkg/Universal/EsrtDxe/EsrtDxe.inf
+   #
+   # FAT filesystem + GPT/MBR partitioning
+   #
+@@ -434,6 +442,12 @@
+   MdeModulePkg/Universal/DisplayEngineDxe/DisplayEngineDxe.inf
+   MdeModulePkg/Universal/SetupBrowserDxe/SetupBrowserDxe.inf
+   MdeModulePkg/Universal/BdsDxe/BdsDxe.inf
++  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareUpdateDxe.inf {
++    <LibraryClasses>
++      FmpAuthenticationLib|SecurityPkg/Library/FmpAuthenticationLibPkcs7/FmpAuthenticationLibPkcs7.inf
++  }
++
++  MdeModulePkg/Application/CapsuleApp/CapsuleApp.inf
+ 
+   #
+   # UEFI application (Shell Embedded Boot Loader)
+diff --git a/Platform/Hisilicon/D06/D06.fdf b/Platform/Hisilicon/D06/D06.fdf
+index 90379b8558..8c3f4f9932 100644
+--- a/Platform/Hisilicon/D06/D06.fdf
++++ b/Platform/Hisilicon/D06/D06.fdf
+@@ -308,7 +308,9 @@ READ_LOCK_STATUS   = TRUE
+   INF MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
+ 
+   INF Silicon/Hisilicon/Hi1620/Drivers/Pl011DebugSerialPortInitDxe/Pl011DebugSerialPortInitDxe.inf
+-  INF MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
++  INF SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareReportDxe.inf
++  INF MdeModulePkg/Universal/EsrtDxe/EsrtDxe.inf
++
+   #
+   # Build Shell from latest source code instead of prebuilt binary
+   #
+@@ -364,11 +366,79 @@ READ_LOCK_STATUS   = TRUE
+ 
+   INF MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
+ 
++  INF RuleOverride = FMP_IMAGE_DESC Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
+   FILE FV_IMAGE = 9E21FD93-9C72-4c15-8C4B-E77F1DB2D792 {
+     SECTION GUIDED EE4E5898-3914-4259-9D6E-DC7BD79403CF PROCESSING_REQUIRED = TRUE {
+       SECTION FV_IMAGE = FVMAIN
+     }
+   }
++[FV.CapsuleDispatchFv]
++FvAlignment        = 16
++ERASE_POLARITY     = 1
++MEMORY_MAPPED      = TRUE
++STICKY_WRITE       = TRUE
++LOCK_CAP           = TRUE
++LOCK_STATUS        = TRUE
++WRITE_DISABLED_CAP = TRUE
++WRITE_ENABLED_CAP  = TRUE
++WRITE_STATUS       = TRUE
++WRITE_LOCK_CAP     = TRUE
++WRITE_LOCK_STATUS  = TRUE
++READ_DISABLED_CAP  = TRUE
++READ_ENABLED_CAP   = TRUE
++READ_STATUS        = TRUE
++READ_LOCK_CAP      = TRUE
++READ_LOCK_STATUS   = TRUE
++
++  INF SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareUpdateDxe.inf
++
++[FV.SystemFirmwareUpdateCargo]
++FvAlignment        = 16
++ERASE_POLARITY     = 1
++MEMORY_MAPPED      = TRUE
++STICKY_WRITE       = TRUE
++LOCK_CAP           = TRUE
++LOCK_STATUS        = TRUE
++WRITE_DISABLED_CAP = TRUE
++WRITE_ENABLED_CAP  = TRUE
++WRITE_STATUS       = TRUE
++WRITE_LOCK_CAP     = TRUE
++WRITE_LOCK_STATUS  = TRUE
++READ_DISABLED_CAP  = TRUE
++READ_ENABLED_CAP   = TRUE
++READ_STATUS        = TRUE
++READ_LOCK_CAP      = TRUE
++READ_LOCK_STATUS   = TRUE
++
++  FILE RAW = 642e4fcf-2df7-4415-8b70-a03909c57b55 { # PcdEdkiiSystemFirmwareFileGuid
++    FD = D06
++  }
++
++  FILE RAW = ce57b167-b0e4-41e8-a897-5f4feb781d40 { # gEdkiiSystemFmpCapsuleDriverFvFileGuid
++    FV = CapsuleDispatchFv
++  }
++
++  FILE RAW = 812136D3-4D3A-433A-9418-29BB9BF78F6E { # gEdkiiSystemFmpCapsuleConfigFileGuid
++    Platform/Hisilicon/D06/Capsule/SystemFirmwareUpdateConfig/SystemFirmwareUpdateConfig.ini
++  }
++
++[FmpPayload.FmpPayloadSystemFirmwarePkcs7]
++IMAGE_HEADER_INIT_VERSION = 0x02
++IMAGE_TYPE_ID             = df8fe8d1-e937-45b8-9691-c4b5e183874e # PcdSystemFmpCapsuleImageTypeIdGuid
++IMAGE_INDEX               = 0x1
++HARDWARE_INSTANCE         = 0x0
++MONOTONIC_COUNT           = 0x1
++CERTIFICATE_GUID          = 4AAFD29D-68DF-49EE-8AA9-347D375665A7 # PKCS7
++
++  FV = SystemFirmwareUpdateCargo
++
++[Capsule.D06FirmwareUpdateCapsuleFmpPkcs7]
++CAPSULE_GUID                = 6dcbd5ed-e82d-4c44-bda1-7194199ad92a # gEfiFmpCapsuleGuid
++CAPSULE_HEADER_SIZE         = 0x20
++CAPSULE_HEADER_INIT_VERSION = 0x1
++
++  FMP_PAYLOAD = FmpPayloadSystemFirmwarePkcs7
++
+ 
+ !include Silicon/Hisilicon/Hisilicon.fdf.inc
+ 
+diff --git a/Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf b/Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
+new file mode 100644
+index 0000000000..fc1832fa5f
+--- /dev/null
++++ b/Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
+@@ -0,0 +1,50 @@
++## @file
++#  System Firmware descriptor.
++#
++#  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++#  Copyright (c) 2018, Linaro Limited. All rights reserved.
++#  Copyright (c) 2016, Intel Corporation. All rights reserved.<BR>
++#
++#  This program and the accompanying materials
++#  are licensed and made available under the terms and conditions of the BSD License
++#  which accompanies this distribution.  The full text of the license may be found at
++#  http://opensource.org/licenses/bsd-license.php
++#
++#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++#
++##
++
++[Defines]
++  INF_VERSION                    = 0x0001001A
++  BASE_NAME                      = SystemFirmwareDescriptor
++  FILE_GUID                      = 90B2B846-CA6D-4D6E-A8D3-C140A8E110AC
++  MODULE_TYPE                    = PEIM
++  VERSION_STRING                 = 1.0
++  ENTRY_POINT                    = SystemFirmwareDescriptorPeimEntry
++
++[Sources]
++  SystemFirmwareDescriptorPei.c
++  SystemFirmwareDescriptor.aslc
++
++[Packages]
++  ArmPkg/ArmPkg.dec
++  ArmPlatformPkg/ArmPlatformPkg.dec
++  MdeModulePkg/MdeModulePkg.dec
++  MdePkg/MdePkg.dec
++  SignedCapsulePkg/SignedCapsulePkg.dec
++
++[LibraryClasses]
++  DebugLib
++  PcdLib
++  PeimEntryPoint
++  PeiServicesLib
++
++[FixedPcd]
++  gArmTokenSpaceGuid.PcdFdSize
++
++[Pcd]
++  gEfiSignedCapsulePkgTokenSpaceGuid.PcdEdkiiSystemFirmwareImageDescriptor
++
++[Depex]
++  TRUE
+diff --git a/Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptorPei.c b/Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptorPei.c
+new file mode 100644
+index 0000000000..27c0a718f8
+--- /dev/null
++++ b/Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptorPei.c
+@@ -0,0 +1,70 @@
++/** @file
++  System Firmware descriptor producer.
++
++  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++  Copyright (c) 2018, Linaro Limited. All rights reserved.
++  Copyright (c) 2016, Intel Corporation. All rights reserved.<BR>
++
++  This program and the accompanying materials
++  are licensed and made available under the terms and conditions of the BSD License
++  which accompanies this distribution.  The full text of the license may be found at
++  http://opensource.org/licenses/bsd-license.php
++
++  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++
++**/
++
++#include <PiPei.h>
++#include <Guid/EdkiiSystemFmpCapsule.h>
++#include <Library/DebugLib.h>
++#include <Library/PcdLib.h>
++#include <Library/PeiServicesLib.h>
++#include <Protocol/FirmwareManagement.h>
++
++/**
++  Entrypoint for SystemFirmwareDescriptor PEIM.
++
++  @param[in]  FileHandle  Handle of the file being invoked.
++  @param[in]  PeiServices Describes the list of possible PEI Services.
++
++  @retval EFI_SUCCESS            PPI successfully installed.
++**/
++EFI_STATUS
++EFIAPI
++SystemFirmwareDescriptorPeimEntry (
++  IN EFI_PEI_FILE_HANDLE     FileHandle,
++  IN CONST EFI_PEI_SERVICES  **PeiServices
++  )
++{
++  EFI_STATUS                              Status;
++  EDKII_SYSTEM_FIRMWARE_IMAGE_DESCRIPTOR  *Descriptor;
++  UINTN                                   Size;
++  UINTN                                   Index;
++  UINT32                                  AuthenticationStatus;
++
++  //
++  // Search RAW section.
++  //
++
++  Index = 0;
++  while (TRUE) {
++    Status = PeiServicesFfsFindSectionData3 (EFI_SECTION_RAW, Index, FileHandle, (VOID **)&Descriptor, &AuthenticationStatus);
++    if (EFI_ERROR (Status)) {
++      // Should not happen, must something wrong in FDF.
++      DEBUG ((DEBUG_ERROR, "Not found SystemFirmwareDescriptor in fdf !\n"));
++      return EFI_NOT_FOUND;
++    }
++    if (Descriptor->Signature == EDKII_SYSTEM_FIRMWARE_IMAGE_DESCRIPTOR_SIGNATURE) {
++      break;
++    }
++    Index++;
++  }
++
++  DEBUG ((DEBUG_INFO, "EDKII_SYSTEM_FIRMWARE_IMAGE_DESCRIPTOR size - 0x%x\n", Descriptor->Length));
++
++  Size = Descriptor->Length;
++  PcdSetPtrS (PcdEdkiiSystemFirmwareImageDescriptor, &Size, Descriptor);
++
++  return EFI_SUCCESS;
++}
+diff --git a/Platform/Hisilicon/D06/Capsule/SystemFirmwareUpdateConfig/SystemFirmwareUpdateConfig.ini b/Platform/Hisilicon/D06/Capsule/SystemFirmwareUpdateConfig/SystemFirmwareUpdateConfig.ini
+new file mode 100644
+index 0000000000..80f253b235
+--- /dev/null
++++ b/Platform/Hisilicon/D06/Capsule/SystemFirmwareUpdateConfig/SystemFirmwareUpdateConfig.ini
+@@ -0,0 +1,46 @@
++#
++#  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++#  Copyright (c) 2018, Linaro Limited. All rights reserved.
++#  Copyright (c) 2016, Intel Corporation. All rights reserved.<BR>
++#
++#  This program and the accompanying materials
++#  are licensed and made available under the terms and conditions of the BSD License
++#  which accompanies this distribution.  The full text of the license may be found at
++#  http://opensource.org/licenses/bsd-license.php
++#
++#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++#
++##
++
++[Head]
++NumOfUpdate = 3
++NumOfRecovery = 0
++Update0 = SysFvMain
++Update1 = SysCustom
++Update2 = SysNvRam
++
++[SysFvMain]
++FirmwareType  = 0             # 0 - SystemFirmware, 1 - NvRam
++AddressType   = 0             # 0 - relative address, 1 - absolute address.
++BaseAddress   = 0x00000000    # Base address offset on flash
++Length        = 0x003C0000    # Length
++ImageOffset   = 0x00000000    # Image offset of this SystemFirmware image
++FileGuid      = 642e4fcf-2df7-4415-8b70-a03909c57b55  # PcdEdkiiSystemFirmwareFileGuid
++
++[SysCustom]
++FirmwareType  = 0             # 0 - SystemFirmware, 1 - NvRam
++AddressType   = 0             # 0 - relative address, 1 - absolute address.
++BaseAddress   = 0x003F0000    # Base address offset on flash
++Length        = 0x00010000    # Length
++ImageOffset   = 0x003F0000    # Image offset of this SystemFirmware image
++FileGuid      = 642e4fcf-2df7-4415-8b70-a03909c57b55  # PcdEdkiiSystemFirmwareFileGuid
++
++[SysNvRam]
++FirmwareType  = 1             # 0 - SystemFirmware, 1 - NvRam
++AddressType   = 0             # 0 - relative address, 1 - absolute address.
++BaseAddress   = 0x003C0000    # Base address offset on flash
++Length        = 0x00020000    # Length
++ImageOffset   = 0x003C0000    # Image offset of this SystemFirmware image
++FileGuid      = 642e4fcf-2df7-4415-8b70-a03909c57b55  # PcdEdkiiSystemFirmwareFileGuid
++
+diff --git a/Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.aslc b/Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.aslc
+new file mode 100644
+index 0000000000..36175338dd
+--- /dev/null
++++ b/Platform/Hisilicon/D06/Drivers/SystemFirmwareDescriptor/SystemFirmwareDescriptor.aslc
+@@ -0,0 +1,81 @@
++/** @file
++  System Firmware descriptor.
++
++  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++  Copyright (c) 2018, Linaro Limited. All rights reserved.
++  Copyright (c) 2016, Intel Corporation. All rights reserved.<BR>
++
++  This program and the accompanying materials
++  are licensed and made available under the terms and conditions of the BSD License
++  which accompanies this distribution.  The full text of the license may be found at
++  http://opensource.org/licenses/bsd-license.php
++
++  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++
++**/
++
++#include <PiPei.h>
++#include <Guid/EdkiiSystemFmpCapsule.h>
++#include <Protocol/FirmwareManagement.h>
++
++#define PACKAGE_VERSION                     0xFFFFFFFF
++#define PACKAGE_VERSION_STRING              L"Unknown"
++
++#define CURRENT_FIRMWARE_VERSION            0x00000002
++#define CURRENT_FIRMWARE_VERSION_STRING     L"0x00000002"
++#define LOWEST_SUPPORTED_FIRMWARE_VERSION   0x00000001
++
++#define IMAGE_ID                            SIGNATURE_64('H','W','A', 'R', 'M', '_', 'F', 'd')
++#define IMAGE_ID_STRING                     L"ARMPlatformFd"
++
++// PcdSystemFmpCapsuleImageTypeIdGuid
++#define IMAGE_TYPE_ID_GUID                  { 0xdf8fe8d1, 0xe937, 0x45b8, { 0x96, 0x91, 0xc4, 0xb5, 0xe1, 0x83, 0x87, 0x4e } }
++
++typedef struct {
++  EDKII_SYSTEM_FIRMWARE_IMAGE_DESCRIPTOR  Descriptor;
++  // real string data
++  CHAR16                                  ImageIdNameStr[ARRAY_SIZE (IMAGE_ID_STRING)];
++  CHAR16                                  VersionNameStr[ARRAY_SIZE (CURRENT_FIRMWARE_VERSION_STRING)];
++  CHAR16                                  PackageVersionNameStr[ARRAY_SIZE (PACKAGE_VERSION_STRING)];
++} IMAGE_DESCRIPTOR;
++
++IMAGE_DESCRIPTOR mImageDescriptor =
++{
++  {
++    EDKII_SYSTEM_FIRMWARE_IMAGE_DESCRIPTOR_SIGNATURE,
++    sizeof (EDKII_SYSTEM_FIRMWARE_IMAGE_DESCRIPTOR),
++    sizeof (IMAGE_DESCRIPTOR),
++    PACKAGE_VERSION,                                       // PackageVersion
++    OFFSET_OF (IMAGE_DESCRIPTOR, PackageVersionNameStr),   // PackageVersionName
++    1,                                                     // ImageIndex;
++    {0x0},                                                 // Reserved
++    IMAGE_TYPE_ID_GUID,                                    // ImageTypeId;
++    IMAGE_ID,                                              // ImageId;
++    OFFSET_OF (IMAGE_DESCRIPTOR, ImageIdNameStr),          // ImageIdName;
++    CURRENT_FIRMWARE_VERSION,                              // Version;
++    OFFSET_OF (IMAGE_DESCRIPTOR, VersionNameStr),          // VersionName;
++    {0x0},                                                 // Reserved2
++    FixedPcdGet32 (PcdFdSize),                             // Size;
++    IMAGE_ATTRIBUTE_IMAGE_UPDATABLE |
++      IMAGE_ATTRIBUTE_RESET_REQUIRED |
++      IMAGE_ATTRIBUTE_AUTHENTICATION_REQUIRED |
++      IMAGE_ATTRIBUTE_IN_USE,                              // AttributesSupported;
++    IMAGE_ATTRIBUTE_IMAGE_UPDATABLE |
++      IMAGE_ATTRIBUTE_RESET_REQUIRED |
++      IMAGE_ATTRIBUTE_AUTHENTICATION_REQUIRED |
++      IMAGE_ATTRIBUTE_IN_USE,                              // AttributesSetting;
++    0x0,                                                   // Compatibilities;
++    LOWEST_SUPPORTED_FIRMWARE_VERSION,                     // LowestSupportedImageVersion;
++    0x00000000,                                            // LastAttemptVersion;
++    0,                                                     // LastAttemptStatus;
++    {0x0},                                                 // Reserved3
++    0,                                                     // HardwareInstance;
++  },
++  // real string data
++  {IMAGE_ID_STRING},
++  {CURRENT_FIRMWARE_VERSION_STRING},
++  {PACKAGE_VERSION_STRING},
++};
++
++VOID* CONST ReferenceAcpiTable = &mImageDescriptor;
+-- 
+2.17.0
+

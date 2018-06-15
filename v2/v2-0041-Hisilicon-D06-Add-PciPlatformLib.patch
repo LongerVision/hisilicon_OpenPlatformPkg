@@ -1,0 +1,141 @@
+From c3a91d2d249e890454c6c23c893eedf68869457b Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Mon, 23 Jul 2018 20:19:29 +0800
+Subject: [PATCH edk2-platforms v2 41/43] Hisilicon/D06: Add PciPlatformLib
+
+Add a Null PciPlatformLib for build D06. The switch generic
+PciHostBridge patch set add two api for PciPlatform driver,
+so need to implement the two api for D06.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D06/D06.dsc                                                 |  1 +
+ Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.inf | 30 +++++++++
+ Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.c   | 67 ++++++++++++++++++++
+ 3 files changed, 98 insertions(+)
+
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+index fad6fcc747..053ea894d5 100644
+--- a/Platform/Hisilicon/D06/D06.dsc
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -95,6 +95,7 @@
+   FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
+ !endif
+   PciExpressLib|MdePkg/Library/BasePciExpressLib/BasePciExpressLib.inf
++  PciPlatformLib|Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.inf
+ 
+ [LibraryClasses.common.SEC]
+   ArmPlatformLib|Silicon/Hisilicon/Library/ArmPlatformLibHisilicon/ArmPlatformLibSec.inf
+diff --git a/Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.inf b/Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.inf
+new file mode 100644
+index 0000000000..7648322522
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.inf
+@@ -0,0 +1,30 @@
++## @file
++# PCI Segment Library for Hisilicon Hi1610/Hi1616 SoC with multiple RCs
++#
++# Copyright (c) 2007 - 2014, Intel Corporation. All rights reserved.<BR>
++# Copyright (c) 2017 - 2018, Linaro Ltd. All rights reserved.<BR>
++# Copyright (c) 2018, Hisilicon Ltd. All rights reserved.<BR>
++#
++#  This program and the accompanying materials
++#  are licensed and made available under the terms and conditions of the BSD License
++#  which accompanies this distribution. The full text of the license may be found at
++#  http://opensource.org/licenses/bsd-license.php.
++#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++#
++#
++##
++
++[Defines]
++  INF_VERSION                    = 0x0001001A
++  BASE_NAME                      = Hi1620PciPlatformLib
++  FILE_GUID                      = 29ba30da-68bc-46a5-888f-c65dabb67fd8
++  MODULE_TYPE                    = BASE
++  VERSION_STRING                 = 1.0
++  LIBRARY_CLASS                  = PciPlatformLib
++
++[Sources]
++  Hi1620PciPlatformLib.c
++
++[Packages]
++  MdePkg/MdePkg.dec
+diff --git a/Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.c b/Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.c
+new file mode 100644
+index 0000000000..ff77974c0f
+--- /dev/null
++++ b/Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.c
+@@ -0,0 +1,67 @@
++/** @file
++*
++*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
++*  Copyright (c) 2018, Linaro Limited. All rights reserved.
++*
++*  This program and the accompanying materials
++*  are licensed and made available under the terms and conditions of the BSD License
++*  which accompanies this distribution.  The full text of the license may be found at
++*  http://opensource.org/licenses/bsd-license.php
++*
++*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
++*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
++*
++**/
++
++#include <Uefi.h>
++#include <Protocol/PciPlatform.h>
++
++
++/*++
++
++Routine Description:
++
++  Perform Platform initialization first in PciPlatform.
++
++Arguments:
++
++Returns:
++
++ VOID.
++
++--*/
++VOID
++EFIAPI
++PciInitPlatform (
++  VOID
++  )
++{
++  return;
++}
++
++/*++
++
++Routine Description:
++
++  Perform Platform initialization by the phase indicated.
++
++Arguments:
++
++  HostBridge    -  The associated PCI host bridge handle.
++  Phase         -  The phase of the PCI controller enumeration.
++  ChipsetPhase  -  Defines the execution phase of the PCI chipset driver.
++
++Returns:
++
++--*/
++VOID
++EFIAPI
++PhaseNotifyPlatform (
++  IN  EFI_HANDLE                                     HostBridge,
++  IN  EFI_PCI_HOST_BRIDGE_RESOURCE_ALLOCATION_PHASE  Phase,
++  IN  EFI_PCI_CHIPSET_EXECUTION_PHASE                ChipsetPhase
++  )
++{
++  return;
++}
++
+-- 
+2.17.0
+

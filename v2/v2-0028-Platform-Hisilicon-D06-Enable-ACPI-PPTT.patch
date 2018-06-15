@@ -1,0 +1,41 @@
+From 1228acfd4f09f8a9c82e5648262f2cfbabd76571 Mon Sep 17 00:00:00 2001
+From: Heyi Guo <heyi.guo@linaro.org>
+Date: Sat, 30 Jun 2018 09:29:53 +0800
+Subject: [PATCH edk2-platforms v2 28/43] Platform/Hisilicon/D06: Enable ACPI
+ PPTT
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Heyi Guo <heyi.guo@linaro.org>
+---
+ Platform/Hisilicon/D06/D06.dsc | 1 +
+ Platform/Hisilicon/D06/D06.fdf | 2 ++
+ 2 files changed, 3 insertions(+)
+
+diff --git a/Platform/Hisilicon/D06/D06.dsc b/Platform/Hisilicon/D06/D06.dsc
+index bec422670d..06249d8a5b 100644
+--- a/Platform/Hisilicon/D06/D06.dsc
++++ b/Platform/Hisilicon/D06/D06.dsc
+@@ -338,6 +338,7 @@
+   Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/AcpiTablesHi1620.inf
+   Silicon/Hisilicon/Drivers/AcpiPlatformDxe/AcpiPlatformDxe.inf
+ 
++  Silicon/Hisilicon/Hi1620/Pptt/Pptt.inf
+   #
+   # Usb Support
+   #
+diff --git a/Platform/Hisilicon/D06/D06.fdf b/Platform/Hisilicon/D06/D06.fdf
+index 06203dc079..5bb779d2e4 100644
+--- a/Platform/Hisilicon/D06/D06.fdf
++++ b/Platform/Hisilicon/D06/D06.fdf
+@@ -252,6 +252,8 @@ READ_LOCK_STATUS   = TRUE
+   INF RuleOverride=ACPITABLE Silicon/Hisilicon/Hi1620/Hi1620AcpiTables/AcpiTablesHi1620.inf
+   INF Silicon/Hisilicon/Drivers/AcpiPlatformDxe/AcpiPlatformDxe.inf
+ 
++  INF Silicon/Hisilicon/Hi1620/Pptt/Pptt.inf
++
+   #
+   #Network
+   #
+-- 
+2.17.0
+

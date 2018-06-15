@@ -1,0 +1,170 @@
+From 88f30696ccd1a22e7cbd776fae01d30bd63a46fb Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Wed, 4 Jul 2018 16:42:31 +0800
+Subject: [PATCH edk2-platforms v2 08/43] Hisilicon/D0x: Unify FlashFvbDxe
+ driver
+
+Add PcdSFCMEM0BaseAddress and switch three 32-bit macro
+PcdFlashNvStorage of D05/D03 to 64-bit for unifying FlashFvbDxe
+driver.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Platform/Hisilicon/D03/D03.fdf                        |  6 +++---
+ Platform/Hisilicon/D05/D05.fdf                        |  6 +++---
+ Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.inf |  7 ++++---
+ Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.c   | 22 ++++++++++----------
+ 4 files changed, 21 insertions(+), 20 deletions(-)
+
+diff --git a/Platform/Hisilicon/D03/D03.fdf b/Platform/Hisilicon/D03/D03.fdf
+index 4591f7b5b1..b23765020d 100644
+--- a/Platform/Hisilicon/D03/D03.fdf
++++ b/Platform/Hisilicon/D03/D03.fdf
+@@ -69,7 +69,7 @@ FILE = Platform/Hisilicon/D03/bl1.bin
+ FILE = Platform/Hisilicon/D03/fip.bin
+ 
+ 0x002D0000|0x0000E000
+-gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize
++gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize
+ DATA = {
+   ## This is the EFI_FIRMWARE_VOLUME_HEADER
+   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+@@ -97,7 +97,7 @@ DATA = {
+ }
+ 
+ 0x002DE000|0x00002000
+-gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
++gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase64|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
+ #NV_FTW_WORKING
+ DATA = {
+   # EFI_FAULT_TOLERANT_WORKING_BLOCK_HEADER->Signature = gEdkiiWorkingBlockSignatureGuid          =
+@@ -110,7 +110,7 @@ DATA = {
+ }
+ 
+ 0x002E0000|0x00010000
+-gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
++gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase64|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
+ 
+ 0x002F0000|0x00010000
+ FILE = Platform/Hisilicon/D0x-CustomData.Fv
+diff --git a/Platform/Hisilicon/D05/D05.fdf b/Platform/Hisilicon/D05/D05.fdf
+index 6227607ffe..6fa5b5e6c8 100644
+--- a/Platform/Hisilicon/D05/D05.fdf
++++ b/Platform/Hisilicon/D05/D05.fdf
+@@ -69,7 +69,7 @@ FILE = Platform/Hisilicon/D05/bl1.bin
+ FILE = Platform/Hisilicon/D05/fip.bin
+ 
+ 0x002D0000|0x0000E000
+-gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize
++gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize
+ DATA = {
+   ## This is the EFI_FIRMWARE_VOLUME_HEADER
+   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+@@ -97,7 +97,7 @@ DATA = {
+ }
+ 
+ 0x002DE000|0x00002000
+-gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
++gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase64|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
+ #NV_FTW_WORKING
+ DATA = {
+   # EFI_FAULT_TOLERANT_WORKING_BLOCK_HEADER->Signature = gEdkiiWorkingBlockSignatureGuid          =
+@@ -110,7 +110,7 @@ DATA = {
+ }
+ 
+ 0x002E0000|0x00010000
+-gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
++gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase64|gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
+ 
+ 0x002F0000|0x00010000
+ FILE = Platform/Hisilicon/D0x-CustomData.Fv
+diff --git a/Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.inf b/Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.inf
+index 09ec7ce08b..f8be4741ef 100644
+--- a/Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.inf
++++ b/Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.inf
+@@ -54,14 +54,15 @@
+   gHisiSpiFlashProtocolGuid
+ 
+ [Pcd.common]
+-  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase
++  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64
+   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize
+-  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase
++  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase64
+   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
+-  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase
++  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase64
+   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
+ 
+   gArmPlatformTokenSpaceGuid.PcdNorFlashCheckBlockLocked
++  gHisiTokenSpaceGuid.PcdSFCMEM0BaseAddress
+ 
+ [Depex]
+   gHisiSpiFlashProtocolGuid
+diff --git a/Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.c b/Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.c
+index 7c6b64c33e..e18cc9e06e 100644
+--- a/Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.c
++++ b/Silicon/Hisilicon/Drivers/FlashFvbDxe/FlashFvbDxe.c
+@@ -28,8 +28,8 @@ FLASH_DESCRIPTION mFlashDevices[FLASH_DEVICE_COUNT] =
+ {
+     {
+         // UEFI Variable Services non-volatile storage
+-        0xa4000000,
+-        FixedPcdGet32(PcdFlashNvStorageVariableBase),
++        FixedPcdGet64 (PcdSFCMEM0BaseAddress),
++        FixedPcdGet64 (PcdFlashNvStorageVariableBase64),
+         0x20000,
+         SIZE_64KB,
+         {0xCC2CBF29, 0x1498, 0x4CDD, {0x81, 0x71, 0xF8, 0xB6, 0xB4, 0x1D, 0x09, 0x09}}
+@@ -145,8 +145,8 @@ InitializeFvAndVariableStoreHeaders (
+     Headers = AllocateZeroPool(HeadersLength);
+ 
+     // FirmwareVolumeHeader->FvLength is declared to have the Variable area AND the FTW working area AND the FTW Spare contiguous.
+-    ASSERT(PcdGet32(PcdFlashNvStorageVariableBase) + PcdGet32(PcdFlashNvStorageVariableSize) == PcdGet32(PcdFlashNvStorageFtwWorkingBase));
+-    ASSERT(PcdGet32(PcdFlashNvStorageFtwWorkingBase) + PcdGet32(PcdFlashNvStorageFtwWorkingSize) == PcdGet32(PcdFlashNvStorageFtwSpareBase));
++    ASSERT(PcdGet64(PcdFlashNvStorageVariableBase64) + PcdGet32(PcdFlashNvStorageVariableSize) == PcdGet64(PcdFlashNvStorageFtwWorkingBase64));
++    ASSERT(PcdGet64(PcdFlashNvStorageFtwWorkingBase64) + PcdGet32(PcdFlashNvStorageFtwWorkingSize) == PcdGet64(PcdFlashNvStorageFtwSpareBase64));
+ 
+     // Check if the size of the area is at least one block size
+     ASSERT((PcdGet32(PcdFlashNvStorageVariableSize) > 0) && ((UINT32)PcdGet32(PcdFlashNvStorageVariableSize) / Instance->Media.BlockSize > 0));
+@@ -154,9 +154,9 @@ InitializeFvAndVariableStoreHeaders (
+     ASSERT((PcdGet32(PcdFlashNvStorageFtwSpareSize) > 0) && ((UINT32)PcdGet32(PcdFlashNvStorageFtwSpareSize) / Instance->Media.BlockSize > 0));
+ 
+     // Ensure the Variable area Base Addresses are aligned on a block size boundaries
+-    ASSERT((UINT32)PcdGet32(PcdFlashNvStorageVariableBase) % Instance->Media.BlockSize == 0);
+-    ASSERT((UINT32)PcdGet32(PcdFlashNvStorageFtwWorkingBase) % Instance->Media.BlockSize == 0);
+-    ASSERT((UINT32)PcdGet32(PcdFlashNvStorageFtwSpareBase) % Instance->Media.BlockSize == 0);
++    ASSERT((UINT32)PcdGet64(PcdFlashNvStorageVariableBase64) % Instance->Media.BlockSize == 0);
++    ASSERT((UINT32)PcdGet64(PcdFlashNvStorageFtwWorkingBase64) % Instance->Media.BlockSize == 0);
++    ASSERT((UINT32)PcdGet64(PcdFlashNvStorageFtwSpareBase64) % Instance->Media.BlockSize == 0);
+ 
+     //
+     // EFI_FIRMWARE_VOLUME_HEADER
+@@ -855,10 +855,10 @@ FvbInitialize (
+     UINT32      FvbNumLba;
+ 
+     Instance->Initialized = TRUE;
+-    mFlashNvStorageVariableBase = FixedPcdGet32 (PcdFlashNvStorageVariableBase);
++    mFlashNvStorageVariableBase = FixedPcdGet64 (PcdFlashNvStorageVariableBase64);
+ 
+     // Set the index of the first LBA for the FVB
+-    Instance->StartLba = (PcdGet32 (PcdFlashNvStorageVariableBase) - Instance->RegionBaseAddress) / Instance->Media.BlockSize;
++    Instance->StartLba = (PcdGet64 (PcdFlashNvStorageVariableBase64) - Instance->RegionBaseAddress) / Instance->Media.BlockSize;
+ 
+     // Determine if there is a valid header at the beginning of the Flash
+     Status = ValidateFvHeader (Instance);
+@@ -1208,8 +1208,8 @@ FlashFvbInitialize (
+     {
+         // Check if this Flash device contain the variable storage region
+         ContainVariableStorage =
+-            (FlashDevices[Index].RegionBaseAddress <= (UINT32)PcdGet32 (PcdFlashNvStorageVariableBase)) &&
+-            ((UINT32)(PcdGet32 (PcdFlashNvStorageVariableBase) + PcdGet32 (PcdFlashNvStorageVariableSize)) <= FlashDevices[Index].RegionBaseAddress + FlashDevices[Index].Size);
++             (FlashDevices[Index].RegionBaseAddress <= PcdGet64 (PcdFlashNvStorageVariableBase64)) &&
++             ((PcdGet64 (PcdFlashNvStorageVariableBase64) + PcdGet32 (PcdFlashNvStorageVariableSize)) <= FlashDevices[Index].RegionBaseAddress + FlashDevices[Index].Size);
+ 
+         Status = FlashCreateInstance (
+                      FlashDevices[Index].DeviceBaseAddress,
+-- 
+2.17.0
+

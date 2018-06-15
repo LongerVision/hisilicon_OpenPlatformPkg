@@ -1,0 +1,125 @@
+From 0574cd888599f1641a88ef5fea667dcd306c1489 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Thu, 28 Jun 2018 11:20:44 +0800
+Subject: [PATCH edk2-platforms v2 19/43] Silicon/Hisilicon/D06: Stop watchdog
+
+according as watchdog design on D06, watchdog should be
+stopped before boot a option.
+
+This is an out of band watchdog timer in BMC; it is used
+to monitor the whole BIOS boot process and reset the system
+in case BIOS hangs somewhere, i.e. it is armed when system
+is power on, and disabled before handling system control to
+OS, while UEFI boot services watchdog is only armed before
+invoking a boot option. So they are two different watchdogs.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf |  2 ++
+ Silicon/Hisilicon/Include/Library/IpmiCmdLib.h                              | 16 ++++++++++++++
+ Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c               | 22 ++++++++++++++++++++
+ 3 files changed, 40 insertions(+)
+
+diff --git a/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf b/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
+index a093f13fb0..b9458b0ade 100644
+--- a/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
++++ b/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
+@@ -46,6 +46,7 @@
+   DebugLib
+   DevicePathLib
+   DxeServicesLib
++  IpmiCmdLib
+   MemoryAllocationLib
+   PcdLib
+   PrintLib
+@@ -69,6 +70,7 @@
+   gEfiEndOfDxeEventGroupGuid
+   gEfiTtyTermGuid
+   gHisiOemVariableGuid
++  gOemConfigGuid
+ 
+ [Protocols]
+   gEfiGenericMemTestProtocolGuid
+diff --git a/Silicon/Hisilicon/Include/Library/IpmiCmdLib.h b/Silicon/Hisilicon/Include/Library/IpmiCmdLib.h
+index 8868b76135..b956ee6d07 100644
+--- a/Silicon/Hisilicon/Include/Library/IpmiCmdLib.h
++++ b/Silicon/Hisilicon/Include/Library/IpmiCmdLib.h
+@@ -19,6 +19,17 @@
+ #define BOOT_OPTION_BOOT_FLAG_VALID         1
+ #define BOOT_OPTION_BOOT_FLAG_INVALID       0
+ 
++typedef enum {
++  EfiReserved,
++  EfiBiosFrb2,
++  EfiBiosPost,
++  EfiOsLoad,
++  EfiSmsOs,
++  EfiOem,
++  EfiFrbReserved1,
++  EfiFrbReserved2
++} EFI_WDT_USER_TYPE;
++
+ typedef enum {
+   NoOverride = 0x0,
+   ForcePxe,
+@@ -91,4 +102,9 @@ IpmiCmdGetSysBootOptions (
+   IN IPMI_GET_BOOT_OPTION   *BootOption
+   );
+ 
++EFI_STATUS
++IpmiCmdStopWatchdogTimer (
++  IN EFI_WDT_USER_TYPE  UserType
++  );
++
+ #endif
+diff --git a/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c b/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c
+index d5f6d78fa4..b63818cbe4 100644
+--- a/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c
++++ b/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c
+@@ -19,6 +19,8 @@
+ #include <Library/BootLogoLib.h>
+ #include <Library/BmcConfigBootLib.h>
+ #include <Library/DevicePathLib.h>
++#include <Library/IpmiCmdLib.h>
++#include <Library/OemConfigData.h>
+ #include <Library/PcdLib.h>
+ #include <Library/TimerLib.h>
+ #include <Library/UefiBootManagerLib.h>
+@@ -615,6 +617,8 @@ PlatformBootManagerAfterConsole (
+ {
+   EFI_STATUS Status;
+   ESRT_MANAGEMENT_PROTOCOL           *EsrtManagement = NULL;
++  OEM_CONFIG_DATA                    SetupData;
++  UINTN                              DataSize = sizeof (OEM_CONFIG_DATA);
+ 
+   //
+   // Show the splash screen.
+@@ -651,6 +655,24 @@ PlatformBootManagerAfterConsole (
+     );
+ 
+   HandleBmcBootType ();
++
++  //Disable POST Watch Dog before attempting boot
++  Status = gRT->GetVariable (
++                  OEM_CONFIG_NAME,
++                  &gOemConfigGuid,
++                  NULL,
++                  &DataSize,
++                  &SetupData
++                  );
++
++  if (!EFI_ERROR (Status)) {
++    if (SetupData.BmcWdtEnable) {
++      Status = IpmiCmdStopWatchdogTimer (EfiBiosPost);
++      if (EFI_ERROR (Status)) {
++        DEBUG ((DEBUG_ERROR, "%a:%r\n", __FUNCTION__, Status));
++      }
++    }
++  }
+ }
+ 
+ /**
+-- 
+2.17.0
+

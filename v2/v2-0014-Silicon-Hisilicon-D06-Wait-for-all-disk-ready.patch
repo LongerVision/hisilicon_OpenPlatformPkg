@@ -1,0 +1,132 @@
+From 1bf2ad05d4558134248da8bd92072a15db3a6de1 Mon Sep 17 00:00:00 2001
+From: Ming Huang <ming.huang@linaro.org>
+Date: Sat, 12 May 2018 17:26:36 +0800
+Subject: [PATCH edk2-platforms v2 14/43] Silicon/Hisilicon/D06: Wait for all
+ disk ready
+
+This patch is relative to D06 SasDxe driver. The SasDxe set a
+variable to notice this libray. Here Wait for all disk ready
+for 15S at most.
+
+D06:
+For using straight-through hard disk backboard, some disk need
+15 seconds to ready. Actually, wait less 15 seconds here(minus
+the time from end of SAS driver to here).
+For using expander backboard, wait less 6 seconds here(minus
+the time from end of SAS driver to here).
+
+D03/D05:
+As Sas driver don't write the SASDiskInfo variable, D03/D05 will
+break the loop, so it no waiting here.
+
+Contributed-under: TianoCore Contribution Agreement 1.1
+Signed-off-by: Ming Huang <ming.huang@linaro.org>
+---
+ Silicon/Hisilicon/HisiPkg.dec                                               |  1 +
+ Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf |  2 +
+ Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c               | 43 ++++++++++++++++++++
+ 3 files changed, 46 insertions(+)
+
+diff --git a/Silicon/Hisilicon/HisiPkg.dec b/Silicon/Hisilicon/HisiPkg.dec
+index 35bea970ec..b56a6a6af7 100644
+--- a/Silicon/Hisilicon/HisiPkg.dec
++++ b/Silicon/Hisilicon/HisiPkg.dec
+@@ -45,6 +45,7 @@
+ 
+   gHisiEfiMemoryMapGuid  = {0xf8870015, 0x6994, 0x4b98, {0x95, 0xa2, 0xbd, 0x56, 0xda, 0x91, 0xc0, 0x7f}}
+   gVersionInfoHobGuid = {0xe13a14c, 0x859c, 0x4f22, {0x82, 0xbd, 0x18, 0xe, 0xe1, 0x42, 0x12, 0xbf}}
++  gHisiOemVariableGuid = {0xac62b9a5, 0x9939, 0x41d3, {0xff, 0x5c, 0xc5, 0x80, 0x32, 0x7d, 0x9b, 0x29}}
+   gOemBootVariableGuid = {0xb7784577, 0x5aaf, 0x4557, {0xa1, 0x99, 0xd4, 0xa4, 0x2f, 0x45, 0x06, 0xf8}}
+   gEfiHisiSocControllerGuid = {0xee369cc3, 0xa743, 0x5382, {0x75, 0x64, 0x53, 0xe4, 0x31, 0x19, 0x38, 0x35}}
+ 
+diff --git a/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf b/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
+index 7a53befc44..a093f13fb0 100644
+--- a/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
++++ b/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBootManagerLib.inf
+@@ -49,6 +49,7 @@
+   MemoryAllocationLib
+   PcdLib
+   PrintLib
++  TimerLib
+   UefiBootManagerLib
+   UefiBootServicesTableLib
+   UefiLib
+@@ -67,6 +68,7 @@
+ [Guids]
+   gEfiEndOfDxeEventGroupGuid
+   gEfiTtyTermGuid
++  gHisiOemVariableGuid
+ 
+ [Protocols]
+   gEfiGenericMemTestProtocolGuid
+diff --git a/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c b/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c
+index 7dd5ba615c..d5f6d78fa4 100644
+--- a/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c
++++ b/Silicon/Hisilicon/Library/PlatformBootManagerLib/PlatformBm.c
+@@ -20,6 +20,7 @@
+ #include <Library/BmcConfigBootLib.h>
+ #include <Library/DevicePathLib.h>
+ #include <Library/PcdLib.h>
++#include <Library/TimerLib.h>
+ #include <Library/UefiBootManagerLib.h>
+ #include <Library/UefiLib.h>
+ #include <Protocol/DevicePath.h>
+@@ -554,6 +555,47 @@ PlatformBootManagerBeforeConsole (
+   PlatformRegisterOptionsAndKeys ();
+ }
+ 
++STATIC
++VOID
++WaitForDiskReady (
++  )
++{
++  EFI_STATUS                Status;
++  UINT32                    Index;
++  UINTN                     DataSize;
++  UINT32                    DiskInfo;
++  UINT8                     IsFinished;
++
++  Status = EFI_NOT_FOUND;
++  DataSize = sizeof (UINT32);
++  // Wait for 15 seconds at most.
++  for (Index = 0; Index < 15; Index++) {
++    Status = gRT->GetVariable (
++                    L"SASDiskInfo",
++                    &gHisiOemVariableGuid,
++                    NULL,
++                    &DataSize,
++                    &DiskInfo
++                    );
++    if (EFI_ERROR(Status)) {
++      DEBUG ((DEBUG_ERROR, "Get DiskInfo:%r\n", Status));
++      break;
++    }
++
++    IsFinished = (UINT8)(DiskInfo >> 24);
++    if (IsFinished) {
++      break;
++    }
++    DEBUG ((DEBUG_ERROR, "%a", Index == 0 ? "Wait for disk." : "."));
++    MicroSecondDelay(1000 * 1000);
++  }
++
++  if (!EFI_ERROR (Status)) {
++    DEBUG ((DEBUG_ERROR, "DiskInfo:%x\n", DiskInfo));
++    EfiBootManagerConnectAll ();
++  }
++}
++
+ /**
+   Do the platform specific action after the console is ready
+   Possible things that can be done in PlatformBootManagerAfterConsole:
+@@ -583,6 +625,7 @@ PlatformBootManagerAfterConsole (
+   // Connect the rest of the devices.
+   //
+   EfiBootManagerConnectAll ();
++  WaitForDiskReady ();
+ 
+   //
+   // Enumerate all possible boot options.
+-- 
+2.17.0
+
