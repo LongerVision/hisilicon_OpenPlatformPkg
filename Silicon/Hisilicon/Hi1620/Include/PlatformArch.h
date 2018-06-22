@@ -30,5 +30,11 @@
 #define MAX_NUM_PER_TYPE 8
 
 
+// for acpi
+#define NODE_IN_SOCKET                                  2
+#define CORE_NUM_PER_SOCKET                             48
+#define EFI_ACPI_MEMORY_AFFINITY_STRUCTURE_COUNT        16
+#define EFI_ACPI_6_2_ITS_AFFINITY_STRUCTURE_COUNT       1
+
 #endif
 
