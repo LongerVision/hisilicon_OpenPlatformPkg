@@ -1,0 +1,135 @@
+// /** @file
+// OEM Config Library used by UiApp
+//
+//
+// Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+//
+// This program and the accompanying materials are licensed and made available under
+// the terms and conditions of the BSD License that accompanies this distribution.
+// The full text of the license may be found at
+// http://opensource.org/licenses/bsd-license.php.
+//
+// THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+// WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+//
+// **/
+#langdef   en-US "English"
+#langdef   fr-FR "Français"
+
+#string STR_SUPPORT_RAS_TITLE                     #language en-US  "Support RAS"
+                                                  #language fr-FR  "Support RAS"
+#string STR_SUPPORT_RAS_HELP                      #language en-US  "Support memory/PCIe/CPU RAS funtions."
+                                                  #language fr-FR  "Support memory/PCIe/CPU RAS funtions."
+
+#string STR_MEMORY_RAS_CONFIG_FORM_TITLE          #language en-US  "Memory RAS Config"
+                                                  #language fr-FR  "Memory RAS Config"
+#string STR_MEMORY_RAS_CONFIG_FORM_HELP           #language en-US  "Memory RAS Config"
+                                                  #language fr-FR  "Memory RAS Config"
+
+#string STR_PCIE_RAS_CONFIG_FORM_TITLE            #language en-US  "PCIe RAS Config"
+                                                  #language fr-FR  "PCIe RAS Config"
+#string STR_PCIE_RAS_CONFIG_FORM_HELP             #language en-US  "PCIe RAS Config"
+                                                  #language fr-FR  "PCIe RAS Config"
+
+#string STR_CPU_RAS_CONFIG_FORM_TITLE             #language en-US  "CPU RAS Config"
+                                                  #language fr-FR  "CPU RAS Config"
+#string STR_CPU_RAS_CONFIG_FORM_HELP              #language en-US  "CPU RAS Config"
+                                                  #language fr-FR  "CPU RAS Config"
+
+#string STR_ENABLE_POISON_PROMPT                  #language en-US  "Poison"
+                                                  #language fr-FR  "Poison"
+#string STR_ENABLE_POISON_HELP                    #language en-US  "Enable/Disable Poison flag"
+                                                  #language fr-FR  "Activer/désactiver l'indicateur de poison"
+
+#string STR_CHECK_ALGORITHM_PROMPT                #language en-US  "Check Algorithm"
+                                                  #language fr-FR  "Vérifier l'algorithme"
+#string STR_CHECK_ALGORITHM_HELP                  #language en-US  "Set the memory check algorithm"
+                                                  #language fr-FR  "Configurer l'algorithme de vérification de la mémoire"
+#string STR_ECC                                   #language en-US  "ECC"
+                                                  #language fr-FR  "ECC"
+#string STR_SDEC                                  #language en-US  "SDEC"
+                                                  #language fr-FR  "SDEC"
+
+#string STR_PATROL_SCRUB_PROMPT                   #language en-US  "Active Scrub"
+                                                  #language fr-FR  "Gommage actif"
+#string STR_PATROL_SCRUB_HELP                     #language en-US  "Enable/Disable Active Scrub"
+                                                  #language fr-FR  "Activer/désactiver le gommage actif"
+
+#string STR_PATROL_SCRUB_DURATION_PROMPT          #language en-US  "Active Scrub Interval"
+                                                  #language fr-FR  "Intervalle de gommage actif"
+#string STR_PATROL_SCRUB_DURATION_HELP            #language en-US  "Selects the number of hours (0-24) required to complete full scrub. A value of zero means auto!"
+                                                  #language fr-FR  "Sélectionne le nombre d'heures (0-24) requis pour compléter le gommage complet. Une valeur de zéro signifie auto!"
+
+#string STR_DEMAND_SCRUB_PROMPT                   #language en-US  "Passive Scrub"
+                                                  #language fr-FR  "Gommage passif"
+#string STR_DEMAND_SCRUB_HELP                     #language en-US  "Enable/Disable Passive Scrub"
+                                                  #language fr-FR  "Activer/désactiver le gommage passif"
+
+#string STR_CORRECT_ERROR_FORM_TITLE              #language en-US  "Correct Error handle"
+                                                  #language fr-FR  "Corriger la poignée d'erreur"
+#string STR_CORRECT_ERROR_FORM_HELP               #language en-US  "Correctable error-related configuration"
+                                                  #language fr-FR  "Activer/désactiver le gommage actif"
+
+#string STR_CORRECT_ERROR_THRESHOLD_PROMPT        #language en-US  "Correct Error Threshold"
+                                                  #language fr-FR  "Seuil d'erreur correct"
+#string STR_CORRECT_ERROR_THRESHOLD_HELP          #language en-US  "Correctable error-related configuration"
+                                                  #language fr-FR  "Configurer les seuils d'erreur corrigeables"
+#string STR_500                                   #language en-US  "500"
+                                                  #language fr-FR  "500"
+#string STR_1000                                  #language en-US  "1000"
+                                                  #language fr-FR  "1000"
+#string STR_2000                                  #language en-US  "2000"
+                                                  #language fr-FR  "2000"
+
+#string STR_FUNNEL_PERIOD_PROMPT                  #language en-US  "Funnel Period(min)"
+                                                  #language fr-FR  "Funnel Period(min)"
+#string STR_FUNNEL_PERIOD_HELP                    #language en-US  "Set the Funnel function time period"
+                                                  #language fr-FR  "Régler la durée de la fonction de l'entonnoir"
+#string STR_30                                    #language en-US  "30"
+                                                  #language fr-FR  "30"
+#string STR_60                                    #language en-US  "60"
+                                                  #language fr-FR  "60"
+
+#string STR_ADVANCE_DEVICE_CORRECTION_PROMPT      #language en-US  "Advance Device Correction"
+                                                  #language fr-FR  "Seuil d'erreur correct"
+#string STR_ADVANCE_DEVICE_CORRECTION_HELP        #language en-US  "Configure the correctable error threshold alarm handling solution"
+                                                  #language fr-FR  "Configurer le système de traitement d'alarme de seuil d'erreur corrigé"
+#string STR_SR                                    #language en-US  "SR"
+                                                  #language fr-FR  "SR"
+#string STR_MR                                    #language en-US  "MR"
+                                                  #language fr-FR  "MR"
+
+#string STR_RANK_SPARING_PROMPT                   #language en-US  "Rank Sparing"
+                                                  #language fr-FR  "Rank Sparing"
+#string STR_RANK_SPARING_HELP                     #language en-US  "Enable/Disable Rank Sparing"
+                                                  #language fr-FR  "Activer/désactiver l'épargne de rang"
+
+#string STR_DPC_FEARURE                           #language en-US  "DPC Feature"
+                                                  #language fr-FR  "Fonction DPC"
+#string STR_DPC_FEARURE_HELP                      #language en-US  "Enable/Disable PCIE DPC(DownStream Port Containment) feature."
+                                                  #language fr-FR  "Activer/désactiver la fonction de DPC (port en aval) de PCIe."
+
+#string STR_ECRC_FEARURE                          #language en-US  "ECRC Feature"
+                                                  #language fr-FR  "Fonction ECRC"
+#string STR_ECRC_FEARURE_HELP                     #language en-US  "Enable/Disable ECRC check feature"
+                                                  #language fr-FR  "Activer/désactiver la fonctionnalité de vérification ECRC"
+#string STR_COMPLETION_TIMEOUT                    #language en-US  "Completion Timeout"
+                                                  #language fr-FR  "Délai d'achèvement"
+#string STR_COMPLETION_TIMEOUT_HELP               #language en-US  "Enable/Disable PCIE Completion Timeout feature."
+                                                  #language fr-FR  "Activer/désactiver la fonctionnalité d'expiration du délai d'achèvement PCIe."
+
+#string STR_COMPLETION_TIMEOUT_VALUE              #language en-US  "Completion Timeout Value"
+                                                  #language fr-FR  "Valeur de temporisation d'achèvement"
+#string STR_COMPLETION_TIMEOUT_VALUE_HELP         #language en-US  "Set the corresponding Completion Timeout value."
+                                                  #language fr-FR  "Définir la valeur de temporisation d'achèvement correspondante."
+
+#string STR_HOT_PLUG                              #language en-US  "Hot-Plug"
+                                                  #language fr-FR  "Hot-Plug"
+#string STR_HOT_PLUG_HELP                         #language en-US  "Enable/Disable PCIE Hot-plug feature."
+                                                  #language fr-FR  "Activer/désactiver la fonction de branchement à chaud PCIe."
+#string STR_50US_TO_50MS                          #language en-US  "50 us to 50 ms"
+                                                  #language fr-FR  "50 us to 50 ms"
+#string STR_50US_TO_100US                         #language en-US  "50 us to 100 us"
+                                                  #language fr-FR  "50 us to 100 us"
+#string STR_1MS_TO_10MS                           #language en-US  "1 ms to 10 ms"
+                                                  #language fr-FR  "1 ms to 10 ms"

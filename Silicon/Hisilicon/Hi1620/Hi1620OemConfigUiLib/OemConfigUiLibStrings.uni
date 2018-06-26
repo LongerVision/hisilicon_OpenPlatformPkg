@@ -1,0 +1,64 @@
+/** @file
+*
+*  String definitions for the OEM Config.
+*
+*  Copyright (c) 2017 - 2018, Hisilicon Limited. All rights reserved.
+*  Copyright (c) 2017 - 2018, Linaro Limited. All rights reserved.
+*
+*  This program and the accompanying materials
+*  are licensed and made available under the terms and conditions of the BSD License
+*  which accompanies this distribution.  The full text of the license may be found at
+*  http://opensource.org/licenses/bsd-license.php
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+*
+**/
+
+/=#
+
+#langdef   en-US "English"
+#langdef   fr-FR "Français"
+
+#string STR_EMPTY_STRING               #language en-US  ""
+                                       #language fr-FR  ""
+#string STR_BIOS_BUILDTIME_STRING      #language en-US  "Build Date"
+                                       #language fr-FR  "Date de génération"
+#string STR_MISC_BIOS_BUILDTIME        #language en-US  ""
+                                       #language fr-FR  ""
+#string SYSTEM_TIME                    #language en-US  "System Time"
+                                       #language fr-FR  "Temps système"
+#string SYSTEM_TIME_HELP               #language en-US  "System Time (HH:MM:SS)"
+                                       #language fr-FR  "Heure système (hh: mm: SS)"
+#string SYSTEM_DATE                    #language en-US  "System Date"
+                                       #language fr-FR  "Date système"
+#string SYSTEM_DATE_HELP               #language en-US  "System Date (MM/DD/YYYY) Use [ENTER],[TAB] or [SHIFT-TAB] to select a field. Use [+] or [-] to configure system Time."
+                                       #language fr-FR  "Date système (mm/jj/aaaa) utilisez [ENTER], [Tab] ou [Maj-Tab] pour sélectionner un champ. Utilisez [+] ou [-] pour configurer l'heure système."
+#string STR_OEM_CONFIG                 #language en-US  "Oem Config"
+                                       #language fr-FR  "Oem Config"
+#string STR_ENABLED                    #language en-US  "Enabled"
+                                       #language fr-FR  "Activé"
+#string STR_DISABLED                   #language en-US  "Disabled"
+                                       #language fr-FR  "Handicapés"
+#string STR_MEMORY_CONFIG_FORM_TITLE   #language en-US  "Memory Config"
+                                       #language fr-FR  "Memory Config"
+#string STR_MEMORY_CONFIG_FORM_HELP    #language en-US  "Display Memory DIMM information."
+                                       #language fr-FR  "Afficher les informations de mémoire DIMM."
+#string STR_PCIE_CONFIG_FORM_TITLE     #language en-US  "PCIe Config"
+                                       #language fr-FR  "PCIe Config"
+#string STR_PCIE_CONFIG_FORM_HELP      #language en-US  "Display PCIe information."
+                                       #language fr-FR  "Afficher les informations PCIe."
+#string STR_MISC_CONFIG_FORM_TITLE     #language en-US  "MISC Config"
+                                       #language fr-FR  "MISC Config"
+#string STR_MISC_CONFIG_FORM_HELP      #language en-US  "Include SMMU Support Enable and Change the boot manner of DTB/ACPI."
+                                       #language fr-FR  "Incluez la prise en charge SMMU et modifiez la manière de démarrage de DTB/ACPI."
+#string STR_IBMC_CONFIG_FORM_TITLE     #language en-US  "IBMC Config"
+                                       #language fr-FR  "IBMC Config"
+#string STR_IBMC_CONFIG_FORM_HELP      #language en-US  "Include IBMC WDT(Watchdog Timer) Config."
+                                       #language fr-FR  "Inclure IBMC WDT (minuterie de surveillance) config."
+#string STR_RAS_CONFIG_FORM_TITLE      #language en-US  "RAS Config"
+                                       #language fr-FR  "RAS Config"
+#string STR_RAS_CONFIG_FORM_HELP       #language en-US  "Displays and provides option to change the Ras Configuration"
+                                       #language fr-FR  "Displays and provides option to change the Ras Configuration"
+#string STR_EXIT_STRING                #language en-US  "Press ESC to exit."
+                                       #language fr-FR  "Appuyez sur éCHAP pour quitter."

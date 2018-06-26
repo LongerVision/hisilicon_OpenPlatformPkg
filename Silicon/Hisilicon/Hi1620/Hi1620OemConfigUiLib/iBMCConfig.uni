@@ -1,0 +1,49 @@
+// /** @file
+// OEM Config Library used by UiApp
+//
+//
+// Copyright (c) 2017, Intel Corporation. All rights reserved.<BR>
+//
+// This program and the accompanying materials are licensed and made available under
+// the terms and conditions of the BSD License that accompanies this distribution.
+// The full text of the license may be found at
+// http://opensource.org/licenses/bsd-license.php.
+//
+// THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+// WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+//
+// **/
+#langdef   en-US "English"
+#langdef   fr-FR "Français"
+
+#string STR_BMC_WATCHDOG_TIMER                      #language en-US  "iBMC WDT Support For POST"
+                                                    #language fr-FR  "iBMC WDT Support For POST"
+#string STR_BMC_WATCHDOG_TIMER_HELP                 #language en-US  "Enable/Disable iBMC watchdog timer at start of POST."
+                                                    #language fr-FR  "Activer/désactiver iBMC chronomètre de surveillance au début du post."
+#string STR_BMC_WATCHDOG_TIMER_TIMEOUT              #language en-US  "iBMC WDT TimeOut For POST"
+                                                    #language fr-FR  "iBMC WDT TimeOut For POST"
+#string STR_BMC_WATCHDOG_TIMER_TIMEOUT_C10_HELP     #language en-US  "Enter the number of minutes the system firmware has to boot the OS before it takes the Timeout Action. Valid values are from 15 to 25 minutes."
+                                                    #language fr-FR  "Entrez le nombre de minutes que le firmware du système doit démarrer l'os avant qu'il ne prenne l'action Timeout. Les valeurs valides sont de 15 à 25 minutes."
+#string STR_BMC_WATCHDOG_TIMER_ACTION               #language en-US  "iBMC WDT Action For POST"
+                                                    #language fr-FR  "iBMC WDT Action For POST"
+#string STR_BMC_WATCHDOG_TIMER_ACTION_HELP          #language en-US  "Timeout Action Choices: No Action, Hard Reset, Power Down or Power Cycle"
+                                                    #language fr-FR  "Choix d'action de délai d'attente: aucune action, réinitialisation matérielle, puissance vers le bas ou cycle de puissance"
+#string STR_BMC_WATCHDOG_TIMER_NO_ACTION            #language en-US  "No Action"
+                                                    #language fr-FR  "Aucune action"
+#string STR_BMC_WATCHDOG_TIMER_HARD_RESET           #language en-US  "Hard Reset"
+                                                    #language fr-FR  "Réinitialisation matérielle"
+#string STR_BMC_WATCHDOG_TIMER_POWER_DOWN           #language en-US  "Power Down"
+                                                    #language fr-FR  "Puissance vers le bas"
+#string STR_BMC_WATCHDOG_TIMER_POWER_CYCLE          #language en-US  "Power Cycle"
+                                                    #language fr-FR  "Cycle de puissance"
+#string STR_BMC_OS_WATCHDOG_TIMER                   #language en-US  "iBMC WDT Support For OS"
+                                                    #language fr-FR  "iBMC WDT Support For OS"
+#string STR_BMC_OS_WATCHDOG_TIMER_HELP              #language en-US  "Enable/Disable OS Watchdog Timer When OS Load"
+                                                    #language fr-FR  "Activer/désactiver le chronomètre de surveillance d'os quand charge d'OS"
+#string STR_BMC_OS_WDT_TIMEOUT                      #language en-US  "iBMC WDT TimeOut For OS"
+                                                    #language fr-FR  "iBMC WDT TimeOut For OS"
+#string STR_BMC_OS_WDT_TIMEOUT_HELP                 #language en-US  "Enter the number of minutes the system firmware \n has to OS Load before it takes the Timeout Action. Valid values are from 5 to 8 minutes."
+                                                    #language fr-FR  "Entrez le nombre de minutes que le firmware du système \n a à la charge OS avant qu'il ne prenne l'action Timeout. Les valeurs valides sont comprises entre 5 et 8 minutes."
+#string STR_BMC_OS_WDT_ACTION                       #language en-US  "iBMC WDT Action For OS"
+                                                    #language fr-FR  "iBMC WDT Action For OS"
+

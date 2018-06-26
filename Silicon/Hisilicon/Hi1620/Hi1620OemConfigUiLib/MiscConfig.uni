@@ -1,0 +1,36 @@
+/** @file
+*
+*  String definitions for the Misc Config form.
+*
+*  Copyright (c) 2017 - 2018, Hisilicon Limited. All rights reserved.
+*  Copyright (c) 2017 - 2018, Linaro Limited. All rights reserved.
+*
+*  This program and the accompanying materials
+*  are licensed and made available under the terms and conditions of the BSD License
+*  which accompanies this distribution.  The full text of the license may be found at
+*  http://opensource.org/licenses/bsd-license.php
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+*
+**/
+
+#langdef   en-US "English"
+#langdef   fr-FR "Français"
+
+#string STR_OEM_TABLE                  #language en-US  "Support Smmu"
+                                       #language fr-FR  "Support Smmu"
+#string STR_OEM_CONFIG_HELP            #language en-US  "Enable or Disable Smmu."
+                                       #language fr-FR  "Activer ou désactiver Smmu."
+#string STR_FDT_TABLE                  #language en-US  "Install DTB Table"
+                                       #language fr-FR  "Installer la table DTB"
+#string STR_FDT_CONFIG_HELP            #language en-US  "Enable or Disable Fdt Table."
+                                       #language fr-FR  "Activer ou désactiver la table FDT."
+#string STR_ENABLE_SPCR_TABLE          #language en-US  "Support SPCR"
+                                       #language fr-FR  "Support SPCR"
+#string STR_ENABLE_SPCR_HELP           #language en-US  "Enable or Disable SPCR Table."
+                                       #language fr-FR  "Activer ou désactiver la table SPCR."
+#string STR_ENABLE_GOP_FRAME_BUFFER    #language en-US  "Support GOP FB"
+                                       #language fr-FR  "Support GOP FB"
+#string STR_ENABLE_GOP_FRAME_BUFFER_HELP     #language en-US  "Enable or Disable GOP frame buffer."
+                                             #language fr-FR  "Activer ou désactiver Buffer de frame GOP."
