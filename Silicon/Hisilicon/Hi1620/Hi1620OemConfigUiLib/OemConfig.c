@@ -311,7 +311,7 @@ OemConfigUiLibConstructor (
       Configuration.EnableSmmu = 1;
       Configuration.EnableFdtTable = 0;
       Configuration.EnableSpcr = 0;
-      //Configuration.EnableGOP=0;
+      Configuration.EnableGOP = 0;
       //
       //Set the default value of the Ras option
       //
