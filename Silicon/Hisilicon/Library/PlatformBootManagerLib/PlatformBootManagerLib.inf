@@ -47,6 +47,7 @@
   DevicePathLib
   DxeServicesLib
   MemoryAllocationLib
+  IpmiCmdLib
   PcdLib
   PrintLib
   TimerLib
@@ -69,6 +70,7 @@
   gEfiEndOfDxeEventGroupGuid
   gEfiTtyTermGuid
   gHisiOemVariableGuid
+  gOemConfigGuid
 
 [Protocols]
   gEfiGenericMemTestProtocolGuid
