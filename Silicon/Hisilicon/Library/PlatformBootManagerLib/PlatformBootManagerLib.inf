@@ -46,6 +46,7 @@
   DebugLib
   DevicePathLib
   DxeServicesLib
+  IpmiCmdLib
   MemoryAllocationLib
   PcdLib
   PrintLib
