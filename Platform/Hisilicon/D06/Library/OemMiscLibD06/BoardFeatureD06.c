@@ -26,7 +26,7 @@
 
 #include <PlatformArch.h>
 
-I2C_DEVICE gDS3231RtcDevice = {
+I2C_DEVICE gRtcDevice = {
   .Socket = 0,
   .Port = 5,
   .DeviceType = DEVICE_TYPE_SPD,

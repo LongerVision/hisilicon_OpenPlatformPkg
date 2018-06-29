@@ -32,7 +32,7 @@
 #include <Protocol/RealTimeClock.h>
 #include "M41T83RealTimeClock.h"
 
-extern I2C_DEVICE gDS3231RtcDevice;
+extern I2C_DEVICE gRtcDevice;
 
 EFI_STATUS
 SwitchRtcI2cChannelAndLock (
@@ -108,7 +108,7 @@ RtcRead (
 {
   EFI_STATUS  Status;
 
-  Status = I2CRead (&gDS3231RtcDevice, Address, Size, Data);
+  Status = I2CRead (&gRtcDevice, Address, Size, Data);
   MicroSecondDelay (1000);
   return Status;
 }
@@ -131,7 +131,7 @@ RtcWrite (
 {
   EFI_STATUS  Status;
 
-  Status = I2CWrite(&gDS3231RtcDevice, Address, Size, Data);
+  Status = I2CWrite(&gRtcDevice, Address, Size, Data);
   MicroSecondDelay (1000);
   return Status;
 }
@@ -162,7 +162,7 @@ InitializeM41T83 (
     EfiAcquireLock (&mRtcLock);
   }
 
-  Status = I2CInit (gDS3231RtcDevice.Socket, gDS3231RtcDevice.Port, Normal);
+  Status = I2CInit (gRtcDevice.Socket, gRtcDevice.Port, Normal);
   MicroSecondDelay (1000);
   if (EFI_ERROR (Status)) {
     if (!EfiAtRuntime ()) {

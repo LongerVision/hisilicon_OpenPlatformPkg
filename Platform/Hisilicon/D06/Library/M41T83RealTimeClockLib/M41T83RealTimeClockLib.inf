@@ -36,6 +36,7 @@
   DebugLib
   I2CLib
   IoLib
+  OemMiscLib
   PcdLib
   TimerLib
   UefiLib
