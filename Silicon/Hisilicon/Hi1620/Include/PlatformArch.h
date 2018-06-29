@@ -26,6 +26,7 @@
 #define MAX_DIMM        2
 #define MAX_RANK_CH     8
 #define MAX_RANK_DIMM   4
+#define MAX_DIMM_SIZE   256  // In GB
 // Max NUMA node number for each node type
 #define MAX_NUM_PER_TYPE 8
 
