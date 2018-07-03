@@ -1,7 +1,7 @@
 /** @file
 *
-*  Copyright (c) 2015, Hisilicon Limited. All rights reserved.
-*  Copyright (c) 2015, Linaro Limited. All rights reserved.
+*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
+*  Copyright (c) 2015 - 2018, Linaro Limited. All rights reserved.
 *
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License
@@ -30,6 +30,10 @@
 // Max NUMA node number for each node type
 #define MAX_NUM_PER_TYPE 8
 
+
+#define RASC_BASE                (0x1800)
+#define RASC_CFG_INFOIDX_REG     (RASC_BASE + 0x58)  /* configuration register for Rank statistical information */
+#define RASC_CFG_SPLVL_REG       (RASC_BASE + 0xD4)  /* configuration register for Sparing level */
 
 // for acpi
 #define NODE_IN_SOCKET                                  2

@@ -1,7 +1,7 @@
 /** @file
 *
-*  Copyright (c) 2015, Hisilicon Limited. All rights reserved.
-*  Copyright (c) 2015, Linaro Limited. All rights reserved.
+*  Copyright (c) 2015 - 2018, Hisilicon Limited. All rights reserved.
+*  Copyright (c) 2015 - 2018, Linaro Limited. All rights reserved.
 *
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License
@@ -38,6 +38,9 @@
 
 #define S1_BASE               0x40000000000
 
+#define RASC_BASE                (0x5000)
+#define RASC_CFG_INFOIDX_REG     (RASC_BASE + 0x5C)  /* RASC_CFG_INFOIDX是RASC的读取Rank统计信息配置寄存器 */
+#define RASC_CFG_SPLVL_REG       (RASC_BASE + 0xB8)  /* RASC_CFG_SPLVL是RASC的Sparing水线配置寄存器 */
 
 //
 // ACPI table information used to initialize tables.

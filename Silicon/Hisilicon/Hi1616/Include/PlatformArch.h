@@ -30,6 +30,10 @@
 // Max NUMA node number for each node type
 #define MAX_NUM_PER_TYPE 8
 
+#define RASC_BASE                (0x5000)
+#define RASC_CFG_INFOIDX_REG     (RASC_BASE + 0x5C)  /* RASC_CFG_INFOIDX是RASC的读取Rank统计信息配置寄存器 */
+#define RASC_CFG_SPLVL_REG       (RASC_BASE + 0xB8)  /* RASC_CFG_SPLVL是RASC的Sparing水线配置寄存器 */
+
 // for acpi
 #define NODE_IN_SOCKET                                  2
 #define CORE_NUM_PER_SOCKET                             32
