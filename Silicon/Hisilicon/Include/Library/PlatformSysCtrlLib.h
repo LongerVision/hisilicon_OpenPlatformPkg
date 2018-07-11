@@ -106,4 +106,9 @@ VOID CloseClusterClock(UINTN CpuClusterBase);
 VOID EnableClusterClock(UINTN CpuClusterBase);
 VOID CloseSktClock (UINT8 Skt);
 
+EFI_STATUS EFIAPI DealI2cBusException(UINT32 Socket);
+EFI_STATUS
+EFIAPI
+I2C_DealException(UINT32 Socket, UINT32 Port);
+
 #endif
