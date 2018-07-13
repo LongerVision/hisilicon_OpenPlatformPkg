@@ -102,5 +102,8 @@ VOID PlatformEventBroadcastConfig(VOID);
 UINTN GetDjtagRegBase(UINT32 NodeId);
 VOID LlcCleanInvalidateAsm(VOID);
 VOID PlatformMdioInit(VOID);
+VOID CloseClusterClock(UINTN CpuClusterBase);
+VOID EnableClusterClock(UINTN CpuClusterBase);
+VOID CloseSktClock (UINT8 Skt);
 
 #endif
