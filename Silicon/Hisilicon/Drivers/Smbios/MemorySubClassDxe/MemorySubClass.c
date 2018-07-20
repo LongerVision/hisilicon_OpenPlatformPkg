@@ -45,7 +45,7 @@ SmbiosGetManufacturer (
 
 VOID
 SmbiosGetPartNumber (
-  IN pGBL_DATA          pGblData,
+  IN pGBL_INTERFACE     pGblData,
   IN UINT8              Skt,
   IN UINT8              Ch,
   IN UINT8              Dimm,
@@ -78,7 +78,7 @@ SmbiosGetPartNumber (
 
 VOID
 SmbiosGetSerialNumber (
-  IN pGBL_DATA          pGblData,
+  IN pGBL_INTERFACE     pGblData,
   IN UINT8              Skt,
   IN UINT8              Ch,
   IN UINT8              Dimm,
@@ -96,7 +96,7 @@ SmbiosGetSerialNumber (
 
 BOOLEAN
 IsDimmPresent (
-  IN  pGBL_DATA          pGblData,
+  IN  pGBL_INTERFACE     pGblData,
   IN  UINT8              Skt,
   IN  UINT8              Ch,
   IN  UINT8              Dimm
@@ -115,7 +115,7 @@ IsDimmPresent (
 
 UINT8
 SmbiosGetMemoryType (
-  IN  pGBL_DATA          pGblData,
+  IN  pGBL_INTERFACE     pGblData,
   IN  UINT8              Skt,
   IN  UINT8              Ch,
   IN  UINT8              Dimm
@@ -146,7 +146,7 @@ SmbiosGetMemoryType (
 
 VOID
 SmbiosGetTypeDetail (
-  IN  pGBL_DATA             pGblData,
+  IN  pGBL_INTERFACE        pGblData,
   IN  UINT8                 Skt,
   IN  UINT8                 Ch,
   IN  UINT8                 Dimm,
@@ -186,7 +186,7 @@ SmbiosGetTypeDetail (
 
 VOID
 SmbiosGetDimmVoltageInfo (
-  IN     pGBL_DATA             pGblData,
+  IN     pGBL_INTERFACE        pGblData,
   IN     UINT8                 Skt,
   IN     UINT8                 Ch,
   IN     UINT8                 Dimm,
@@ -281,7 +281,7 @@ SmbiosGetPartitionWidth (
 
 EFI_STATUS
 SmbiosAddType16Table (
-  IN  pGBL_DATA          pGblData,
+  IN  pGBL_INTERFACE     pGblData,
   OUT EFI_SMBIOS_HANDLE  *MemArraySmbiosHandle
   )
 {
@@ -345,7 +345,7 @@ SmbiosAddType16Table (
 
 EFI_STATUS
 SmbiosAddType19Table (
-  IN pGBL_DATA          pGblData,
+  IN pGBL_INTERFACE     pGblData,
   IN EFI_SMBIOS_HANDLE  MemArraySmbiosHandle
   )
 {
@@ -397,7 +397,7 @@ SmbiosAddType19Table (
 
 EFI_STATUS
 SmbiosAddType17Table (
-  IN pGBL_DATA          pGblData,
+  IN pGBL_INTERFACE     pGblData,
   IN UINT8              Skt,
   IN UINT8              Ch,
   IN UINT8              Dimm,
@@ -692,7 +692,7 @@ MemorySubClassEntryPoint(
     EFI_STATUS                      Status;
     EFI_SMBIOS_PROTOCOL             *Smbios;
     EFI_HOB_GUID_TYPE               *GuidHob;
-    pGBL_DATA                       pGblData;
+    pGBL_INTERFACE                  pGblData;
     EFI_SMBIOS_HANDLE               MemArraySmbiosHandle;
     UINT8                           Skt, Ch, Dimm;
 
@@ -702,7 +702,7 @@ MemorySubClassEntryPoint(
         DEBUG((EFI_D_ERROR, "Could not get MemoryMap Guid hob.  %r\n"));
         return EFI_NOT_FOUND;
     }
-    pGblData = (pGBL_DATA) GET_GUID_HOB_DATA(GuidHob);
+    pGblData = (pGBL_INTERFACE) GET_GUID_HOB_DATA(GuidHob);
 
     //
     // Locate dependent protocols
