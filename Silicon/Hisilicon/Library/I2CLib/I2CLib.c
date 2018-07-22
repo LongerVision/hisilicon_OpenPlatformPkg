@@ -236,6 +236,42 @@ I2C_GetRxStatus(UINT32 Socket,UINT8 Port)
 
 EFI_STATUS
 EFIAPI
+CheckI2CTimeOut (
+  UINT32 Socket,
+  UINT8  Port,
+  I2CTransfer Transfer
+)
+{
+  UINT32 ulTimes = 0;
+  UINT32 ulFifo;
+
+  if (Transfer == I2CTx) {
+    ulFifo = I2C_GetTxStatus (Socket,Port);
+    while (ulFifo != 0) {
+      I2C_Delay(2);
+      if (++ulTimes > I2C_READ_TIMEOUT) {
+        (VOID)I2C_Disable (Socket, Port);
+        return EFI_TIMEOUT;
+      }
+      ulFifo = I2C_GetTxStatus (Socket,Port);
+    }
+  }
+  else {
+    ulFifo = I2C_GetRxStatus (Socket,Port);
+    while (ulFifo == 0) {
+      I2C_Delay(2);
+      if (++ulTimes > I2C_READ_TIMEOUT) {
+        (VOID)I2C_Disable (Socket, Port);
+        return EFI_TIMEOUT;
+      }
+      ulFifo = I2C_GetRxStatus (Socket,Port);
+    }
+  }
+  return EFI_SUCCESS;
+}
+
+EFI_STATUS
+EFIAPI
 WriteBeforeRead(I2C_DEVICE *I2cInfo, UINT32 ulLength, UINT8 *pBuf)
 {
     UINT32 ulFifo;
@@ -247,17 +283,11 @@ WriteBeforeRead(I2C_DEVICE *I2cInfo, UINT32 ulLength, UINT8 *pBuf)
 
     I2C_SetTarget(I2cInfo->Socket,I2cInfo->Port,I2cInfo->SlaveDeviceAddress);
 
-    ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
-    while(0 != ulFifo)
-    {
-        I2C_Delay(2);
-        if(++ulTimes > I2C_READ_TIMEOUT)
-        {
-            return EFI_TIMEOUT;
-        }
-        ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
+    if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CTx) == EFI_TIMEOUT) {
+      return EFI_TIMEOUT;
     }
 
+    ulFifo = 0;
     for(ulCnt = 0; ulCnt < ulLength; ulCnt++)
     {
         ulTimes = 0;
@@ -275,17 +305,8 @@ WriteBeforeRead(I2C_DEVICE *I2cInfo, UINT32 ulLength, UINT8 *pBuf)
         ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
     }
 
-    ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
-    ulTimes = 0;
-    while(0 != ulFifo)
-    {
-        I2C_Delay(2);
-
-        if(++ulTimes > I2C_READ_TIMEOUT)
-        {
-            return EFI_TIMEOUT;
-        }
-        ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
+    if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CTx) == EFI_TIMEOUT) {
+      return EFI_TIMEOUT;
     }
 
     return EFI_SUCCESS;
@@ -313,16 +334,8 @@ I2CWrite(I2C_DEVICE *I2cInfo, UINT16 InfoOffset, UINT32 ulLength, UINT8 *pBuf)
 
     I2C_SetTarget(I2cInfo->Socket,I2cInfo->Port,I2cInfo->SlaveDeviceAddress);
 
-    ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
-    while(0 != ulFifo)
-    {
-        I2C_Delay(2);
-        if(++ulTimes > I2C_READ_TIMEOUT)
-        {
-            (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
-            return EFI_TIMEOUT;
-        }
-        ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
+    if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CTx) == EFI_TIMEOUT) {
+      return EFI_TIMEOUT;
     }
 
 
@@ -336,17 +349,8 @@ I2CWrite(I2C_DEVICE *I2cInfo, UINT16 InfoOffset, UINT32 ulLength, UINT8 *pBuf)
         I2C_REG_WRITE(Base + I2C_DATA_CMD_OFFSET, InfoOffset & 0xff);
     }
 
-    ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
-    ulTimes = 0;
-    while(0 != ulFifo)
-    {
-        I2C_Delay(2);
-        if(++ulTimes > I2C_READ_TIMEOUT)
-        {
-            (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
-            return EFI_TIMEOUT;
-        }
-        ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
+    if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CTx) == EFI_TIMEOUT) {
+      return EFI_TIMEOUT;
     }
 
     for(Idx = 0; Idx < ulLength; Idx++)
@@ -372,20 +376,10 @@ I2CWrite(I2C_DEVICE *I2cInfo, UINT16 InfoOffset, UINT32 ulLength, UINT8 *pBuf)
         }
     }
 
-    ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
-    ulTimes = 0;
-    while(0 != ulFifo)
-    {
-        I2C_Delay(2);
-
-        if(++ulTimes > I2C_READ_TIMEOUT)
-        {
-            DEBUG ((EFI_D_ERROR, "I2C Write try to finished,time out!\n"));
-            (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
-            return EFI_TIMEOUT;
-        }
-        ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
+    if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CTx) == EFI_TIMEOUT) {
+      return EFI_TIMEOUT;
     }
+
     (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
 
     return EFI_SUCCESS;
@@ -395,8 +389,6 @@ EFI_STATUS
 EFIAPI
 I2CRead(I2C_DEVICE *I2cInfo, UINT16 InfoOffset,UINT32 ulRxLen,UINT8 *pBuf)
 {
-    UINT32 ulFifo;
-    UINT32 ulTimes = 0;
     UINT8  I2CWAddr[2];
     EFI_STATUS  Status;
     UINT32  Idx = 0;
@@ -434,17 +426,8 @@ I2CRead(I2C_DEVICE *I2cInfo, UINT16 InfoOffset,UINT32 ulRxLen,UINT8 *pBuf)
 
     I2C_SetTarget(I2cInfo->Socket,I2cInfo->Port,I2cInfo->SlaveDeviceAddress);
 
-    ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
-    while(0 != ulFifo)
-    {
-        I2C_Delay(2);
-
-        while(++ulTimes > I2C_READ_TIMEOUT)
-        {
-            (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
-            return EFI_TIMEOUT;
-        }
-        ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
+    if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CTx) == EFI_TIMEOUT) {
+      return EFI_TIMEOUT;
     }
 
     while (ulRxLen > 0) {
@@ -455,16 +438,9 @@ I2CRead(I2C_DEVICE *I2cInfo, UINT16 InfoOffset,UINT32 ulRxLen,UINT8 *pBuf)
             I2C_REG_WRITE(Base + I2C_DATA_CMD_OFFSET, I2C_READ_SIGNAL | I2C_CMD_STOP_BIT);
         }
 
-        ulTimes = 0;
-        do {
-            I2C_Delay(2);
-
-            while(++ulTimes > I2C_READ_TIMEOUT) {
-                (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
-                return EFI_TIMEOUT;
-            }
-            ulFifo = I2C_GetRxStatus(I2cInfo->Socket,I2cInfo->Port);
-        }while(0 == ulFifo);
+        if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CRx) == EFI_TIMEOUT) {
+          return EFI_TIMEOUT;
+        }
 
         I2C_REG_READ(Base + I2C_DATA_CMD_OFFSET, pBuf[Idx++]);
 
@@ -481,8 +457,6 @@ I2CReadMultiByte(I2C_DEVICE *I2cInfo, UINT32 InfoOffset,UINT32 ulRxLen,UINT8 *pB
 {
     UINT32 ulCnt;
     UINT16 usTotalLen = 0;
-    UINT32 ulFifo;
-    UINT32 ulTimes = 0;
     UINT8  I2CWAddr[4];
     EFI_STATUS  Status;
     UINT32  BytesLeft;
@@ -558,16 +532,9 @@ I2CReadMultiByte(I2C_DEVICE *I2cInfo, UINT32 InfoOffset,UINT32 ulRxLen,UINT8 *pB
 
 
     for(ulCnt = 0; ulCnt < BytesLeft; ulCnt++) {
-        ulTimes = 0;
-        do {
-            I2C_Delay(2);
-
-            while(++ulTimes > I2C_READ_TIMEOUT) {
-                (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
-                return EFI_TIMEOUT;
-            }
-            ulFifo = I2C_GetRxStatus(I2cInfo->Socket,I2cInfo->Port);
-        }while(0 == ulFifo);
+      if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CRx) == EFI_TIMEOUT) {
+        return EFI_TIMEOUT;
+      }
 
         I2C_REG_READ(Base + I2C_DATA_CMD_OFFSET, pBuf[Idx++]);
     }
@@ -580,8 +547,6 @@ EFI_STATUS
 EFIAPI
 I2CWriteMultiByte(I2C_DEVICE *I2cInfo, UINT32 InfoOffset, UINT32 ulLength, UINT8 *pBuf)
 {
-    UINT32 ulFifo;
-    UINT32 ulTimes = 0;
     UINT32  Idx;
     UINTN  Base;
 
@@ -597,16 +562,8 @@ I2CWriteMultiByte(I2C_DEVICE *I2cInfo, UINT32 InfoOffset, UINT32 ulLength, UINT8
 
     I2C_SetTarget(I2cInfo->Socket,I2cInfo->Port,I2cInfo->SlaveDeviceAddress);
 
-    ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
-    while(0 != ulFifo)
-    {
-        I2C_Delay(2);
-        if(++ulTimes > I2C_READ_TIMEOUT)
-        {
-            (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
-            return EFI_TIMEOUT;
-        }
-        ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
+    if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CTx) == EFI_TIMEOUT) {
+      return EFI_TIMEOUT;
     }
 
 
@@ -630,7 +587,6 @@ I2CWriteMultiByte(I2C_DEVICE *I2cInfo, UINT32 InfoOffset, UINT32 ulLength, UINT8
 
     }
 
-    ulTimes = 0;
     for(Idx = 0; Idx < ulLength; Idx++)
     {
 
@@ -638,20 +594,10 @@ I2CWriteMultiByte(I2C_DEVICE *I2cInfo, UINT32 InfoOffset, UINT32 ulLength, UINT8
 
     }
 
-    ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
-    ulTimes = 0;
-    while(0 != ulFifo)
-    {
-        I2C_Delay(2);
-
-        if(++ulTimes > I2C_READ_TIMEOUT)
-        {
-            DEBUG ((EFI_D_ERROR, "I2C Write try to finished,time out!\n"));
-            (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
-            return EFI_TIMEOUT;
-        }
-        ulFifo = I2C_GetTxStatus(I2cInfo->Socket,I2cInfo->Port);
+    if (CheckI2CTimeOut (I2cInfo->Socket,I2cInfo->Port,I2CTx) == EFI_TIMEOUT) {
+      return EFI_TIMEOUT;
     }
+
     (VOID)I2C_Disable(I2cInfo->Socket, I2cInfo->Port);
 
     return EFI_SUCCESS;
