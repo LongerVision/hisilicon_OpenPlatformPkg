@@ -16,8 +16,10 @@
 #include <Library/DebugLib.h>
 #include <Library/HobLib.h>
 #include <Library/HwMemInitLib.h>
+#include <Library/OemConfigData.h>
 #include <Library/OemMiscLib.h>
 #include <Library/UefiBootServicesTableLib.h>
+#include <Library/UefiRuntimeServicesTableLib.h>
 #include <Library/UefiLib.h>
 
 #define CORECOUNT(X) ((X) * CORE_NUM_PER_SOCKET)
@@ -114,6 +116,25 @@ UpdateSlit (
   return  EFI_SUCCESS;
 }
 
+STATIC
+EFI_STATUS
+IsNeedSpcr (
+  IN OUT EFI_ACPI_DESCRIPTION_HEADER  *Table
+  )
+{
+  EFI_STATUS                     Status;
+  OEM_CONFIG_DATA                SetupData;
+  UINTN                          DataSize = sizeof (OEM_CONFIG_DATA);
+
+  Status = gRT->GetVariable (OEM_CONFIG_NAME, &gOemConfigGuid, NULL, &DataSize, &SetupData);
+  if (!EFI_ERROR (Status) && (SetupData.EnableSpcr == FALSE)) {
+    return EFI_ABORTED;
+  }
+
+  return EFI_SUCCESS;
+}
+
+
 EFI_STATUS
 UpdateAcpiTable (
   IN OUT EFI_ACPI_DESCRIPTION_HEADER      *TableHeader
@@ -129,6 +150,9 @@ UpdateAcpiTable (
 
   case EFI_ACPI_6_0_SYSTEM_LOCALITY_INFORMATION_TABLE_SIGNATURE:
     Status = UpdateSlit (TableHeader);
+    break;
+  case EFI_ACPI_6_2_SERIAL_PORT_CONSOLE_REDIRECTION_TABLE_SIGNATURE:
+    Status = IsNeedSpcr (TableHeader);
     break;
   }
   return Status;
