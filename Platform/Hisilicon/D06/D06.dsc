@@ -95,6 +95,7 @@
   FileExplorerLib|MdeModulePkg/Library/FileExplorerLib/FileExplorerLib.inf
 !endif
   PciExpressLib|MdePkg/Library/BasePciExpressLib/BasePciExpressLib.inf
+  PciPlatformLib|Silicon/Hisilicon/Hi1620/Library/Hi1620PciPlatformLib/Hi1620PciPlatformLib.inf
 
 [LibraryClasses.common.SEC]
   ArmPlatformLib|Silicon/Hisilicon/Library/ArmPlatformLibHisilicon/ArmPlatformLibSec.inf
