@@ -1,7 +1,7 @@
 /** @file
 *
-*  Copyright (c) 2016, Hisilicon Limited. All rights reserved.
-*  Copyright (c) 2016, Linaro Limited. All rights reserved.
+*  Copyright (c) 2016-2018, Hisilicon Limited. All rights reserved.
+*  Copyright (c) 2016-2018, Linaro Limited. All rights reserved.
 *
 *  This program and the accompanying materials
 *  are licensed and made available under the terms and conditions of the BSD License
@@ -17,6 +17,53 @@
 #define _LPC_LIB_H_
 
 #include <Uefi.h>
+
+#define PCIE_SUBSYS_IOMUX       0x201100000
+#define PCIE_SUBSYS_IOMG019     (PCIE_SUBSYS_IOMUX + 0x48)
+#define PCIE_SUBSYS_IOMG020     (PCIE_SUBSYS_IOMUX + 0x4C)
+#define PCIE_SUBSYS_IOMG021     (PCIE_SUBSYS_IOMUX + 0x50)
+#define PCIE_SUBSYS_IOMG022     (PCIE_SUBSYS_IOMUX + 0x54)
+#define PCIE_SUBSYS_IOMG023     (PCIE_SUBSYS_IOMUX + 0x58)
+#define PCIE_SUBSYS_IOMG024     (PCIE_SUBSYS_IOMUX + 0x5C)
+#define PCIE_SUBSYS_IOMG025     (PCIE_SUBSYS_IOMUX + 0x60)
+#define PCIE_SUBSYS_IOMG028     (PCIE_SUBSYS_IOMUX + 0x6C)
+
+#define IO_MGMT_SUBCTRL_BASE    0x201070000
+#define SC_LPC_RESET_REQ_REG    (IO_MGMT_SUBCTRL_BASE + 0x0a58)
+#define SC_LPC_RESET_DREQ_REG   (IO_MGMT_SUBCTRL_BASE + 0x0a5c)
+#define SC_LPC_SEL              (IO_MGMT_SUBCTRL_BASE + 0x2400)
+
+
+#define LPCD06_BASE             0x201190000
+#define LPC_FIRM_SPACE0_CFG     (LPCD06_BASE + 0x100)
+#define LPC_FIRM_SPACE1_CFG     (LPCD06_BASE + 0x104)
+#define LPC_FIRM_SPACE2_CFG     (LPCD06_BASE + 0x108)
+#define LPC_FIRM_SPACE3_CFG     (LPCD06_BASE + 0x10C)
+#define LPC_FIRM_SPACE4_CFG     (LPCD06_BASE + 0x110)
+#define LPC_FIRM_SPACE5_CFG     (LPCD06_BASE + 0x114)
+#define LPC_FIRM_SPACE6_CFG     (LPCD06_BASE + 0x118)
+#define LPC_FIRM_SPACE7_CFG     (LPCD06_BASE + 0x11C)
+#define LPC_MEM_SPACE0_CFG      (LPCD06_BASE + 0x120)
+#define LPC_MEM_SPACE1_CFG      (LPCD06_BASE + 0x124)
+#define LPC_MEM_SPACE2_CFG      (LPCD06_BASE + 0x128)
+#define LPC_MEM_SPACE3_CFG      (LPCD06_BASE + 0x12C)
+#define LPC_MEM_SPACE4_CFG      (LPCD06_BASE + 0x130)
+#define LPC_MEM_SPACE5_CFG      (LPCD06_BASE + 0x134)
+#define LPC_MEM_SPACE6_CFG      (LPCD06_BASE + 0x138)
+
+#define LPCD06_START_REG        (LPCD06_BASE + 0x00)
+#define LPCD06_OP_STATUS_REG    (LPCD06_BASE + 0x04)
+#define LPCD06_IRQ_ST_REG       (LPCD06_BASE + 0x08)
+#define LPCD06_OP_LEN_REG       (LPCD06_BASE + 0x10)
+#define LPCD06_CMD_REG          (LPCD06_BASE + 0x14)
+#define LPCD06_ADDR_REG         (LPCD06_BASE + 0x20)
+#define LPCD06_WDATA_REG        (LPCD06_BASE + 0x24)
+#define LPCD06_RDATA_REG        (LPCD06_BASE + 0x28)
+
+#define LPC_SIRQ_CTR0           (LPCD06_BASE + 0x80)
+#define LPC_SIRQ_CTR1           (LPCD06_BASE + 0x84)
+#define LPC_SIRQ_INT_MASK       (LPCD06_BASE + 0x94)
+
 
 #define PCIE_SUBSYS_IO_MUX      0xA0170000
 #define PCIE_SUBSYS_IOMG033     (PCIE_SUBSYS_IO_MUX + 0x84)
