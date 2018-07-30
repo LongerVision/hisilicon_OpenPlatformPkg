@@ -1,0 +1,41 @@
+/** @file
+*
+*  Copyright (c) 2018, Hisilicon Limited. All rights reserved.
+*  Copyright (c) 2018, Linaro Limited. All rights reserved.
+*
+*  This program and the accompanying materials
+*  are licensed and made available under the terms and conditions of the BSD License
+*  which accompanies this distribution.  The full text of the license may be found at
+*  http://opensource.org/licenses/bsd-license.php
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+*
+**/
+
+
+
+[Defines]
+  INF_VERSION                    = 0x0001001A
+  BASE_NAME                      = HisiD06ShellCmdLib
+  FILE_GUID                      = 41878264-1668-460f-b0bf-26bdc89d464c
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = NULL|UEFI_APPLICATION UEFI_DRIVER
+  CONSTRUCTOR                    = HisiD06ShellCmdLibConstructor
+  DESTRUCTOR                     = HisiD06ShellCmdLibDestructor
+
+
+[Binaries.AARCH64]
+  LIB|HisiD06ShellCmdLib.lib|*
+
+[Packages]
+  ShellPkg/ShellPkg.dec
+  Silicon/Hisilicon/HisiPkg.dec
+
+[LibraryClasses]
+  I2CLib
+  ShellLib
+
+[Guids]
+  HisiPlatformShellSampleHiiGuid                 ## CONSUMES ## HII
