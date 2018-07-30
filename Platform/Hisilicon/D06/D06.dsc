@@ -473,6 +473,8 @@
 !if $(INCLUDE_DP) == TRUE
       NULL|ShellPkg/Library/UefiDpLib/UefiDpLib.inf
 !endif #$(INCLUDE_DP)
+      NULL|Silicon/Hisilicon/Library/HisiShellCmdLib/HisiShellCmdLib.inf
+      NULL|Silicon/Hisilicon/Hi1620/Library/HisiD06ShellCmdLib/HisiD06ShellCmdLib.inf
 
     <PcdsFixedAtBuild>
       gEfiMdePkgTokenSpaceGuid.PcdDebugPropertyMask|0xFF
