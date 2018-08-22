@@ -207,3 +207,19 @@ OemIsNeedDisableExpanderBuffer (
 {
   return TRUE;
 }
+
+UINTN OemGetCpuFreq (UINT8 Socket)
+{
+  UINT8 BrdVerData;
+
+  BrdVerData = MmioRead8(CPLD_BASE_ADDRESS + CPLD_BOM_VER_FLAG);
+
+  if (BrdVerData >= BRD_VER_4TH){  //2.5G
+    return 2500000000;
+  }
+  else
+  {
+     return 2000000000;
+  }
+}
+
