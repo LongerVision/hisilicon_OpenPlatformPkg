@@ -165,7 +165,7 @@
   !ifdef $(FIRMWARE_VER)
     gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"$(FIRMWARE_VER)"
   !else
-    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Development build 18.08 for Hisilicon D06"
+    gEfiMdeModulePkgTokenSpaceGuid.PcdFirmwareVersionString|L"Development-cap3 build 18.08 for Hisilicon D06"
   !endif
 
   gHisiTokenSpaceGuid.PcdBiosVersionString|L"10.01.01T18"
@@ -398,7 +398,7 @@
   #
   # FAT filesystem + GPT/MBR partitioning
   #
-
+  Silicon/Hisilicon/Drivers/ramdisk/ramdisk.inf
   MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
   MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
   FatPkg/EnhancedFatDxe/Fat.inf
