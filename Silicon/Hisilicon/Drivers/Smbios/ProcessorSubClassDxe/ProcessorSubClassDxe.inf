@@ -28,7 +28,6 @@
 
 [Packages]
   ArmPkg/ArmPkg.dec
-  ArmPlatformPkg/ArmPlatformPkg.dec
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   IntelFrameworkPkg/IntelFrameworkPkg.dec
@@ -53,7 +52,6 @@
   gEfiSmbiosProtocolGuid                       # PROTOCOL ALWAYS_CONSUMED
 
 [Pcd]
-  gArmPlatformTokenSpaceGuid.PcdCoreCount
   gHisiTokenSpaceGuid.PcdCPUInfo
   gArmTokenSpaceGuid.PcdArmArchTimerFreqInHz
 
