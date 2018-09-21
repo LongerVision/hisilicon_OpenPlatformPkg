@@ -76,7 +76,7 @@ VOID MN_CONFIG (VOID);
 VOID SmmuConfigForOS (VOID);
 VOID SmmuConfigForBios (VOID);
 
-VOID StartupAp (VOID);
+VOID StartUpBSP (VOID);
 
 VOID LlcCleanInvalidate (VOID);
 
