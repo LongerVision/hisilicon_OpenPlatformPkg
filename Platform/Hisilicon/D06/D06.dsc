@@ -243,6 +243,11 @@
 
   gEfiMdeModulePkgTokenSpaceGuid.PcdSrIovSupport|FALSE
   gArmTokenSpaceGuid.PcdPciIoTranslation|0x0
+  !if $(SECURE_BOOT_ENABLE) == TRUE
+    gHisiTokenSpaceGuid.PcdIsSecureBoot|TRUE
+  !else
+    gHisiTokenSpaceGuid.PcdIsSecureBoot|FALSE
+  !endif
 
 ################################################################################
 #
