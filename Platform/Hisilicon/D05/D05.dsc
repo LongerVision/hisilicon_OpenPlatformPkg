@@ -422,6 +422,11 @@
   gHisiTokenSpaceGuid.PcdHb1Rb7IoSize|0x10000 #64K
 
   gHisiTokenSpaceGuid.Pcdsoctype|0x1610
+  !if $(SECURE_BOOT_ENABLE) == TRUE
+    gHisiTokenSpaceGuid.PcdIsSecureBoot|TRUE
+  !else
+    gHisiTokenSpaceGuid.PcdIsSecureBoot|FALSE
+  !endif
 
 ################################################################################
 #

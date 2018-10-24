@@ -189,7 +189,11 @@ InitializeFvAndVariableStoreHeaders (
     // VARIABLE_STORE_HEADER
     //
     VariableStoreHeader = (VARIABLE_STORE_HEADER*)((UINTN)Headers + (UINTN)FirmwareVolumeHeader->HeaderLength);
-    CopyGuid (&VariableStoreHeader->Signature, &gEfiVariableGuid);
+    if (PcdGetBool (PcdIsSecureBoot)) {
+      CopyGuid (&VariableStoreHeader->Signature, &gEfiAuthenticatedVariableGuid);
+    } else {
+      CopyGuid (&VariableStoreHeader->Signature, &gEfiVariableGuid);
+    }
     VariableStoreHeader->Size = PcdGet32(PcdFlashNvStorageVariableSize) - FirmwareVolumeHeader->HeaderLength;
     VariableStoreHeader->Format            = VARIABLE_STORE_FORMATTED;
     VariableStoreHeader->State             = VARIABLE_STORE_HEALTHY;
@@ -220,6 +224,7 @@ ValidateFvHeader (
     VARIABLE_STORE_HEADER*      VariableStoreHeader;
     UINTN                       VariableStoreLength;
     UINTN                       FvLength;
+    EFI_GUID                    *Guid;
 
     FwVolHeader = (EFI_FIRMWARE_VOLUME_HEADER*)Instance->RegionBaseAddress;
 
@@ -258,7 +263,12 @@ ValidateFvHeader (
     VariableStoreHeader = (VARIABLE_STORE_HEADER*)((UINTN)FwVolHeader + (UINTN)FwVolHeader->HeaderLength);
 
     // Check the Variable Store Guid
-    if ( CompareGuid (&VariableStoreHeader->Signature, &gEfiVariableGuid) == FALSE )
+    if (PcdGetBool (PcdIsSecureBoot)) {
+      Guid = &gEfiAuthenticatedVariableGuid;
+    } else {
+      Guid = &gEfiVariableGuid;
+    }
+    if (CompareGuid (&VariableStoreHeader->Signature, Guid) == FALSE)
     {
         DEBUG ((EFI_D_ERROR, "ValidateFvHeader: Variable Store Guid non-compatible\n"));
         return EFI_NOT_FOUND;
