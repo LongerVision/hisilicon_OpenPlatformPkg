@@ -32,6 +32,9 @@ extern I2C_DEVICE gRtcDevice;
 
 STATIC EFI_LOCK  mRtcLock;
 
+STATIC CONST CHAR16  mTimeZoneVariableName[] = L"M41T83RtcTimeZone";
+STATIC CONST CHAR16  mDaylightVariableName[] = L"M41T83RtcDaylight";
+
 /**
   Read RTC content through its registers.
 
@@ -182,6 +185,7 @@ LibSetTime (
   RTC_M41T83_TIME             BcdTime;
   UINT16                      CenturyBase = 2000;
   UINTN                       LineNum = 0;
+  UINTN                       EpochSeconds;
 
   if (NULL == Time) {
     return EFI_INVALID_PARAMETER;
@@ -205,6 +209,21 @@ LibSetTime (
   (VOID)MicroSecondDelay (RTC_DELAY_1000_MACROSECOND);
 
   SetMem (&BcdTime, sizeof (RTC_M41T83_TIME), 0);
+
+  EpochSeconds = EfiTimeToEpoch (Time);
+
+  // Adjust for the correct time zone, i.e. convert to UTC time zone
+  if (Time->TimeZone != EFI_UNSPECIFIED_TIMEZONE) {
+    EpochSeconds -= Time->TimeZone * SEC_PER_MIN;
+  }
+
+  // Adjust for the correct period
+  if ((Time->Daylight & EFI_TIME_IN_DAYLIGHT) == EFI_TIME_IN_DAYLIGHT) {
+    // Convert to un-adjusted time, i.e. fall back one hour
+    EpochSeconds -= SEC_PER_HOUR;
+  }
+
+  EpochToEfiTime (EpochSeconds, Time);
 
   // Acquire RTC Lock to make access to RTC atomic
   if (!EfiAtRuntime ()) {
@@ -254,6 +273,43 @@ LibSetTime (
     LineNum = __LINE__;
     goto Exit;
   }
+  // Save the current time zone information into non-volatile storage
+  Status = EfiSetVariable (
+             (CHAR16 *)mTimeZoneVariableName,
+             &gEfiCallerIdGuid,
+             EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+             sizeof (Time->TimeZone),
+             (VOID *)&(Time->TimeZone)
+             );
+  if (EFI_ERROR (Status)) {
+    DEBUG ((
+      DEBUG_ERROR,
+      "LibSetTime: can not save %s variable to non-volatile storage, Status = %r\n",
+      mTimeZoneVariableName,
+      Status
+      ));
+    LineNum = __LINE__;
+    goto Exit;
+  }
+
+  // Save the current daylight information into non-volatile storage
+  Status = EfiSetVariable (
+             (CHAR16 *)mDaylightVariableName,
+             &gEfiCallerIdGuid,
+             EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+             sizeof (Time->Daylight),
+             (VOID *)&(Time->Daylight)
+             );
+  if (EFI_ERROR (Status)) {
+    DEBUG ((
+      DEBUG_ERROR,
+      "LibSetTime: can not to save %s variable to non-volatile storage, Status = %r\n",
+      mDaylightVariableName,
+      Status
+      ));
+    LineNum = __LINE__;
+    goto Exit;
+  }
 
 Exit:
   OemReleaseOwnershipOfRtc ();
@@ -295,6 +351,10 @@ LibGetTime (
   UINTN                       LineNum = 0;
   BOOLEAN                     IsTimeInvalid = FALSE;
   UINT8                       TimeTemp[7] = {0};
+  UINTN                       EpochSeconds;
+  INT16                       TimeZone;
+  UINT8                       Daylight;
+  UINTN                       Size;
 
   // Ensure Time is a valid pointer
   if (Time == NULL) {
@@ -336,7 +396,6 @@ LibGetTime (
   Time->Hour = BcdToDecimal8 (BcdTime.Hour.Bits.Hours);
   Time->Minute = BcdToDecimal8 (BcdTime.Minute.Bits.Minutes);
   Time->Second = BcdToDecimal8 (BcdTime.Second.Bits.Seconds);
-  Time->TimeZone = EFI_UNSPECIFIED_TIMEZONE;
 
   if (!IsTimeValid (Time)) {
       Status = EFI_DEVICE_ERROR;
@@ -344,6 +403,120 @@ LibGetTime (
       IsTimeInvalid = TRUE;
       goto Exit;
   }
+
+  EpochSeconds = EfiTimeToEpoch (Time);
+
+  Size = sizeof (TimeZone);
+  Status = EfiGetVariable (
+             (CHAR16 *)mTimeZoneVariableName,
+             &gEfiCallerIdGuid,
+             NULL,
+             &Size,
+             (VOID *)&TimeZone
+             );
+
+  if (EFI_ERROR (Status)) {
+    DEBUG ((
+      DEBUG_ERROR,
+      "LibGetTime: can not get %s variable, Status = %r\n",
+      mTimeZoneVariableName,
+      Status
+      ));
+    if (Status != EFI_NOT_FOUND) {
+      LineNum = __LINE__;
+      goto Exit;
+    }
+
+    // The time zone variable does not exist in non-volatile storage, so create it.
+    Time->TimeZone = EFI_UNSPECIFIED_TIMEZONE;
+    // Store it
+    Status = EfiSetVariable (
+               (CHAR16 *)mTimeZoneVariableName,
+               &gEfiCallerIdGuid,
+               EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+               Size,
+               (VOID *)&(Time->TimeZone)
+               );
+
+    if (EFI_ERROR (Status)) {
+      DEBUG ((
+        DEBUG_ERROR,
+        "LibGetTime: can not save %s variable to non-volatile storage, Status = %r\n",
+        mTimeZoneVariableName,
+        Status
+        ));
+      LineNum = __LINE__;
+      goto Exit;
+    }
+  } else {
+    // Got the time zone
+    Time->TimeZone = TimeZone;
+
+    // Check TimeZone bounds:   -1440 to 1440 or 2047
+    if (((Time->TimeZone < TIME_ZONE_MIN) || (Time->TimeZone > TIME_ZONE_MAX))
+          && (Time->TimeZone != EFI_UNSPECIFIED_TIMEZONE)) {
+      Time->TimeZone = EFI_UNSPECIFIED_TIMEZONE;
+    }
+
+    // Adjust for the correct time zone
+    if (Time->TimeZone != EFI_UNSPECIFIED_TIMEZONE) {
+      EpochSeconds += Time->TimeZone * SEC_PER_MIN;
+    }
+  }
+
+  // Get the current daylight information from non-volatile storage
+  Size = sizeof (Daylight);
+  Status = EfiGetVariable (
+             (CHAR16 *)mDaylightVariableName,
+             &gEfiCallerIdGuid,
+             NULL,
+             &Size,
+             (VOID *)&Daylight
+             );
+
+  if (EFI_ERROR (Status)) {
+    DEBUG ((
+      DEBUG_ERROR,
+      "LibGetTime: Failed to get %s variable, Status = %r\n",
+      mDaylightVariableName,
+      Status
+      ));
+    if (Status != EFI_NOT_FOUND) {
+      goto Exit;
+    }
+    // The daylight variable does not exist in non-volatile storage, so create it.
+    Time->Daylight = 0;
+    // Store it
+    Status = EfiSetVariable (
+               (CHAR16 *)mDaylightVariableName,
+               &gEfiCallerIdGuid,
+               EFI_VARIABLE_NON_VOLATILE | EFI_VARIABLE_BOOTSERVICE_ACCESS | EFI_VARIABLE_RUNTIME_ACCESS,
+               Size,
+               (VOID *)&(Time->Daylight)
+               );
+    if (EFI_ERROR (Status)) {
+      DEBUG ((
+        DEBUG_ERROR,
+        "LibGetTime: can not save %s variable to non-volatile storage, Status = %r\n",
+        mDaylightVariableName,
+        Status
+        ));
+      LineNum = __LINE__;
+      goto Exit;
+    }
+  } else {
+    // Got the daylight information
+    Time->Daylight = Daylight;
+
+    // Adjust for the correct period
+    if ((Time->Daylight & EFI_TIME_IN_DAYLIGHT) == EFI_TIME_IN_DAYLIGHT) {
+      // Convert to adjusted time, i.e. spring forwards one hour
+      EpochSeconds += SEC_PER_HOUR;
+    }
+  }
+
+  // Convert from internal 32-bit time to UEFI time
+  EpochToEfiTime (EpochSeconds, Time);
 
 Exit:
   OemReleaseOwnershipOfRtc ();

@@ -41,6 +41,10 @@
 #define M41T83_REGADDR_ALARM2DATE       0x15
 #define M41T83_REGADDR_ALARM2MONTH      0x14
 
+//UEFI SPEC 2.7,page 295
+#define TIME_ZONE_MIN                 -1440
+#define TIME_ZONE_MAX                 1440
+
 typedef union {
   struct {
     UINT8 TD0:1;

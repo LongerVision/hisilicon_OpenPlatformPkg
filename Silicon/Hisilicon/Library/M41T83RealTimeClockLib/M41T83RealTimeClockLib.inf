@@ -42,4 +42,4 @@
   UefiRuntimeLib        # Use EFiAtRuntime to check stage
 
 [Depex]
-  gEfiCpuArchProtocolGuid
+  gEfiCpuArchProtocolGuid AND gEfiVariableWriteArchProtocolGuid
