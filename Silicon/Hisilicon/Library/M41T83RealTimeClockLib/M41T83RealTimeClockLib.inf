@@ -27,7 +27,6 @@
 [Packages]
   EmbeddedPkg/EmbeddedPkg.dec
   MdePkg/MdePkg.dec
-  Platform/Hisilicon/D06/D06.dec
   Silicon/Hisilicon/HisiPkg.dec
 
 [LibraryClasses]
