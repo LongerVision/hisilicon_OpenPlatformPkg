@@ -53,7 +53,7 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
-[0001]                   Proximity Domain : 01
+[0001]                   Proximity Domain : 00
 [0001]                           Reserved : 00
 [0002]                           Reserved : 0000
 [0004]             DeviceID mapping index : 00000002
@@ -99,7 +99,7 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
-[0001]                   Proximity Domain : 01
+[0001]                   Proximity Domain : 00
 [0001]                           Reserved : 00
 [0002]                           Reserved : 0000
 [0004]             DeviceID mapping index : 0001
@@ -139,7 +139,7 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
-[0001]                   Proximity Domain : 01
+[0001]                   Proximity Domain : 00
 [0001]                           Reserved : 00
 [0002]                           Reserved : 0000
 [0004]             DeviceID mapping index : 00000001
@@ -179,7 +179,7 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
-[0001]                   Proximity Domain : 03
+[0001]                   Proximity Domain : 02
 [0001]                           Reserved : 00
 [0002]                           Reserved : 0000
 [0004]             DeviceID mapping index : 00000002
@@ -225,7 +225,7 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
-[0001]                   Proximity Domain : 03
+[0001]                   Proximity Domain : 02
 [0001]                           Reserved : 00
 [0002]                           Reserved : 0000
 [0004]             DeviceID mapping index : 0001
@@ -265,7 +265,7 @@
 [0004]                      PRI Interrupt : 00000000
 [0004]                     GERR Interrupt : 00000000
 [0004]                     Sync Interrupt : 00000000
-[0001]                   Proximity Domain : 03
+[0001]                   Proximity Domain : 02
 [0001]                           Reserved : 00
 [0002]                           Reserved : 0000
 [0004]             DeviceID mapping index : 00000001
@@ -300,8 +300,8 @@
                             Read Allocate : 0
                                  Override : 0
 [0002]                           Reserved : 0000
-[0001]       Memory Flags (decoded below) : 00
-                                Coherency : 0
+[0001]       Memory Flags (decoded below) : 01
+                                Coherency : 1
                          Device Attribute : 0
 [0004]                      ATS Attribute : 00000000
 [0004]                 PCI Segment Number : 00000000           // should match with above MCFG
@@ -1921,7 +1921,7 @@
 [34Ch 0844   4]                   Input base : 00000000
 [350h 0848   4]                     ID Count : 00000001
 [354h 0852   4]                  Output Base : 00000100
-[358h 0856   4]             Output Reference : 00000100
+[358h 0856   4]             Output Reference : 00000138
 [35Ch 0860   4]        Flags (decoded below) : 00000001
                               Single Mapping : 1
 /* RDE device report++.*/
