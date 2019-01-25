@@ -77,7 +77,6 @@
 
   IpmiCmdLib
 
-  SerdesLib
 
 [Protocols]
   gEfiSmbiosProtocolGuid                       # PROTOCOL ALWAYS_CONSUMED
