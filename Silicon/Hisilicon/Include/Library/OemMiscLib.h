@@ -22,6 +22,11 @@
 #include <PlatformArch.h>
 #include <Library/I2CLib.h>
 
+#define HCCS_PLL_VALUE_2600  0x52240681
+#define HCCS_PLL_VALUE_2800  0x52240701
+#define HCCS_PLL_VALUE_3000  0x52240781
+
+
 #define PCIEDEVICE_REPORT_MAX      8
 #define MAX_PROCESSOR_SOCKETS      MAX_SOCKET
 #define MAX_MEMORY_CHANNELS        MAX_CHANNEL
@@ -54,5 +59,10 @@ BOOLEAN OemIsNeedDisableExpanderBuffer(VOID);
 extern EFI_STRING_ID gDimmToDevLocator[MAX_SOCKET][MAX_CHANNEL][MAX_DIMM];
 EFI_HII_HANDLE EFIAPI OemGetPackages ();
 UINTN OemGetCpuFreq (UINT8 Socket);
+
+UINTN
+OemGetHccsFreq (
+  VOID
+  );
 
 #endif
