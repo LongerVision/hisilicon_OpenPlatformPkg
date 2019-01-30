@@ -290,6 +290,10 @@ OemConfigUiLibConstructor (
       Configuration.OSWdtTimeout = 5;
       Configuration.OSWdtAction = 1;
       //
+      //Set the default value of the PCIe option
+      //
+      Configuration.PcieDPCSupport = 0;
+      //
       //Set the default value of the Misc option
       //
       Configuration.EnableSmmu = 1;

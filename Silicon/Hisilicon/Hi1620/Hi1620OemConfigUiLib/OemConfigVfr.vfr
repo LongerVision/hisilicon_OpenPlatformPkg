@@ -62,11 +62,9 @@ formset
       prompt = STRING_TOKEN(STR_IBMC_CONFIG_FORM_TITLE),
       help   = STRING_TOKEN(STR_IBMC_CONFIG_FORM_HELP);
 
-    suppressif TRUE;
     goto PCIE_CONFIG_FORM_ID,
       prompt  = STRING_TOKEN(STR_PCIE_CONFIG_FORM_TITLE),
       help    = STRING_TOKEN(STR_PCIE_CONFIG_FORM_HELP);
-    endif;
 
     goto MISC_CONFIG_FORM_ID,
       prompt  = STRING_TOKEN(STR_MISC_CONFIG_FORM_TITLE),
