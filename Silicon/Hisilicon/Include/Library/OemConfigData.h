@@ -49,6 +49,7 @@ typedef struct {
   UINT8         OSWdtAction;
   /*PCIe Config*/
   UINT8         PcieSRIOVSupport;
+  UINT8         PcieDPCSupport;
   UINT8         PciePort[PCIE_MAX_TOTAL_PORTS];
   UINT8         PcieLinkSpeedPort[PCIE_MAX_TOTAL_PORTS];
   UINT8         PcieLinkDeEmphasisPort[PCIE_MAX_TOTAL_PORTS];
