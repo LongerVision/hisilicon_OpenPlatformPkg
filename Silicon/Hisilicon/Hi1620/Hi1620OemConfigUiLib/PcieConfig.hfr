@@ -17,6 +17,9 @@
 form formid = PCIE_CONFIG_FORM_ID,
   title   = STRING_TOKEN (STR_PCIE_CONFIG_FORM_TITLE);
 
+  oneof varid  = OEM_CONFIG_DATA.PcieDPCSupport,
+        prompt   = STRING_TOKEN (STR_DPC_SUPPORT_PROMPT),
+        help     = STRING_TOKEN (STR_DPC_SUPPORT_HELP),
         option text = STRING_TOKEN (STR_DISABLE), value = 0, flags = MANUFACTURING | DEFAULT | RESET_REQUIRED;
         option text = STRING_TOKEN (STR_ENABLE),  value = 1, flags = RESET_REQUIRED;
   endoneof;

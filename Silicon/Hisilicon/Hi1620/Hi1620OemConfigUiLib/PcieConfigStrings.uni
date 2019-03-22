@@ -26,7 +26,8 @@
 #string STR_PCIE_CPU_1_PROMPT           #language en-US "CPU 1 PCIE Configuration"
 #string STR_SRIOV_SUPPORT_PROMPT        #language en-US "SRIOV"
 #string STR_SRIOV_SUPPORT_HELP          #language en-US "This option enables / disables the SRIOV function"
-
+#string STR_DPC_SUPPORT_PROMPT          #language en-US "Support DPC"
+#string STR_DPC_SUPPORT_HELP            #language en-US "This option enables / disables the DPC function"
 #string STR_PCIE_PORT_PROMPT_HELP       #language en-US "Press <Enter> to config this port."
 #string STR_PCIE_PORT_0_NULL_PROMPT     #language en-US ""
 #string STR_PCIE_PORT_0_PROMPT          #language en-US "CPU 0 Pcie - Port 0"
